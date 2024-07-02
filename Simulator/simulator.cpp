@@ -8,6 +8,7 @@
 class Agent {
 public:
     sf::Vector2f position;
+    sf::Vector2f initial_position;
     sf::Vector2f velocity;
     float radius = 5.0f; // Example radius
     sf::Color color = sf::Color::Red; // Example color
@@ -32,6 +33,7 @@ int main() {
     for (int i = 0; i < 1000; ++i) { // Create 10 agents (adjust as needed)
         Agent agent;
         agent.position = sf::Vector2f(rand() % 3440, rand() % 1440);
+        agent.initial_position = agent.position;
         agent.velocity = sf::Vector2f(dis(gen), dis(gen)); // Random velocity
         agents.push_back(agent);
     }
@@ -86,6 +88,13 @@ int main() {
             arrow.setPoint(1, sf::Vector2f(-arrowLength, arrowLength / 2));
             arrow.setPoint(2, sf::Vector2f(-arrowLength, -arrowLength / 2));
             arrow.setFillColor(sf::Color::Black); 
+
+            // Draw trajectory
+            sf::Vertex trajectory[] = 
+            {
+                sf::Vertex(agent.initial_position, sf::Color::Red),
+                sf::Vertex(agent.position, sf::Color::Red)
+            };
             
 
             // Line (arrow body) - Offset the start by the agent's radius
@@ -100,6 +109,7 @@ int main() {
             arrow.setPosition(line[1].position); // Position the arrowhead at the end of the line
             arrow.setRotation(arrowAngle * 180.0f / M_PI);
             window.draw(arrow);
+            window.draw(trajectory, 2, sf::Lines);
             window.draw(line, 2, sf::Lines); 
         }
 

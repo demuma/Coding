@@ -59,7 +59,7 @@ int main() {
 
     // Agent initialization (example)
     std::vector<Agent> agents;
-    for (int i = 0; i < 500; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         Agent agent;
         agent.position = sf::Vector2f(rand() % 3440, rand() % 1440);
         agent.initial_position = agent.position;
@@ -68,7 +68,7 @@ int main() {
     }
 
     // Grid parameters
-    const float cellSize = 100.0f; // Size of each cell in the grid
+    const float cellSize = 50.0f; // Size of each cell in the grid
     const int numCellsX = window.getSize().x / cellSize; // Number of cells horizontally
     const int numCellsY = window.getSize().y / cellSize; // Number of cells vertically
     std::unordered_map<sf::Vector2i, GridCell> grid;
@@ -76,6 +76,10 @@ int main() {
     // Initialize clock
     sf::Clock clock;
     float deltaTime = 0.f;
+    
+    // Collision counters
+    size_t gridBasedCollisionCount = 0;
+    size_t globalCollisionCount = 0;
 
     while (window.isOpen()) {
         sf::Event event;
@@ -99,6 +103,9 @@ int main() {
             // Check collisions within the same cell
             for (size_t i = 0; i < cell.agents.size(); ++i) {
                 for (size_t j = i + 1; j < cell.agents.size(); ++j) {
+                    gridBasedCollisionCount++;
+                    globalCollisionCount++;
+
                     Agent& agent1 = *cell.agents[i];
                     Agent& agent2 = *cell.agents[j];
 
@@ -140,6 +147,9 @@ int main() {
                     const auto& adjacentCell = grid[adjacentCellIndex];
                     for (Agent* agent1 : cell.agents) {
                         for (Agent* agent2 : adjacentCell.agents) {
+                            gridBasedCollisionCount++;
+                            globalCollisionCount++;
+
                             // Calculate lookahead distance (you can adjust this formula)
                             float lookaheadDistance1 = agent1->radius + agent1->velocity.x * deltaTime;
                             float lookaheadDistance2 = agent2->radius + agent2->velocity.x * deltaTime;
@@ -169,6 +179,9 @@ int main() {
                 }
             }
         }
+
+        // For global collision comparison, calculate once per frame outside grid-based collision detection
+        globalCollisionCount += agents.size() * (agents.size() - 1) / 2;
 
         // Rendering
         window.clear(sf::Color::White); // Clear the window with a white background
@@ -250,6 +263,10 @@ int main() {
 
         window.display();
     }
+    
+    // Print collision calculation counts
+    std::cout << "Grid-based collision calculations: " << gridBasedCollisionCount << std::endl;
+    std::cout << "Global collision calculations (estimated): " << globalCollisionCount << std::endl;
 
     return 0;
 }

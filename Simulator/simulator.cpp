@@ -3,6 +3,7 @@
 #include <cmath> // For trigonometry functions
 #include <functional>
 #include <random>
+#include <iostream>
 
 // Simple Agent class (you'll likely have a more complex one)
 class Agent {
@@ -11,18 +12,28 @@ public:
     sf::Vector2f initial_position;
     sf::Vector2f velocity;
     float radius = 5.0f; // Example radius
+    float bufferRadius;
     sf::Color color = sf::Color::Red; // Example color
+    sf::Color originalColor = color;
     // sf::Color color = sf::Color(rand() % 255, rand() % 255, rand() %);
 
     void updatePosition() {
         position += velocity;
+    }
+
+    sf::CircleShape getFuturePosition(float deltaTime) const {
+        sf::Vector2f futurePos = position + velocity * deltaTime;
+        sf::CircleShape futureShape(radius);
+        futureShape.setOrigin(radius, radius);
+        futureShape.setPosition(futurePos);
+        return futureShape;
     }
 };
 
 int main() {
     // Window setup
     sf::RenderWindow window(sf::VideoMode(3440, 1440), "Road User Simulation");
-    window.setFramerateLimit(60); // Cap FPS for smoother visuals
+    window.setFramerateLimit(30); // Cap FPS for smoother visuals
 
     std::random_device rd;   
     std::mt19937 gen(rd());  
@@ -30,13 +41,17 @@ int main() {
 
     // Agent initialization (example)
     std::vector<Agent> agents;
-    for (int i = 0; i < 1000; ++i) { // Create 10 agents (adjust as needed)
+    for (int i = 0; i < 500; ++i) {
         Agent agent;
         agent.position = sf::Vector2f(rand() % 3440, rand() % 1440);
         agent.initial_position = agent.position;
         agent.velocity = sf::Vector2f(dis(gen), dis(gen)); // Random velocity
         agents.push_back(agent);
     }
+
+    // Initialize clock
+    sf::Clock clock;
+    float deltaTime = 0.f; // Time elapsed since last frame
 
     while (window.isOpen()) {
         sf::Event event;
@@ -45,9 +60,34 @@ int main() {
                 window.close();
         }
 
+        deltaTime = clock.restart().asSeconds();
+
         // Update agent positions
         for (auto& agent : agents) {
             agent.updatePosition();
+        }
+
+        // Collision detection
+        for (size_t i = 0; i < agents.size(); ++i) {
+            for (size_t j = i + 1; j < agents.size(); ++j) {
+                Agent& agent1 = agents[i];
+                Agent& agent2 = agents[j];
+
+                // Calculate lookahead distance (you can adjust this formula)
+                float lookaheadDistance1 = agent1.radius + agent1.velocity.x * deltaTime;
+                float lookaheadDistance2 = agent2.radius + agent2.velocity.x * deltaTime;
+
+                // Get future positions
+                sf::CircleShape futurePos1 = agent1.getFuturePosition(deltaTime);
+                sf::CircleShape futurePos2 = agent2.getFuturePosition(deltaTime);
+
+                // Check if buffer zones of future positions intersect
+                if (futurePos1.getGlobalBounds().intersects(futurePos2.getGlobalBounds())) {
+                    // Collision detected!
+                    agent1.color = sf::Color::Yellow; // Change color to indicate collision (optional)
+                    agent2.color = sf::Color::Yellow;
+                } 
+            }
         }
 
         // Rendering

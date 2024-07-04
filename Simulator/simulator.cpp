@@ -24,23 +24,19 @@ public:
     sf::Color color = sf::Color::Black; // Start color is black
     sf::Color bufferColor = sf::Color::Green; // Start buffer color is green
 
-    float lookaheadDistance;
     float bufferRadius;
+    bool inCollision; // Track if the agent is in collision
 
     Agent() {
-        lookaheadDistance = 0;
         bufferRadius = 0;
+        inCollision = false; // Initialize collision state
     }
 
     void updatePosition() {
         position += velocity;
         // Calculate buffer zone radius based on velocity
         float velocityMagnitude = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-        float lookaheadDistanceScale = 30.0f; // Adjust as necessary
         bufferRadius = radius * (2 + velocityMagnitude / 2.0f); // Adjust as necessary
-
-        // Calculate lookahead distance
-        lookaheadDistance = std::sqrt(velocityMagnitude) * lookaheadDistanceScale; // Using a scaling factor
     }
 
     sf::CircleShape getFuturePosition(float deltaTime) const {
@@ -61,8 +57,8 @@ public:
         return bufferZone;
     }
 
-    sf::Vector2f getFutureLookaheadPosition(float lookaheadTime) const {
-        return position + velocity * lookaheadTime;
+    sf::Vector2f getFuturePositionAtTime(float time) const {
+        return position + velocity * time;
     }
 };
 
@@ -76,6 +72,40 @@ sf::Vector2i getGridCellIndex(const sf::Vector2f& position, float cellSize) {
     return sf::Vector2i(static_cast<int>(position.x / cellSize), static_cast<int>(position.y / cellSize));
 }
 
+// Improved collision prediction using incremental lookahead steps
+bool predictCollision(const Agent& agent1, const Agent& agent2) {
+    const float lookaheadStep = 0.1f; // Time step for predictions
+    const float maxLookahead = 3.0f; // Maximum lookahead time
+
+    for (float t = 0; t <= maxLookahead; t += lookaheadStep) {
+        sf::Vector2f futurePos1 = agent1.getFuturePositionAtTime(t);
+        sf::Vector2f futurePos2 = agent2.getFuturePositionAtTime(t);
+
+        // Check if the future positions (including buffer radius) intersect
+        float dx = futurePos1.x - futurePos2.x;
+        float dy = futurePos1.y - futurePos2.y;
+        float distance = std::sqrt(dx * dx + dy * dy);
+
+        if (distance < agent1.bufferRadius + agent2.bufferRadius) {
+            return true; // Potential collision detected
+        }
+    }
+
+    return false; // No collision detected in the lookahead time frame
+}
+
+void resetSimulation(std::vector<Agent>& agents, std::mt19937& gen, std::uniform_real_distribution<>& dis) {
+    // Reset each agent's position and velocity
+    for (auto& agent : agents) {
+        agent.position = sf::Vector2f(rand() % 3440, rand() % 1440);
+        agent.initial_position = agent.position;
+        agent.velocity = sf::Vector2f(dis(gen), dis(gen)); // Random velocity
+        agent.color = sf::Color::Black; // Reset color
+        agent.bufferColor = sf::Color::Green; // Reset buffer color
+        agent.inCollision = false; // Reset collision state
+    }
+}
+
 int main() {
     // Window setup
     sf::RenderWindow window(sf::VideoMode(3440, 1440), "Road User Simulation");
@@ -87,7 +117,7 @@ int main() {
 
     // Agent initialization (example)
     std::vector<Agent> agents;
-    for (int i = 0; i < 50; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         Agent agent;
         agent.position = sf::Vector2f(rand() % 3440, rand() % 1440);
         agent.initial_position = agent.position;
@@ -139,6 +169,20 @@ int main() {
     pauseButtonText.setPosition(pauseButton.getPosition().x + pauseButton.getSize().x / 2,
                                 pauseButton.getPosition().y + pauseButton.getSize().y / 2);
 
+    // Create reset button
+    sf::RectangleShape resetButton(sf::Vector2f(100, 50));
+    resetButton.setFillColor(sf::Color::Blue);
+    resetButton.setPosition(window.getSize().x - 110, window.getSize().y - 120); // Positioned above the pause button
+    sf::Text resetButtonText;
+    resetButtonText.setFont(font);
+    resetButtonText.setString("Reset");
+    resetButtonText.setCharacterSize(20);
+    resetButtonText.setFillColor(sf::Color::Black);
+    sf::FloatRect resetButtonTextRect = resetButtonText.getLocalBounds();
+    resetButtonText.setOrigin(resetButtonTextRect.width / 2, resetButtonTextRect.height / 2);
+    resetButtonText.setPosition(resetButton.getPosition().x + resetButton.getSize().x / 2,
+                                resetButton.getPosition().y + resetButton.getSize().y / 2);
+
     bool isPaused = false;
 
     while (window.isOpen() && frameCount < maxFrames) {
@@ -148,8 +192,9 @@ int main() {
                 window.close();
             if (event.type == sf::Event::MouseButtonPressed) {
                 if (event.mouseButton.button == sf::Mouse::Left) {
-                    // Check if pause button is clicked
                     sf::Vector2f mousePos(static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y));
+
+                    // Check if pause button is clicked
                     if (pauseButton.getGlobalBounds().contains(mousePos)) {
                         isPaused = !isPaused;
                         if (isPaused) {
@@ -159,6 +204,17 @@ int main() {
                             pauseButton.setFillColor(sf::Color::Green);
                             pauseButtonText.setString("Pause");
                         }
+                    }
+
+                    // Check if reset button is clicked
+                    if (resetButton.getGlobalBounds().contains(mousePos)) {
+                        resetSimulation(agents, gen, dis);
+                        if (isPaused) {
+                            isPaused = false;
+                            pauseButton.setFillColor(sf::Color::Green);
+                            pauseButtonText.setString("Pause");
+                        }
+                        frameCount = 0; // Reset frame count
                     }
                 }
             }
@@ -175,6 +231,14 @@ int main() {
                 grid[cellIndex].agents.push_back(&agent);
             }
 
+            // Reset collision state and buffer colors
+            for (auto& agent : agents) {
+                if (agent.inCollision) {
+                    agent.bufferColor = sf::Color::Green;
+                    agent.inCollision = false;
+                }
+            }
+
             // Collision detection using grid
             for (const auto& [cellIndex, cell] : grid) {
                 // Check collisions within the same cell
@@ -186,22 +250,12 @@ int main() {
                         Agent& agent1 = *cell.agents[i];
                         Agent& agent2 = *cell.agents[j];
 
-                        // Calculate lookahead times
-                        float lookaheadTime1 = agent1.lookaheadDistance / std::sqrt(agent1.velocity.x * agent1.velocity.x + agent1.velocity.y * agent1.velocity.y);
-                        float lookaheadTime2 = agent2.lookaheadDistance / std::sqrt(agent2.velocity.x * agent2.velocity.x + agent2.velocity.y * agent2.velocity.y);
-
-                        // Get future positions
-                        sf::Vector2f futurePos1 = agent1.getFutureLookaheadPosition(lookaheadTime1);
-                        sf::Vector2f futurePos2 = agent2.getFutureLookaheadPosition(lookaheadTime2);
-
-                        // Check if the future buffer zones of the agents intersect
-                        float dx = futurePos1.x - futurePos2.x;
-                        float dy = futurePos1.y - futurePos2.y;
-                        float distance = std::sqrt(dx * dx + dy * dy);
-                        if (distance < agent1.bufferRadius + agent2.bufferRadius) {
+                        if (predictCollision(agent1, agent2)) {
                             // Collision predicted!
                             agent1.bufferColor = sf::Color::Red;
                             agent2.bufferColor = sf::Color::Red;
+                            agent1.inCollision = true;
+                            agent2.inCollision = true;
                         }
                     }
                 }
@@ -220,22 +274,12 @@ int main() {
                                 gridBasedCollisionCount++;
                                 globalCollisionCount++;
 
-                                // Calculate lookahead times
-                                float lookaheadTime1 = agent1->lookaheadDistance / std::sqrt(agent1->velocity.x * agent1->velocity.x + agent1->velocity.y * agent1->velocity.y);
-                                float lookaheadTime2 = agent2->lookaheadDistance / std::sqrt(agent2->velocity.x * agent2->velocity.x + agent2->velocity.y * agent2->velocity.y);
-
-                                // Get future positions
-                                sf::Vector2f futurePos1 = agent1->getFutureLookaheadPosition(lookaheadTime1);
-                                sf::Vector2f futurePos2 = agent2->getFutureLookaheadPosition(lookaheadTime2);
-
-                                // Check if the future buffer zones of the agents intersect
-                                float dx = futurePos1.x - futurePos2.x;
-                                float dy = futurePos1.y - futurePos2.y;
-                                float distance = std::sqrt(dx * dx + dy * dy);
-                                if (distance < agent1->bufferRadius + agent2->bufferRadius) {
+                                if (predictCollision(*agent1, *agent2)) {
                                     // Collision predicted!
                                     agent1->bufferColor = sf::Color::Red;
                                     agent2->bufferColor = sf::Color::Red;
+                                    agent1->inCollision = true;
+                                    agent2->inCollision = true;
                                 }
                             }
                         }
@@ -260,7 +304,7 @@ int main() {
 
         // Rendering
         window.clear(sf::Color::White); // Clear the window with a white background
-        
+
         // Draw the grid
         for (int x = 0; x <= numCellsX; ++x) {
             sf::Vertex line[] = {
@@ -332,6 +376,10 @@ int main() {
         // Draw pause button
         window.draw(pauseButton);
         window.draw(pauseButtonText);
+
+        // Draw reset button
+        window.draw(resetButton);
+        window.draw(resetButtonText);
 
         window.display();
     }

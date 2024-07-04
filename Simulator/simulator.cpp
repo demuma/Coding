@@ -24,7 +24,6 @@ public:
     sf::Color color = sf::Color::Black; // Start color is black
     sf::Color bufferColor = sf::Color::Green; // Start buffer color is green
 
-    // Control variables
     float lookaheadDistance;
     float bufferRadius;
 
@@ -37,10 +36,11 @@ public:
         position += velocity;
         // Calculate buffer zone radius based on velocity
         float velocityMagnitude = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+        float lookaheadDistanceScale = 30.0f; // Adjust as necessary
         bufferRadius = radius * (2 + velocityMagnitude / 2.0f); // Adjust as necessary
 
         // Calculate lookahead distance
-        lookaheadDistance = bufferRadius; // Using bufferRadius as the lookahead distance reference
+        lookaheadDistance = std::sqrt(velocityMagnitude) * lookaheadDistanceScale; // Using a scaling factor
     }
 
     sf::CircleShape getFuturePosition(float deltaTime) const {
@@ -59,6 +59,10 @@ public:
         bufferZone.setOutlineThickness(2.f);
         bufferZone.setOutlineColor(bufferColor);
         return bufferZone;
+    }
+
+    sf::Vector2f getFutureLookaheadPosition(float lookaheadTime) const {
+        return position + velocity * lookaheadTime;
     }
 };
 
@@ -182,20 +186,20 @@ int main() {
                         Agent& agent1 = *cell.agents[i];
                         Agent& agent2 = *cell.agents[j];
 
-                        // Calculate lookahead distance (you can adjust this formula)
-                        float lookaheadDistance1 = agent1.lookaheadDistance;
-                        float lookaheadDistance2 = agent2.lookaheadDistance;
+                        // Calculate lookahead times
+                        float lookaheadTime1 = agent1.lookaheadDistance / std::sqrt(agent1.velocity.x * agent1.velocity.x + agent1.velocity.y * agent1.velocity.y);
+                        float lookaheadTime2 = agent2.lookaheadDistance / std::sqrt(agent2.velocity.x * agent2.velocity.x + agent2.velocity.y * agent2.velocity.y);
 
                         // Get future positions
-                        sf::CircleShape futurePos1 = agent1.getFuturePosition(deltaTime);
-                        sf::CircleShape futurePos2 = agent2.getFuturePosition(deltaTime);
+                        sf::Vector2f futurePos1 = agent1.getFutureLookaheadPosition(lookaheadTime1);
+                        sf::Vector2f futurePos2 = agent2.getFutureLookaheadPosition(lookaheadTime2);
 
                         // Check if the future buffer zones of the agents intersect
-                        float dx = futurePos1.getPosition().x - futurePos2.getPosition().x;
-                        float dy = futurePos1.getPosition().y - futurePos2.getPosition().y;
+                        float dx = futurePos1.x - futurePos2.x;
+                        float dy = futurePos1.y - futurePos2.y;
                         float distance = std::sqrt(dx * dx + dy * dy);
                         if (distance < agent1.bufferRadius + agent2.bufferRadius) {
-                            // Collision detected!
+                            // Collision predicted!
                             agent1.bufferColor = sf::Color::Red;
                             agent2.bufferColor = sf::Color::Red;
                         }
@@ -216,20 +220,20 @@ int main() {
                                 gridBasedCollisionCount++;
                                 globalCollisionCount++;
 
-                                // Calculate lookahead distance (you can adjust this formula)
-                                float lookaheadDistance1 = agent1->lookaheadDistance;
-                                float lookaheadDistance2 = agent2->lookaheadDistance;
+                                // Calculate lookahead times
+                                float lookaheadTime1 = agent1->lookaheadDistance / std::sqrt(agent1->velocity.x * agent1->velocity.x + agent1->velocity.y * agent1->velocity.y);
+                                float lookaheadTime2 = agent2->lookaheadDistance / std::sqrt(agent2->velocity.x * agent2->velocity.x + agent2->velocity.y * agent2->velocity.y);
 
                                 // Get future positions
-                                sf::CircleShape futurePos1 = agent1->getFuturePosition(deltaTime);
-                                sf::CircleShape futurePos2 = agent2->getFuturePosition(deltaTime);
+                                sf::Vector2f futurePos1 = agent1->getFutureLookaheadPosition(lookaheadTime1);
+                                sf::Vector2f futurePos2 = agent2->getFutureLookaheadPosition(lookaheadTime2);
 
                                 // Check if the future buffer zones of the agents intersect
-                                float dx = futurePos1.getPosition().x - futurePos2.getPosition().x;
-                                float dy = futurePos1.getPosition().y - futurePos2.getPosition().y;
+                                float dx = futurePos1.x - futurePos2.x;
+                                float dy = futurePos1.y - futurePos2.y;
                                 float distance = std::sqrt(dx * dx + dy * dy);
                                 if (distance < agent1->bufferRadius + agent2->bufferRadius) {
-                                    // Collision detected!
+                                    // Collision predicted!
                                     agent1->bufferColor = sf::Color::Red;
                                     agent2->bufferColor = sf::Color::Red;
                                 }
@@ -287,7 +291,7 @@ int main() {
 
             // Draw the arrow (a triangle)
             sf::Vector2f direction = agent.velocity;
-            float arrowLength = agent.radius * 0.8f; 
+            float arrowLength = agent.radius * 0.8f;
             float arrowAngle = std::atan2(direction.y, direction.x);
 
             // Normalize the direction vector to have a length of 1 (unit vector)

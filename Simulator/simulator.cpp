@@ -5,6 +5,7 @@
 #include <random>
 #include <iostream>
 #include <unordered_map>
+#include <chrono>
 
 // Custom hash function for sf::Vector2i
 namespace std {
@@ -81,7 +82,10 @@ int main() {
     size_t gridBasedCollisionCount = 0;
     size_t globalCollisionCount = 0;
 
-    while (window.isOpen()) {
+    const int maxFrames = 10000; // Number of frames the simulation should run
+    int frameCount = 0;
+
+    while (window.isOpen() && frameCount < maxFrames) {
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
@@ -105,7 +109,7 @@ int main() {
                 for (size_t j = i + 1; j < cell.agents.size(); ++j) {
                     gridBasedCollisionCount++;
                     globalCollisionCount++;
-
+                    
                     Agent& agent1 = *cell.agents[i];
                     Agent& agent2 = *cell.agents[j];
 
@@ -182,6 +186,9 @@ int main() {
 
         // For global collision comparison, calculate once per frame outside grid-based collision detection
         globalCollisionCount += agents.size() * (agents.size() - 1) / 2;
+
+        // Increment frame count
+        frameCount++;
 
         // Rendering
         window.clear(sf::Color::White); // Clear the window with a white background
@@ -267,6 +274,7 @@ int main() {
     // Print collision calculation counts
     std::cout << "Grid-based collision calculations: " << gridBasedCollisionCount << std::endl;
     std::cout << "Global collision calculations (estimated): " << globalCollisionCount << std::endl;
+    std::cout << "Total procentual reduction: " << 100.0f * (1.0f - static_cast<float>(gridBasedCollisionCount) / globalCollisionCount) << "%" << std::endl;
 
     return 0;
 }

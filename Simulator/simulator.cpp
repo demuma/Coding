@@ -1,11 +1,9 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <cmath>
-#include <functional>
 #include <random>
 #include <iostream>
 #include <unordered_map>
-#include <chrono>
 
 // Custom hash function for sf::Vector2i
 namespace std {
@@ -52,7 +50,7 @@ sf::Vector2i getGridCellIndex(const sf::Vector2f& position, float cellSize) {
 int main() {
     // Window setup
     sf::RenderWindow window(sf::VideoMode(3440, 1440), "Road User Simulation");
-    window.setFramerateLimit(30); // Cap FPS for smoother visuals
+    window.setFramerateLimit(60); // Cap FPS for smoother visuals
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -60,7 +58,7 @@ int main() {
 
     // Agent initialization (example)
     std::vector<Agent> agents;
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 10; ++i) {
         Agent agent;
         agent.position = sf::Vector2f(rand() % 3440, rand() % 1440);
         agent.initial_position = agent.position;
@@ -85,110 +83,165 @@ int main() {
     const int maxFrames = 10000; // Number of frames the simulation should run
     int frameCount = 0;
 
+    // Load font
+    sf::Font font;
+    if (!font.loadFromFile("/Library/Fonts/Arial Unicode.ttf")) {
+        std::cerr << "Error loading font\n";
+        return -1;
+    }
+
+    // Create text to display frame count
+    sf::Text frameText;
+    frameText.setFont(font);
+    frameText.setCharacterSize(24);
+    frameText.setFillColor(sf::Color::Black);
+
+    // Create pause button
+    sf::RectangleShape pauseButton(sf::Vector2f(100, 50));
+    pauseButton.setFillColor(sf::Color::Green);
+    pauseButton.setPosition(window.getSize().x - 110, window.getSize().y - 60); // Positioned in the bottom right corner
+    sf::Text pauseButtonText;
+    pauseButtonText.setFont(font);
+    pauseButtonText.setString("Pause");
+    pauseButtonText.setCharacterSize(20);
+    pauseButtonText.setFillColor(sf::Color::Black);
+    sf::FloatRect buttonTextRect = pauseButtonText.getLocalBounds();
+    pauseButtonText.setOrigin(buttonTextRect.width / 2, buttonTextRect.height / 2);
+    pauseButtonText.setPosition(pauseButton.getPosition().x + pauseButton.getSize().x / 2,
+                                pauseButton.getPosition().y + pauseButton.getSize().y / 2);
+
+    bool isPaused = false;
+
     while (window.isOpen() && frameCount < maxFrames) {
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
-        }
-
-        deltaTime = clock.restart().asSeconds();
-
-        // Update agent positions
-        grid.clear(); // Clear the grid before updating positions
-        for (auto& agent : agents) {
-            agent.updatePosition();
-            sf::Vector2i cellIndex = getGridCellIndex(agent.position, cellSize);
-            grid[cellIndex].agents.push_back(&agent);
-        }
-
-        // Collision detection using grid
-        for (const auto& [cellIndex, cell] : grid) {
-            // Check collisions within the same cell
-            for (size_t i = 0; i < cell.agents.size(); ++i) {
-                for (size_t j = i + 1; j < cell.agents.size(); ++j) {
-                    gridBasedCollisionCount++;
-                    globalCollisionCount++;
-                    
-                    Agent& agent1 = *cell.agents[i];
-                    Agent& agent2 = *cell.agents[j];
-
-                    // Calculate lookahead distance (you can adjust this formula)
-                    float lookaheadDistance1 = agent1.radius + agent1.velocity.x * deltaTime;
-                    float lookaheadDistance2 = agent2.radius + agent2.velocity.x * deltaTime;
-
-                    // Get future positions
-                    sf::CircleShape futurePos1 = agent1.getFuturePosition(deltaTime);
-                    sf::CircleShape futurePos2 = agent2.getFuturePosition(deltaTime);
-
-                    // Calculate buffer zone radii based on velocity
-                    float velocityMagnitude1 = std::sqrt(agent1.velocity.x * agent1.velocity.x + agent1.velocity.y * agent1.velocity.y);
-                    float bufferRadius1 = agent1.radius * (2 + velocityMagnitude1 / 2.0f);
-
-                    float velocityMagnitude2 = std::sqrt(agent2.velocity.x * agent2.velocity.x + agent2.velocity.y * agent2.velocity.y);
-                    float bufferRadius2 = agent2.radius * (2 + velocityMagnitude2 / 2.0f);
-
-                    // Check if the future buffer zones of the agents intersect
-                    float dx = futurePos1.getPosition().x - futurePos2.getPosition().x;
-                    float dy = futurePos1.getPosition().y - futurePos2.getPosition().y;
-                    float distance = std::sqrt(dx * dx + dy * dy);
-                    if (distance < bufferRadius1 + bufferRadius2) {
-                        // Collision detected!
-                        agent1.color = sf::Color::Yellow; // Change color to indicate collision (optional)
-                        agent2.color = sf::Color::Yellow;
-                    }
-                }
-            }
-
-            // Check collisions with adjacent cells
-            for (int dx = -1; dx <= 1; ++dx) {
-                for (int dy = -1; dy <= 1; ++dy) {
-                    if (dx == 0 && dy == 0) continue; // Skip the current cell
-
-                    sf::Vector2i adjacentCellIndex = cellIndex + sf::Vector2i(dx, dy);
-                    if (grid.find(adjacentCellIndex) == grid.end()) continue; // No agents in the adjacent cell
-
-                    const auto& adjacentCell = grid[adjacentCellIndex];
-                    for (Agent* agent1 : cell.agents) {
-                        for (Agent* agent2 : adjacentCell.agents) {
-                            gridBasedCollisionCount++;
-                            globalCollisionCount++;
-
-                            // Calculate lookahead distance (you can adjust this formula)
-                            float lookaheadDistance1 = agent1->radius + agent1->velocity.x * deltaTime;
-                            float lookaheadDistance2 = agent2->radius + agent2->velocity.x * deltaTime;
-
-                            // Get future positions
-                            sf::CircleShape futurePos1 = agent1->getFuturePosition(deltaTime);
-                            sf::CircleShape futurePos2 = agent2->getFuturePosition(deltaTime);
-
-                            // Calculate buffer zone radii based on velocity
-                            float velocityMagnitude1 = std::sqrt(agent1->velocity.x * agent1->velocity.x + agent1->velocity.y * agent1->velocity.y);
-                            float bufferRadius1 = agent1->radius * (2 + velocityMagnitude1 / 2.0f);
-
-                            float velocityMagnitude2 = std::sqrt(agent2->velocity.x * agent2->velocity.x + agent2->velocity.y * agent2->velocity.y);
-                            float bufferRadius2 = agent2->radius * (2 + velocityMagnitude2 / 2.0f);
-
-                            // Check if the future buffer zones of the agents intersect
-                            float dx = futurePos1.getPosition().x - futurePos2.getPosition().x;
-                            float dy = futurePos1.getPosition().y - futurePos2.getPosition().y;
-                            float distance = std::sqrt(dx * dx + dy * dy);
-                            if (distance < bufferRadius1 + bufferRadius2) {
-                                // Collision detected!
-                                agent1->color = sf::Color::Yellow; // Change color to indicate collision (optional)
-                                agent2->color = sf::Color::Yellow;
-                            }
+            if (event.type == sf::Event::MouseButtonPressed) {
+                if (event.mouseButton.button == sf::Mouse::Left) {
+                    // Check if pause button is clicked
+                    sf::Vector2f mousePos(static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y));
+                    if (pauseButton.getGlobalBounds().contains(mousePos)) {
+                        isPaused = !isPaused;
+                        if (isPaused) {
+                            pauseButton.setFillColor(sf::Color::Red);
+                            pauseButtonText.setString("Resume");
+                        } else {
+                            pauseButton.setFillColor(sf::Color::Green);
+                            pauseButtonText.setString("Pause");
                         }
                     }
                 }
             }
         }
 
-        // For global collision comparison, calculate once per frame outside grid-based collision detection
-        globalCollisionCount += agents.size() * (agents.size() - 1) / 2;
+        if (!isPaused) {
+            deltaTime = clock.restart().asSeconds();
 
-        // Increment frame count
-        frameCount++;
+            // Update agent positions
+            grid.clear(); // Clear the grid before updating positions
+            for (auto& agent : agents) {
+                agent.updatePosition();
+                sf::Vector2i cellIndex = getGridCellIndex(agent.position, cellSize);
+                grid[cellIndex].agents.push_back(&agent);
+            }
+
+            // Collision detection using grid
+            for (const auto& [cellIndex, cell] : grid) {
+                // Check collisions within the same cell
+                for (size_t i = 0; i < cell.agents.size(); ++i) {
+                    for (size_t j = i + 1; j < cell.agents.size(); ++j) {
+                        gridBasedCollisionCount++;
+                        globalCollisionCount++;
+
+                        Agent& agent1 = *cell.agents[i];
+                        Agent& agent2 = *cell.agents[j];
+
+                        // Calculate lookahead distance (you can adjust this formula)
+                        float lookaheadDistance1 = agent1.radius + agent1.velocity.x * deltaTime;
+                        float lookaheadDistance2 = agent2.radius + agent2.velocity.x * deltaTime;
+
+                        // Get future positions
+                        sf::CircleShape futurePos1 = agent1.getFuturePosition(deltaTime);
+                        sf::CircleShape futurePos2 = agent2.getFuturePosition(deltaTime);
+
+                        // Calculate buffer zone radii based on velocity
+                        float velocityMagnitude1 = std::sqrt(agent1.velocity.x * agent1.velocity.x + agent1.velocity.y * agent1.velocity.y);
+                        float bufferRadius1 = agent1.radius * (2 + velocityMagnitude1 / 2.0f);
+
+                        float velocityMagnitude2 = std::sqrt(agent2.velocity.x * agent2.velocity.x + agent2.velocity.y * agent2.velocity.y);
+                        float bufferRadius2 = agent2.radius * (2 + velocityMagnitude2 / 2.0f);
+
+                        // Check if the future buffer zones of the agents intersect
+                        float dx = futurePos1.getPosition().x - futurePos2.getPosition().x;
+                        float dy = futurePos1.getPosition().y - futurePos2.getPosition().y;
+                        float distance = std::sqrt(dx * dx + dy * dy);
+                        if (distance < bufferRadius1 + bufferRadius2) {
+                            // Collision detected!
+                            agent1.color = sf::Color::Yellow; // Change color to indicate collision (optional)
+                            agent2.color = sf::Color::Yellow;
+                        }
+                    }
+                }
+
+                // Check collisions with adjacent cells
+                for (int dx = -1; dx <= 1; ++dx) {
+                    for (int dy = -1; dy <= 1; ++dy) {
+                        if (dx == 0 && dy == 0) continue; // Skip the current cell
+
+                        sf::Vector2i adjacentCellIndex = cellIndex + sf::Vector2i(dx, dy);
+                        if (grid.find(adjacentCellIndex) == grid.end()) continue; // No agents in the adjacent cell
+
+                        const auto& adjacentCell = grid[adjacentCellIndex];
+                        for (Agent* agent1 : cell.agents) {
+                            for (Agent* agent2 : adjacentCell.agents) {
+                                gridBasedCollisionCount++;
+                                globalCollisionCount++;
+
+                                // Calculate lookahead distance (you can adjust this formula)
+                                float lookaheadDistance1 = agent1->radius + agent1->velocity.x * deltaTime;
+                                float lookaheadDistance2 = agent2->radius + agent2->velocity.x * deltaTime;
+
+                                // Get future positions
+                                sf::CircleShape futurePos1 = agent1->getFuturePosition(deltaTime);
+                                sf::CircleShape futurePos2 = agent2->getFuturePosition(deltaTime);
+
+                                // Calculate buffer zone radii based on velocity
+                                float velocityMagnitude1 = std::sqrt(agent1->velocity.x * agent1->velocity.x + agent1->velocity.y * agent1->velocity.y);
+                                float bufferRadius1 = agent1->radius * (2 + velocityMagnitude1 / 2.0f);
+
+                                float velocityMagnitude2 = std::sqrt(agent2->velocity.x * agent2->velocity.x + agent2->velocity.y * agent2->velocity.y);
+                                float bufferRadius2 = agent2->radius * (2 + velocityMagnitude2 / 2.0f);
+
+                                // Check if the future buffer zones of the agents intersect
+                                float dx = futurePos1.getPosition().x - futurePos2.getPosition().x;
+                                float dy = futurePos1.getPosition().y - futurePos2.getPosition().y;
+                                float distance = std::sqrt(dx * dx + dy * dy);
+                                if (distance < bufferRadius1 + bufferRadius2) {
+                                    // Collision detected!
+                                    agent1->color = sf::Color::Yellow; // Change color to indicate collision (optional)
+                                    agent2->color = sf::Color::Yellow;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // For global collision comparison, calculate once per frame outside grid-based collision detection
+            globalCollisionCount += agents.size() * (agents.size() - 1) / 2;
+
+            // Increment frame count
+            frameCount++;
+        } else {
+            clock.restart(); // Prevent deltaTime accumulation while paused
+        }
+
+        // Update frame count text
+        frameText.setString("Frame " + std::to_string(frameCount) + "/" + std::to_string(maxFrames));
+        sf::FloatRect textRect = frameText.getLocalBounds();
+        frameText.setOrigin(textRect.width, 0); // Right-align the text
+        frameText.setPosition(window.getSize().x - 10, 10); // Padding of 10 pixels from top-right corner
 
         // Rendering
         window.clear(sf::Color::White); // Clear the window with a white background
@@ -268,13 +321,19 @@ int main() {
             window.draw(line, 2, sf::Lines); 
         }
 
+        // Draw frame count text
+        window.draw(frameText);
+
+        // Draw pause button
+        window.draw(pauseButton);
+        window.draw(pauseButtonText);
+
         window.display();
     }
     
     // Print collision calculation counts
     std::cout << "Grid-based collision calculations: " << gridBasedCollisionCount << std::endl;
     std::cout << "Global collision calculations (estimated): " << globalCollisionCount << std::endl;
-    std::cout << "Total procentual reduction: " << 100.0f * (1.0f - static_cast<float>(gridBasedCollisionCount) / globalCollisionCount) << "%" << std::endl;
 
     return 0;
 }

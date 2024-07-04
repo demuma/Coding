@@ -25,11 +25,11 @@ public:
     sf::Color bufferColor = sf::Color::Green; // Start buffer color is green
 
     float bufferRadius;
-    bool inCollision; // Track if the agent is in collision
+    bool hasCollision;
 
     Agent() {
         bufferRadius = 0;
-        inCollision = false; // Initialize collision state
+        hasCollision = false;
     }
 
     void updatePosition() {
@@ -39,12 +39,8 @@ public:
         bufferRadius = radius * (2 + velocityMagnitude / 2.0f); // Adjust as necessary
     }
 
-    sf::CircleShape getFuturePosition(float deltaTime) const {
-        sf::Vector2f futurePos = position + velocity * deltaTime;
-        sf::CircleShape futureShape(radius);
-        futureShape.setOrigin(radius, radius);
-        futureShape.setPosition(futurePos);
-        return futureShape;
+    sf::Vector2f getFuturePositionAtTime(float time) const {
+        return position + velocity * time;
     }
 
     sf::CircleShape getBufferZone() const {
@@ -57,8 +53,9 @@ public:
         return bufferZone;
     }
 
-    sf::Vector2f getFuturePositionAtTime(float time) const {
-        return position + velocity * time;
+    void resetCollisionState() {
+        bufferColor = sf::Color::Green;
+        hasCollision = false;
     }
 };
 
@@ -73,7 +70,7 @@ sf::Vector2i getGridCellIndex(const sf::Vector2f& position, float cellSize) {
 }
 
 // Improved collision prediction using incremental lookahead steps
-bool predictCollision(const Agent& agent1, const Agent& agent2) {
+bool predictCollision(Agent& agent1, Agent& agent2) {
     const float lookaheadStep = 0.1f; // Time step for predictions
     const float maxLookahead = 3.0f; // Maximum lookahead time
 
@@ -87,7 +84,11 @@ bool predictCollision(const Agent& agent1, const Agent& agent2) {
         float distance = std::sqrt(dx * dx + dy * dy);
 
         if (distance < agent1.bufferRadius + agent2.bufferRadius) {
-            return true; // Potential collision detected
+            agent1.bufferColor = sf::Color::Red;
+            agent2.bufferColor = sf::Color::Red;
+            agent1.hasCollision = true;
+            agent2.hasCollision = true;
+            return true; // Collision detected
         }
     }
 
@@ -102,14 +103,14 @@ void resetSimulation(std::vector<Agent>& agents, std::mt19937& gen, std::uniform
         agent.velocity = sf::Vector2f(dis(gen), dis(gen)); // Random velocity
         agent.color = sf::Color::Black; // Reset color
         agent.bufferColor = sf::Color::Green; // Reset buffer color
-        agent.inCollision = false; // Reset collision state
+        agent.hasCollision = false;
     }
 }
 
 int main() {
     // Window setup
     sf::RenderWindow window(sf::VideoMode(3440, 1440), "Road User Simulation");
-    window.setFramerateLimit(30); // Cap FPS for smoother visuals
+    window.setFramerateLimit(10); // Cap FPS for smoother visuals
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -117,7 +118,7 @@ int main() {
 
     // Agent initialization (example)
     std::vector<Agent> agents;
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 3000; ++i) {
         Agent agent;
         agent.position = sf::Vector2f(rand() % 3440, rand() % 1440);
         agent.initial_position = agent.position;
@@ -133,7 +134,6 @@ int main() {
 
     // Initialize clock
     sf::Clock clock;
-    float deltaTime = 0.f;
 
     // Collision counters
     size_t gridBasedCollisionCount = 0;
@@ -155,10 +155,21 @@ int main() {
     frameText.setCharacterSize(24);
     frameText.setFillColor(sf::Color::Black);
 
+    // Create text to display frame rate
+    sf::Text frameRateText;
+    frameRateText.setFont(font);
+    frameRateText.setCharacterSize(24);
+    frameRateText.setFillColor(sf::Color::Black);
+
+    // Initialize frame rate buffer
+    std::vector<float> frameRates;
+    const size_t frameRateBufferSize = 100; // Adjust the buffer size for the moving average
+    float cumulativeSum = 0.0f;
+
     // Create pause button
     sf::RectangleShape pauseButton(sf::Vector2f(100, 50));
     pauseButton.setFillColor(sf::Color::Green);
-    pauseButton.setPosition(window.getSize().x - 110, window.getSize().y - 60); // Positioned in the bottom right corner
+    pauseButton.setPosition(window.getSize().x - 110, window.getSize().y - 160); // Adjusted position
     sf::Text pauseButtonText;
     pauseButtonText.setFont(font);
     pauseButtonText.setString("Pause");
@@ -172,7 +183,7 @@ int main() {
     // Create reset button
     sf::RectangleShape resetButton(sf::Vector2f(100, 50));
     resetButton.setFillColor(sf::Color::Blue);
-    resetButton.setPosition(window.getSize().x - 110, window.getSize().y - 120); // Positioned above the pause button
+    resetButton.setPosition(window.getSize().x - 110, window.getSize().y - 220); // Adjusted position
     sf::Text resetButtonText;
     resetButtonText.setFont(font);
     resetButtonText.setString("Reset");
@@ -184,6 +195,7 @@ int main() {
                                 resetButton.getPosition().y + resetButton.getSize().y / 2);
 
     bool isPaused = false;
+    sf::Time elapsedTime;
 
     while (window.isOpen() && frameCount < maxFrames) {
         sf::Event event;
@@ -215,28 +227,23 @@ int main() {
                             pauseButtonText.setString("Pause");
                         }
                         frameCount = 0; // Reset frame count
+                        frameRates.clear(); // Reset frame rate buffer
+                        cumulativeSum = 0.0f;
                     }
                 }
             }
         }
 
         if (!isPaused) {
-            deltaTime = clock.restart().asSeconds();
+            elapsedTime = clock.restart();
 
             // Update agent positions
             grid.clear(); // Clear the grid before updating positions
             for (auto& agent : agents) {
                 agent.updatePosition();
+                agent.resetCollisionState(); // Reset collision state at the start of each frame for each agent
                 sf::Vector2i cellIndex = getGridCellIndex(agent.position, cellSize);
                 grid[cellIndex].agents.push_back(&agent);
-            }
-
-            // Reset collision state and buffer colors
-            for (auto& agent : agents) {
-                if (agent.inCollision) {
-                    agent.bufferColor = sf::Color::Green;
-                    agent.inCollision = false;
-                }
             }
 
             // Collision detection using grid
@@ -250,13 +257,7 @@ int main() {
                         Agent& agent1 = *cell.agents[i];
                         Agent& agent2 = *cell.agents[j];
 
-                        if (predictCollision(agent1, agent2)) {
-                            // Collision predicted!
-                            agent1.bufferColor = sf::Color::Red;
-                            agent2.bufferColor = sf::Color::Red;
-                            agent1.inCollision = true;
-                            agent2.inCollision = true;
-                        }
+                        predictCollision(agent1, agent2);
                     }
                 }
 
@@ -274,13 +275,7 @@ int main() {
                                 gridBasedCollisionCount++;
                                 globalCollisionCount++;
 
-                                if (predictCollision(*agent1, *agent2)) {
-                                    // Collision predicted!
-                                    agent1->bufferColor = sf::Color::Red;
-                                    agent2->bufferColor = sf::Color::Red;
-                                    agent1->inCollision = true;
-                                    agent2->inCollision = true;
-                                }
+                                predictCollision(*agent1, *agent2);
                             }
                         }
                     }
@@ -293,14 +288,34 @@ int main() {
             // Increment frame count
             frameCount++;
         } else {
-            clock.restart(); // Prevent deltaTime accumulation while paused
+            elapsedTime = clock.restart(); // Prevent deltaTime accumulation while paused
         }
+
+        float frameRate = 1.0f / elapsedTime.asSeconds();
+
+        // Update frame rate buffer using cumulative sum
+        if (frameRates.size() == frameRateBufferSize) {
+            cumulativeSum -= frameRates[0]; // Subtract the oldest frame rate from the sum
+            frameRates.erase(frameRates.begin());
+        }
+
+        frameRates.push_back(frameRate);
+        cumulativeSum += frameRate; // Add the new frame rate to the sum
+
+        // Calculate moving average of frame rate
+        float movingAverageFrameRate = cumulativeSum / frameRates.size();
 
         // Update frame count text
         frameText.setString("Frame " + std::to_string(frameCount) + "/" + std::to_string(maxFrames));
         sf::FloatRect textRect = frameText.getLocalBounds();
         frameText.setOrigin(textRect.width, 0); // Right-align the text
         frameText.setPosition(window.getSize().x - 10, 10); // Padding of 10 pixels from top-right corner
+
+        // Update frame rate text
+        frameRateText.setString("FPS: " + std::to_string(static_cast<int>(movingAverageFrameRate)));
+        textRect = frameRateText.getLocalBounds();
+        frameRateText.setOrigin(textRect.width, 0); // Right-align the text
+        frameRateText.setPosition(window.getSize().x - 10, 40); // Padding of 10 pixels below frame count
 
         // Rendering
         window.clear(sf::Color::White); // Clear the window with a white background
@@ -372,6 +387,9 @@ int main() {
 
         // Draw frame count text
         window.draw(frameText);
+
+        // Draw frame rate text
+        window.draw(frameRateText);
 
         // Draw pause button
         window.draw(pauseButton);

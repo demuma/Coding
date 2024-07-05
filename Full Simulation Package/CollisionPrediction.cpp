@@ -3,7 +3,7 @@
 
 // Function definition (implementation)
 bool predictCollision(Agent& agent1, Agent& agent2) {
-    const float lookaheadStep = 0.1f; // Time step for predictions
+    const float lookaheadStep = 0.5f; // Time step for predictions
     const float maxLookahead = 3.0f; // Maximum lookahead time
 
     for (float t = 0; t <= maxLookahead; t += lookaheadStep) {

@@ -11,6 +11,7 @@
 #include "Grid.h"
 #include "CollisionPrediction.h"
 
+// Custom hash function for sf::Vector2i
 namespace std {
     template <> struct hash<sf::Vector2i> {
         std::size_t operator()(const sf::Vector2i& v) const noexcept {
@@ -55,29 +56,29 @@ void resetSimulation(std::vector<Agent>& agents, std::mt19937& gen, std::uniform
     
     // Reset each agent's position and velocity
     for (auto& agent : agents) {
-    //agent.position = sf::Vector2f(dis(gen) * windowWidth / 2, dis(gen) * windowHeight) / 2;
-    agent.position = sf::Vector2f(rand() % windowWidth, rand() % windowHeight);
-    agent.initial_position = agent.position;
+        //agent.position = sf::Vector2f(dis(gen) * windowWidth / 2, dis(gen) * windowHeight) / 2;
+        agent.position = sf::Vector2f(rand() % windowWidth, rand() % windowHeight);
+        agent.initial_position = agent.position;
 
-    // Iterate over each agent type in the configuration
-    for (const auto& agentType : config["agents"]["road_user_taxonomy"]) {
-        // Check if this is the right type for the current agent
-        if (agentType["type"].as<std::string>() == agent.initial_color_str) {
-            // Extract the properties for this agent type
-            float minVelocity = agentType["min_velocity"].as<float>();
-            float maxVelocity = agentType["max_velocity"].as<float>();
+        // // Iterate over each agent type in the configuration
+        // for (const auto& agentType : config["agents"]["road_user_taxonomy"]) {
+        //     // Check if this is the right type for the current agent
+        //     if (agentType["type"].as<std::string>() == agent.initial_color_str) {
+        //         // Extract the properties for this agent type
+        //         float minVelocity = agentType["min_velocity"].as<float>();
+        //         float maxVelocity = agentType["max_velocity"].as<float>();
 
-            // Set the agent's velocity based on the config values
-            agent.velocity = sf::Vector2f(
-                dis(gen) * (maxVelocity - minVelocity) + minVelocity,
-                dis(gen) * (maxVelocity - minVelocity) + minVelocity
-            );
+        //         // Set the agent's velocity based on the config values
+        //         agent.velocity = sf::Vector2f(
+        //             dis(gen) * (maxVelocity - minVelocity) + minVelocity,
+        //             dis(gen) * (maxVelocity - minVelocity) + minVelocity
+        //         );
 
-            break; // Found the correct type, stop searching
-        }
-    }
+        //         break; // Found the correct type, stop searching
+        //     }
+        // }
 
-        agent.original_velocity = agent.velocity;
+        agent.velocity = agent.original_velocity;
         agent.color = agent.initial_color;
         agent.bufferColor = sf::Color::Green;
         agent.hasCollision = false;
@@ -132,9 +133,9 @@ int main() {
         }
         for (int i = 0; i < numTypeAgents; ++i) {
             Agent agent;
-            //agent.position = sf::Vector2f(dis(gen) * (windowWidth / 2) + (windowWidth / 2), // Shift to window center
-              //                       dis(gen) * (windowHeight / 2) + (windowHeight / 2)); // Adjusted for half the window size
-            agent.position = sf::Vector2f(rand() % windowWidth, rand() % windowHeight);
+            agent.position = sf::Vector2f(dis(gen) * (windowWidth / 2) + (windowWidth / 2), // Shift to window center
+                                     dis(gen) * (windowHeight / 2) + (windowHeight / 2)); // Adjusted for half the window size
+            agent.position = sf::Vector2f((rand() % windowWidth) + 1, (rand() % windowHeight) + 1);
             agent.initial_position = agent.position;
             float minVelocity = agentType["min_velocity"].as<float>();
             float maxVelocity = agentType["max_velocity"].as<float>();
@@ -163,8 +164,6 @@ int main() {
             agents.push_back(agent);
         }
     }
-
-    std::cout << "Number of agents: " << agents.size() << std::endl;
     
     // Grid parameters
     std::unordered_map<sf::Vector2i, GridCell> grid;
@@ -380,13 +379,14 @@ int main() {
                 };
                 window.draw(line, 2, sf::Lines);
             }
-        }
+       }
 
         for (const auto& agent : agents) {
             // Draw the agent as a circle
             sf::CircleShape agentShape(agent.radius);
             agentShape.setFillColor(agent.color);
             agentShape.setOrigin(agentShape.getRadius(), agentShape.getRadius());
+            //agentShape.setOrigin(agent.radius, agent.radius);
             agentShape.setPosition(agent.position);
             window.draw(agentShape);
 
@@ -408,11 +408,20 @@ int main() {
             arrow.setPoint(2, sf::Vector2f(-arrowLength, -arrowLength / 2));
             arrow.setFillColor(sf::Color::Black);
 
+            // Line (arrow body) - Offset the start by the agent's radius
+            sf::Vertex line[] =
+            {
+                sf::Vertex(agent.position + normalizedDirection * agent.radius, sf::Color::Black),  // Offset start point
+                sf::Vertex(agent.position + normalizedDirection * agent.radius + direction * (arrowLength / 2.0f), sf::Color::Black) // Ending point (base of arrowhead)
+            };
+
             // Set the origin of the arrowhead to the base of the triangle
             arrow.setOrigin(-arrowLength, 0); 
-            arrow.setPosition(agent.position + normalizedDirection * (agentShape.getRadius() + 2.f)); // Position at the edge of the agent
+            //arrow.setPosition(agent.position + normalizedDirection * (agentShape.getRadius() + 2.f)); // Position at the edge of the agent
+            arrow.setPosition(line[1].position); // Position the arrowhead at the end of the line
             arrow.setRotation(arrowAngle * 180.0f / M_PI); // Convert radians to degrees for SFML
             window.draw(arrow);
+            window.draw(line, 2, sf::Lines);
 
             // Draw trajectory (if enabled in config)
             if (showTrajectories) {

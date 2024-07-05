@@ -20,23 +20,33 @@ public:
     sf::Vector2f position;
     sf::Vector2f initial_position;
     sf::Vector2f velocity;
+    sf::Vector2f original_velocity; // To store original velocity
     float radius = 5.0f; // Example radius
     sf::Color color = sf::Color::Black; // Start color is black
     sf::Color bufferColor = sf::Color::Green; // Start buffer color is green
 
     float bufferRadius;
     bool hasCollision;
+    bool stopped; // Flag indicating if the agent is stopped
+    int stoppedFrameCounter; // Counter to handle stopping duration
 
     Agent() {
         bufferRadius = 0;
         hasCollision = false;
+        stopped = false;
+        stoppedFrameCounter = 0;
+    }
+
+    void initialize() {
+        float velocityMagnitude = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+        bufferRadius = radius * (2 + velocityMagnitude / 2.0f); // Calculate buffer zone radius based on initial velocity
     }
 
     void updatePosition() {
         position += velocity;
         // Calculate buffer zone radius based on velocity
-        float velocityMagnitude = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-        bufferRadius = radius * (2 + velocityMagnitude / 2.0f); // Adjust as necessary
+        //float velocityMagnitude = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+        //bufferRadius = radius * (2 + velocityMagnitude / 2.0f); // Adjust as necessary
     }
 
     sf::Vector2f getFuturePositionAtTime(float time) const {
@@ -57,6 +67,40 @@ public:
         bufferColor = sf::Color::Green;
         hasCollision = false;
     }
+
+    void stop() {
+        if (!stopped) {
+            original_velocity = velocity;
+            velocity = sf::Vector2f(0.0f, 0.0f);
+            stopped = true;
+            stoppedFrameCounter = 0; // Reset the counter when stopping
+        }
+    }
+
+    bool canResume(const std::vector<Agent>& agents) {
+        for (const auto& other : agents) {
+            if (&other == this) continue; // Skip self
+
+            // Check if this agent's buffer zone will intersect with any other agent's buffer zone
+            float dx = position.x - other.position.x;
+            float dy = position.y - other.position.y;
+            float distance = std::sqrt(dx * dx + dy * dy);
+            
+            if (distance < bufferRadius + other.bufferRadius) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void resume(const std::vector<Agent>& agents) {
+        if (stopped && stoppedFrameCounter >= 20) { // Resume after 20 frames (adjust as needed)
+            if (canResume(agents)) {
+                velocity = original_velocity;
+                stopped = false;
+            }
+        }
+    }
 };
 
 // GridCell structure for storing agents in each cell
@@ -71,7 +115,7 @@ sf::Vector2i getGridCellIndex(const sf::Vector2f& position, float cellSize) {
 
 // Improved collision prediction using incremental lookahead steps
 bool predictCollision(Agent& agent1, Agent& agent2) {
-    const float lookaheadStep = 0.1f; // Time step for predictions
+    const float lookaheadStep = 0.5f; // Time step for predictions
     const float maxLookahead = 3.0f; // Maximum lookahead time
 
     for (float t = 0; t <= maxLookahead; t += lookaheadStep) {
@@ -88,6 +132,17 @@ bool predictCollision(Agent& agent1, Agent& agent2) {
             agent2.bufferColor = sf::Color::Red;
             agent1.hasCollision = true;
             agent2.hasCollision = true;
+
+            // Implement collision avoidance: stop the slower agent
+            float speed1 = std::sqrt(agent1.velocity.x * agent1.velocity.x + agent1.velocity.y * agent1.velocity.y);
+            float speed2 = std::sqrt(agent2.velocity.x * agent2.velocity.x + agent2.velocity.y * agent2.velocity.y);
+
+            if (speed1 < speed2) {
+                agent1.stop(); // Slower agent stops
+            } else {
+                agent2.stop(); // Slower agent stops
+            }
+
             return true; // Collision detected
         }
     }
@@ -101,16 +156,20 @@ void resetSimulation(std::vector<Agent>& agents, std::mt19937& gen, std::uniform
         agent.position = sf::Vector2f(rand() % 3440, rand() % 1440);
         agent.initial_position = agent.position;
         agent.velocity = sf::Vector2f(dis(gen), dis(gen)); // Random velocity
+        agent.original_velocity = agent.velocity; // Store initial velocity
         agent.color = sf::Color::Black; // Reset color
         agent.bufferColor = sf::Color::Green; // Reset buffer color
         agent.hasCollision = false;
+        agent.stopped = false; // Reset stopped state
+        agent.stoppedFrameCounter = 0; // Reset the counter
+        agent.initialize(); // Calculate the buffer zone based on the initial velocity
     }
 }
 
 int main() {
     // Window setup
     sf::RenderWindow window(sf::VideoMode(3440, 1440), "Road User Simulation");
-    window.setFramerateLimit(10); // Cap FPS for smoother visuals
+    window.setFramerateLimit(60); // Cap FPS for smoother visuals
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -118,16 +177,18 @@ int main() {
 
     // Agent initialization (example)
     std::vector<Agent> agents;
-    for (int i = 0; i < 3000; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         Agent agent;
         agent.position = sf::Vector2f(rand() % 3440, rand() % 1440);
         agent.initial_position = agent.position;
         agent.velocity = sf::Vector2f(dis(gen), dis(gen)); // Random velocity
+        agent.original_velocity = agent.velocity; // Store initial velocity
+        agent.initialize(); // Calculate the buffer zone based on initial velocity
         agents.push_back(agent);
     }
 
     // Grid parameters
-    const float cellSize = 50.0f; // Size of each cell in the grid
+    const float cellSize = 100.0f; // Size of each cell in the grid
     const int numCellsX = window.getSize().x / cellSize; // Number of cells horizontally
     const int numCellsY = window.getSize().y / cellSize; // Number of cells vertically
     std::unordered_map<sf::Vector2i, GridCell> grid;
@@ -244,9 +305,15 @@ int main() {
                 agent.resetCollisionState(); // Reset collision state at the start of each frame for each agent
                 sf::Vector2i cellIndex = getGridCellIndex(agent.position, cellSize);
                 grid[cellIndex].agents.push_back(&agent);
+
+                // Resume agents if they are stopped
+                if (agent.stopped) {
+                    ++agent.stoppedFrameCounter;
+                    agent.resume(agents); // The agent resumes after a timeout
+                }
             }
 
-            // Collision detection using grid
+            // Collision detection using grid (same as before)
             for (const auto& [cellIndex, cell] : grid) {
                 // Check collisions within the same cell
                 for (size_t i = 0; i < cell.agents.size(); ++i) {

@@ -1,45 +1,51 @@
 version: 1.0.0
 
+display:
+  width: 3440
+  height: 1440
+
 grid:
+  cell_size: 50
   x_size: 50
   y_size: 50
   show_trajectories: True
 
 agents:
-  num_agents: 10
+  num_agents: 100
   road_user_taxonomy:
     - type: pedestrian
       proportion: 0.3
       radius: 0.5
       colors: 'blue'
-      min_speed: 1
-      max_speed: 2
+      min_velocity: 1
+      max_velocity: 2
     - type: cyclist
       proportion: 0.2
       radius: 0.5
       colors: 'green'
-      min_speed: 3
-      max_speed: 6
+      min_velocity: 3
+      max_velocity: 6
     - type: e-scooter
       proportion: 0.5
       radius: 1.0
       colors: 'red'
-      min_speed: 5
-      max_speed: 13
+      min_velocity: 5
+      max_velocity: 13
     - type: senior
       proportion: 0.2
       radius: 0.4
       colors: 'purple'
-      min_speed: 0.5
-      max_speed: 1
+      min_velocity: 0.5
+      max_velocity: 1
     - type: child
       proportion: 0.2
       radius: 0.2
       colors: 'orange'
-      min_speed: 1
-      max_speed: 2
+      min_velocity: 1
+      max_velocity: 2
 
 simulation:
   duration_seconds: 5
-  fps: 10
+  fps: 30
+  maximum_frames: 10000
   # scenario: random

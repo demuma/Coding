@@ -1,4 +1,4 @@
-#include "Agent.h"
+#include "Agent.hpp"
 #include <cmath> // For std::sqrt
 
 Agent::Agent() {

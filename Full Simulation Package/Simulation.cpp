@@ -1,28 +1,124 @@
-#include <SFML/Graphics.hpp>
-#include <vector>
-#include <cmath>
-#include <random>
+#include "Simulation.hpp"
 #include <iostream>
-#include <unordered_map>
-#include <yaml-cpp/yaml.h>
-#include <filesystem>
+#include <chrono> // For timing
+#include "CollisionAvoidance.hpp"
+#include <random>
 
-#include "Agent.h"
-#include "Grid.h"
-#include "CollisionPrediction.h"
+// Constructor
+Simulation::Simulation(sf::RenderWindow& window, const sf::Font& font, const YAML::Node& config) 
+    : window(window), font(font), config(config), grid(cellSize, window.getSize().x / cellSize, window.getSize().y / cellSize)
+{
+    loadConfiguration(); // Load configuration at the beginning
+    initializeAgents();
+    initializeUI(); 
+}
 
-// Custom hash function for sf::Vector2i
-namespace std {
-    template <> struct hash<sf::Vector2i> {
-        std::size_t operator()(const sf::Vector2i& v) const noexcept {
-            // Combine the hash values of x and y components
-            return std::hash<int>()(v.x) ^ (std::hash<int>()(v.y) << 1); 
+// Function to load simulation parameters from the YAML configuration file
+void Simulation::loadConfiguration() {
+    windowWidth = config["display"]["width"].as<int>();
+    windowHeight = config["display"]["height"].as<int>();
+    cellSize = config["grid"]["cell_size"].as<float>();
+    showGrid = config["grid"]["show_grid"].as<bool>();
+    showTrajectories = config["grid"]["show_trajectories"].as<bool>();
+    numAgents = config["agents"]["num_agents"].as<int>();
+    durationSeconds = config["simulation"]["duration_seconds"].as<float>();
+    maxFrames = config["simulation"]["maximum_frames"].as<int>();
+    fps = config["display"]["frame_rate"].as<int>();
+}
+
+// Function to initialize agents based on the YAML configuration
+void Simulation::initializeAgents() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(-1.0, 1.0);
+
+    for (const auto& agentType : config["agents"]["road_user_taxonomy"]) {
+        int numTypeAgents = numAgents * agentType["proportion"].as<float>();
+        sf::Color agentColor = stringToColor(agentType["color"].as<std::string>());
+
+        // Error handling for invalid colors
+        if (agentColor == sf::Color::Black) {
+            std::cerr << "Invalid color string in config file for agent type: " << agentType["type"].as<std::string>() << std::endl;
+            exit(1); // Exit with an error code
         }
-    };
+
+        for (int i = 0; i < numTypeAgents; ++i) {
+            Agent agent;
+            agent.position = sf::Vector2f(rand() % windowWidth, rand() % windowHeight);
+            agent.initial_position = agent.position;
+            float minVelocity = agentType["min_velocity"].as<float>();
+            float maxVelocity = agentType["max_velocity"].as<float>();
+            agent.velocity = sf::Vector2f(dis(gen) * maxVelocity, dis(gen) * maxVelocity); 
+
+            // Ensure minimum velocity
+            if (std::abs(agent.velocity.x) < minVelocity) {
+                agent.velocity.x = agent.velocity.x < 0 ? -minVelocity : minVelocity;
+            }
+            if (std::abs(agent.velocity.y) < minVelocity) {
+                agent.velocity.y = agent.velocity.y < 0 ? -minVelocity : minVelocity;
+            }
+            
+            agent.original_velocity = agent.velocity;
+            agent.radius = agentType["radius"].as<float>();
+            agent.color = agentColor;
+            agent.initial_color = agentColor;
+            agent.initialize();
+            agents.push_back(agent);
+        }
+    }
+}
+
+// Function to initialize UI elements
+void Simulation::initializeUI() {
+    // Frame count text
+    frameText.setFont(font);
+    frameText.setCharacterSize(24);
+    frameText.setFillColor(sf::Color::Black);
+    // Initial position will be updated in the main loop
+
+    // Frame rate text
+    frameRateText.setFont(font);
+    frameRateText.setCharacterSize(24);
+    frameRateText.setFillColor(sf::Color::Black);
+    // Initial position will be updated in the main loop
+
+    // Pause button
+    pauseButton.setSize(sf::Vector2f(100, 50)); 
+    pauseButton.setFillColor(sf::Color::Green);
+    pauseButton.setPosition(window.getSize().x - 110, window.getSize().y - 160);
+
+    pauseButtonText.setFont(font);
+    pauseButtonText.setString("Pause");
+    pauseButtonText.setCharacterSize(20);
+    pauseButtonText.setFillColor(sf::Color::Black);
+    
+    // Center the pause button text
+    sf::FloatRect pauseButtonTextRect = pauseButtonText.getLocalBounds();
+    pauseButtonText.setOrigin(pauseButtonTextRect.left + pauseButtonTextRect.width / 2.0f,
+                              pauseButtonTextRect.top + pauseButtonTextRect.height / 2.0f);
+    pauseButtonText.setPosition(pauseButton.getPosition().x + pauseButton.getSize().x / 2.0f,
+                                pauseButton.getPosition().y + pauseButton.getSize().y / 2.0f);
+
+    // Reset button
+    resetButton.setSize(sf::Vector2f(100, 50));
+    resetButton.setFillColor(sf::Color::Blue);
+    resetButton.setPosition(window.getSize().x - 110, window.getSize().y - 220); 
+
+    resetButtonText.setFont(font);
+    resetButtonText.setString("Reset");
+    resetButtonText.setCharacterSize(20);
+    resetButtonText.setFillColor(sf::Color::Black);
+
+    // Center the reset button text
+    sf::FloatRect resetButtonTextRect = resetButtonText.getLocalBounds();
+    resetButtonText.setOrigin(resetButtonTextRect.left + resetButtonTextRect.width / 2.0f,
+                              resetButtonTextRect.top + resetButtonTextRect.height / 2.0f);
+    resetButtonText.setPosition(resetButton.getPosition().x + resetButton.getSize().x / 2.0f,
+                                resetButton.getPosition().y + resetButton.getSize().y / 2.0f);
 }
 
 // Function to convert a string to sf::Color (case-insensitive)
-sf::Color stringToColor(const std::string& colorStr) {
+sf::Color Simulation::stringToColor(const std::string& colorStr) {  // Note the Simulation:: scope
     std::string lowerColorStr = colorStr;
     std::transform(lowerColorStr.begin(), lowerColorStr.end(), lowerColorStr.begin(),
                    [](unsigned char c) { return std::tolower(c); });
@@ -44,41 +140,241 @@ sf::Color stringToColor(const std::string& colorStr) {
             return sf::Color(r, g, b);
         }
     }
-
+    
     std::cerr << "Warning: Unrecognized color string '" << colorStr << "'. Using black instead." << std::endl;
     return sf::Color::Black;
 }
 
-// Function to reset the simulation
-void resetSimulation(std::vector<Agent>& agents, std::mt19937& gen, std::uniform_real_distribution<>& dis, const YAML::Node& config) {
-    int windowWidth = config["display"]["width"].as<int>();
-    int windowHeight = config["display"]["height"].as<int>();
+// Main simulation loop
+void Simulation::run() {
+    // Collision timing
+    std::chrono::duration<double> collisionTime(0.0);
+
+    // Frame rate buffer and calculation
+    //std::vector<float> frameRates;
+    cumulativeSum = 0.0f;
+
+    // Simulation duration control
+    frameCount = 0;
+
+    while (window.isOpen() && (totalElapsedTime < sf::seconds(durationSeconds) || maxFrames == 0)) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            handleEvents(event); // Delegate event handling
+        }
+
+        if (!isPaused) {
+            elapsedTime = clock.restart();
+
+            // Clear the grid
+            grid.clear();
+            
+            // Update agent positions and add them to the grid
+            for (auto& agent : agents) {
+                agent.updatePosition(); // Pass deltaTime
+                grid.addAgent(&agent);
+            }
+
+            // Collision detection using grid (with timing)
+            auto startTime = std::chrono::high_resolution_clock::now();
+            grid.checkCollisions();
+            auto endTime = std::chrono::high_resolution_clock::now();
+            collisionTime += endTime - startTime;
+
+            std::cout << "Collision detection time: " << collisionTime.count() * 1000 << " milliseconds" << std::endl;
+            collisionTime = std::chrono::duration<double>(0.0); // Reset timer
+
+            // Global collision count estimation (for comparison)
+            globalCollisionCount += agents.size() * (agents.size() - 1) / 2;
+
+            // Increment frame count and total elapsed time
+            frameCount++;
+            totalElapsedTime += elapsedTime;
+
+            // Frame rate calculation
+            frameRate = 1.0f / elapsedTime.asSeconds();
+            if (frameRates.size() == frameRateBufferSize) {
+                cumulativeSum -= frameRates[0];
+                frameRates.erase(frameRates.begin());
+            }
+            frameRates.push_back(frameRate);
+            cumulativeSum += frameRate;
+            float movingAverageFrameRate = cumulativeSum / frameRates.size();
+
+            updateFrameRateText(movingAverageFrameRate);
+            updateFrameCountText(frameCount);
+        }
+
+        render(); 
+    }
+
+    // Output collision statistics
+    std::cout << "Grid-based collision calculations: " << gridBasedCollisionCount << std::endl;
+    std::cout << "Global collision calculations (estimated): " << globalCollisionCount << std::endl;
+    std::cout << "Total percentual reduction: " << 100.0f * (1.0f - static_cast<float>(gridBasedCollisionCount) / globalCollisionCount) << "%" << std::endl;
+}
+
+// Function to render the simulation
+void Simulation::render() {
+    window.clear(sf::Color::White);
+
+    // Draw the grid (if enabled)
+    if (showGrid) {
+        for (int x = 0; x <= window.getSize().x / cellSize; ++x) {
+            sf::Vertex line[] = {
+                sf::Vertex(sf::Vector2f(x * cellSize, 0), sf::Color(220, 220, 220)), // Light gray for grid
+                sf::Vertex(sf::Vector2f(x * cellSize, window.getSize().y), sf::Color(220, 220, 220))
+            };
+            window.draw(line, 2, sf::Lines);
+        }
+        for (int y = 0; y <= window.getSize().y / cellSize; ++y) {
+            sf::Vertex line[] = {
+                sf::Vertex(sf::Vector2f(0, y * cellSize), sf::Color(220, 220, 220)),
+                sf::Vertex(sf::Vector2f(window.getSize().x, y * cellSize), sf::Color(220, 220, 220))
+            };
+            window.draw(line, 2, sf::Lines);
+        }
+    }
     
-    // Reset each agent's position and velocity
+
+    for (const auto& agent : agents) {
+        // Draw the agent as a circle
+        sf::CircleShape agentShape(agent.radius);
+        agentShape.setFillColor(agent.color);
+        agentShape.setOrigin(agentShape.getRadius(), agentShape.getRadius());
+        agentShape.setPosition(agent.position);
+        window.draw(agentShape);
+
+        // Draw the buffer zone
+        sf::CircleShape bufferZone = agent.getBufferZone();
+        window.draw(bufferZone);
+
+        // Draw the arrow (a triangle) representing the velocity vector
+        sf::Vector2f direction = agent.velocity;
+        float arrowLength = agent.radius * 0.8f;
+        float arrowAngle = std::atan2(direction.y, direction.x);
+
+        // Normalize the direction vector for consistent arrow length
+        sf::Vector2f normalizedDirection = direction / std::sqrt(direction.x * direction.x + direction.y * direction.y);
+
+        sf::ConvexShape arrow(3);
+        arrow.setPoint(0, sf::Vector2f(0, 0)); // Tip of the arrow
+        arrow.setPoint(1, sf::Vector2f(-arrowLength, arrowLength / 2));
+        arrow.setPoint(2, sf::Vector2f(-arrowLength, -arrowLength / 2));
+        arrow.setFillColor(sf::Color::Black);
+
+        // Line (arrow body) - Offset the start by the agent's radius
+        sf::Vertex line[] =
+        {
+            sf::Vertex(agent.position + normalizedDirection * agent.radius, sf::Color::Black),  // Offset start point
+            sf::Vertex(agent.position + normalizedDirection * agent.radius + direction * (arrowLength / 2.0f), sf::Color::Black) // Ending point (base of arrowhead)
+        };
+
+        // Set the origin of the arrowhead to the base of the triangle
+        arrow.setOrigin(-arrowLength, 0); 
+        arrow.setPosition(line[1].position); 
+        arrow.setRotation(arrowAngle * 180.0f / M_PI); // Convert radians to degrees for SFML
+        window.draw(arrow);
+        window.draw(line, 2, sf::Lines);
+
+        // Draw trajectory (if enabled in config)
+        if (showTrajectories) {
+            sf::Vertex trajectory[] =
+            {
+                sf::Vertex(agent.initial_position, agent.initial_color),
+                sf::Vertex(agent.position, agent.initial_color)
+            };
+            window.draw(trajectory, 2, sf::Lines);
+        }
+    }
+
+    // Draw frame count text
+        window.draw(frameText);
+
+        // Draw frame rate text
+        window.draw(frameRateText);
+
+        // Draw pause button
+        window.draw(pauseButton);
+        window.draw(pauseButtonText);
+
+        // Draw reset button
+        window.draw(resetButton);
+        window.draw(resetButtonText);
+
+        window.display();
+
+    // Output collision statistics
+    std::cout << "Grid-based collision calculations: " << gridBasedCollisionCount << std::endl;
+    std::cout << "Global collision calculations (estimated): " << globalCollisionCount << std::endl;
+    std::cout << "Total percentual reduction: " << 100.0f * (1.0f - static_cast<float>(gridBasedCollisionCount) / globalCollisionCount) << "%" << std::endl;
+}
+
+// Function to update the text that displays the current frame rate
+void Simulation::updateFrameRateText(float frameRate) {
+    frameRateText.setString("FPS: " + std::to_string(static_cast<int>(frameRate)));
+    sf::FloatRect textRect = frameRateText.getLocalBounds();
+    frameRateText.setOrigin(textRect.width, 0); // Right-align the text
+    frameRateText.setPosition(window.getSize().x - 10, 40); // Position with padding
+}
+
+// Function to update the text that displays the current frame count
+void Simulation::updateFrameCountText(int frameCount) {
+    frameText.setString("Frame " + std::to_string(frameCount) + "/" + (maxFrames > 0 ? std::to_string(maxFrames) : "∞")); // ∞ for unlimited frames
+    sf::FloatRect textRect = frameText.getLocalBounds();
+    frameText.setOrigin(textRect.width, 0); // Right-align the text
+    frameText.setPosition(window.getSize().x - 10, 10); // Position with padding
+}
+
+// Function to handle events (mouse clicks, window close, etc.)
+void Simulation::handleEvents(sf::Event event) {
+
+    if (event.type == sf::Event::Closed) {
+        window.close();
+    } else if (event.type == sf::Event::MouseButtonPressed) {
+        if (event.mouseButton.button == sf::Mouse::Left) {
+            sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
+
+            // Pause/Resume button click
+            if (pauseButton.getGlobalBounds().contains(mousePos)) {
+                isPaused = !isPaused; // Toggle pause state
+                pauseButtonText.setString(isPaused ? "Resume" : "Pause");
+                pauseButton.setFillColor(isPaused ? sf::Color::Red : sf::Color::Green);
+            }
+
+            // Reset button click
+            else if (resetButton.getGlobalBounds().contains(mousePos)) {
+                resetSimulation();
+                // Reset frame count, frame rate, and total elapsed time
+                frameCount = 0;
+                frameRates.clear();
+                cumulativeSum = 0.0f;
+                totalElapsedTime = sf::seconds(0.0f);
+
+                // Resume simulation if it was paused
+                if (isPaused) {
+                    isPaused = false;
+                    pauseButtonText.setString("Pause");
+                    pauseButton.setFillColor(sf::Color::Green);
+                }
+            }
+        }
+    }
+}
+
+// Function to reset the simulation
+void Simulation::resetSimulation() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(-1.0, 1.0);
+
     for (auto& agent : agents) {
-        //agent.position = sf::Vector2f(dis(gen) * windowWidth / 2, dis(gen) * windowHeight) / 2;
         agent.position = sf::Vector2f(rand() % windowWidth, rand() % windowHeight);
         agent.initial_position = agent.position;
+        
+        // Update agent's velocity with the original velocity to make it look like all agents change direction at once
+        agent.velocity = agent.original_velocity; 
 
-        // // Iterate over each agent type in the configuration
-        // for (const auto& agentType : config["agents"]["road_user_taxonomy"]) {
-        //     // Check if this is the right type for the current agent
-        //     if (agentType["type"].as<std::string>() == agent.initial_color_str) {
-        //         // Extract the properties for this agent type
-        //         float minVelocity = agentType["min_velocity"].as<float>();
-        //         float maxVelocity = agentType["max_velocity"].as<float>();
-
-        //         // Set the agent's velocity based on the config values
-        //         agent.velocity = sf::Vector2f(
-        //             dis(gen) * (maxVelocity - minVelocity) + minVelocity,
-        //             dis(gen) * (maxVelocity - minVelocity) + minVelocity
-        //         );
-
-        //         break; // Found the correct type, stop searching
-        //     }
-        // }
-
-        agent.velocity = agent.original_velocity;
         agent.color = agent.initial_color;
         agent.bufferColor = sf::Color::Green;
         agent.hasCollision = false;
@@ -86,382 +382,53 @@ void resetSimulation(std::vector<Agent>& agents, std::mt19937& gen, std::uniform
         agent.stoppedFrameCounter = 0;
         agent.initialize();
     }
+    
+    grid.clear();
+    gridBasedCollisionCount = 0;
+    globalCollisionCount = 0;
 }
 
-int main() {
+void Simulation::update(float deltaTime) {
+    for (auto& agent : agents) {
+        agent.updatePosition();
+        agent.resetCollisionState(); // Reset collision state at the start of each frame for each agent
 
-    // Configuration Loading
-    YAML::Node config;
-    try {
-        config = YAML::LoadFile("../config.yaml"); 
-    } catch (const YAML::Exception& e) {
-        std::cerr << "Error loading config file: " << e.what() << std::endl;
-        return 1;
-    }
-
-    // Update parameters based on configuration
-    int windowWidth = config["display"]["width"].as<int>();
-    int windowHeight = config["display"]["height"].as<int>();
-    float cellSize = config["grid"]["cell_size"].as<float>();
-    int numCellsX = windowWidth / cellSize;
-    int numCellsY = windowHeight / cellSize;
-    bool showTrajectories = config["grid"]["show_trajectories"].as<bool>();
-    int numAgents = config["agents"]["num_agents"].as<int>();
-
-    // Load simulation parameters
-    float durationSeconds = config["simulation"]["duration_seconds"].as<float>();
-    int fps = config["simulation"]["fps"].as<int>();
-    int maxFrames = config["simulation"]["maximum_frames"].as<int>();
-
-    std::chrono::duration<double> collisionTime(0.0);
-
-    // Window setup
-    sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Road User Simulation");
-    window.setFramerateLimit(fps);
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(-1.0, 1.0);
-
-    // Agent initialization using configuration
-    std::vector<Agent> agents;
-    for (const auto& agentType : config["agents"]["road_user_taxonomy"]) {
-        int numTypeAgents = numAgents * agentType["proportion"].as<float>();
-        sf::Color agentColor = stringToColor(agentType["color"].as<std::string>());
-        // Error handling if the color is invalid
-        if (agentColor == sf::Color::Black) { 
-            std::cerr << "Invalid color string in config file for agent type: " << agentType["type"].as<std::string>() << std::endl;
-            return 1;
+        // Check if agent is out of bounds and wrap around
+        if (agent.position.x > windowWidth + agent.radius) {
+            agent.position.x = -agent.radius; // Wrap around from right to left
+            agent.initial_position.x = agent.position.x; // Reset initial position for trajectory
+        } else if (agent.position.x < -agent.radius) {
+            agent.position.x = windowWidth + agent.radius; // Wrap around from left to right
+            agent.initial_position.x = agent.position.x; // Reset initial position for trajectory
         }
-        for (int i = 0; i < numTypeAgents; ++i) {
-            Agent agent;
-            agent.position = sf::Vector2f(dis(gen) * (windowWidth / 2) + (windowWidth / 2), // Shift to window center
-                                     dis(gen) * (windowHeight / 2) + (windowHeight / 2)); // Adjusted for half the window size
-            agent.position = sf::Vector2f((rand() % windowWidth) + 1, (rand() % windowHeight) + 1);
-            agent.initial_position = agent.position;
-            float minVelocity = agentType["min_velocity"].as<float>();
-            float maxVelocity = agentType["max_velocity"].as<float>();
-            //agent.velocity = sf::Vector2f(dis(gen) * (maxVelocity - minVelocity) + minVelocity,
-                                        //dis(gen) * (maxVelocity - minVelocity) + minVelocity);
-            agent.velocity = sf::Vector2f(dis(gen) * maxVelocity, dis(gen) * maxVelocity); // Random velocity         
-            if(std::abs(agent.velocity.x) < minVelocity) {
-                if(agent.velocity.x < -minVelocity) {
-                    agent.velocity.x = -minVelocity;
-                } else {
-                    agent.velocity.x = minVelocity;
-                }
-            }
-            if(std::abs(agent.velocity.y) < minVelocity) {
-                if(agent.velocity.y < -minVelocity) {
-                    agent.velocity.y = -minVelocity;
-                } else {
-                    agent.velocity.y = minVelocity;
-                }
-            }
-            agent.original_velocity = agent.velocity;
-            agent.radius = agentType["radius"].as<float>();
-            agent.color = agentColor;
-            agent.initial_color = agentColor;
-            agent.initialize();
-            agents.push_back(agent);
+
+        if (agent.position.y > windowHeight + agent.radius) {
+            agent.position.y = -agent.radius; // Wrap around from bottom to top
+            agent.initial_position.y = agent.position.y; // Reset initial position for trajectory
+        } else if (agent.position.y < -agent.radius) {
+            agent.position.y = windowHeight + agent.radius; // Wrap around from top to bottom
+            agent.initial_position.y = agent.position.y; // Reset initial position for trajectory
+        }
+
+        sf::Vector2i cellIndex = getGridCellIndex(agent.position, cellSize);
+        grid.getCells()[cellIndex].agents.push_back(&agent);
+
+        // Resume agents if they are stopped
+        if (agent.stopped) {
+            ++agent.stoppedFrameCounter;
+            agent.resume(agents); 
         }
     }
-    
-    // Grid parameters
-    std::unordered_map<sf::Vector2i, GridCell> grid;
 
-    // Initialize clock
-    sf::Clock clock;
+    // Collision detection using grid (with timing)
+    auto startTime = std::chrono::high_resolution_clock::now();
+    grid.checkCollisions();
+    auto endTime = std::chrono::high_resolution_clock::now();
+    collisionTime += endTime - startTime;
 
-    // Collision counters
-    size_t gridBasedCollisionCount = 0;
-    size_t globalCollisionCount = 0;
+    std::cout << "Collision detection time: " << collisionTime.count() * 1000 << " milliseconds" << std::endl;
+    collisionTime = std::chrono::duration<double>(0.0); // Reset the timer
 
-    // Load font
-    sf::Font font;
-    if (!font.loadFromFile("/Library/Fonts/Arial Unicode.ttf")) { // Update with correct path if needed
-        std::cerr << "Error loading font\n";
-        return -1;
-    }
-
-    // Create text to display frame count
-    sf::Text frameText;
-    frameText.setFont(font);
-    frameText.setCharacterSize(24);
-    frameText.setFillColor(sf::Color::Black);
-
-    // Create text to display frame rate
-    sf::Text frameRateText;
-    frameRateText.setFont(font);
-    frameRateText.setCharacterSize(24);
-    frameRateText.setFillColor(sf::Color::Black);
-
-    // Initialize frame rate buffer
-    std::vector<float> frameRates;
-    const size_t frameRateBufferSize = 100; 
-    float cumulativeSum = 0.0f;
-
-    // Create pause button
-    sf::RectangleShape pauseButton(sf::Vector2f(100, 50));
-    pauseButton.setFillColor(sf::Color::Green);
-    pauseButton.setPosition(window.getSize().x - 110, window.getSize().y - 160); // Adjusted position
-    sf::Text pauseButtonText;
-    pauseButtonText.setFont(font);
-    pauseButtonText.setString("Pause");
-    pauseButtonText.setCharacterSize(20);
-    pauseButtonText.setFillColor(sf::Color::Black);
-    sf::FloatRect buttonTextRect = pauseButtonText.getLocalBounds();
-    pauseButtonText.setOrigin(buttonTextRect.width / 2, buttonTextRect.height / 2);
-    pauseButtonText.setPosition(pauseButton.getPosition().x + pauseButton.getSize().x / 2,
-                                pauseButton.getPosition().y + pauseButton.getSize().y / 2);
-
-    // Create reset button (with updated position)
-    sf::RectangleShape resetButton(sf::Vector2f(100, 50));
-    resetButton.setFillColor(sf::Color::Blue);
-    resetButton.setPosition(window.getSize().x - 110, window.getSize().y - 220); // Adjusted
-    sf::Text resetButtonText;
-    resetButtonText.setFont(font);
-    resetButtonText.setString("Reset");
-    resetButtonText.setCharacterSize(20);
-    resetButtonText.setFillColor(sf::Color::Black);
-    sf::FloatRect resetButtonTextRect = resetButtonText.getLocalBounds();
-    resetButtonText.setOrigin(resetButtonTextRect.width / 2, resetButtonTextRect.height / 2);
-    resetButtonText.setPosition(resetButton.getPosition().x + resetButton.getSize().x / 2,
-                                resetButton.getPosition().y + resetButton.getSize().y / 2);
-
-    bool isPaused = false;
-    sf::Time elapsedTime;
-
-    // Max time of simulation
-    sf::Time maxTime = sf::seconds(durationSeconds);
-
-    int frameCount = 0; // Initialize frame count here
-    sf::Time totalElapsedTime; // Track total elapsed time
-
-    while (window.isOpen() && (totalElapsedTime < maxTime || maxFrames == 0)) { // Use maxTime or frameCount
-
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
-                window.close();
-
-            if (event.type == sf::Event::MouseButtonPressed) {
-                if (event.mouseButton.button == sf::Mouse::Left) {
-                    sf::Vector2f mousePos(static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y));
-                    if (pauseButton.getGlobalBounds().contains(mousePos)) {
-                        isPaused = !isPaused;
-                        if (isPaused) {
-                            pauseButton.setFillColor(sf::Color::Red);
-                            pauseButtonText.setString("Resume");
-                        } else {
-                            pauseButton.setFillColor(sf::Color::Green);
-                            pauseButtonText.setString("Pause");
-                        }
-                    } else if (resetButton.getGlobalBounds().contains(mousePos)) {
-                        resetSimulation(agents, gen, dis, config);
-                        if (isPaused) {
-                            isPaused = false;
-                            pauseButton.setFillColor(sf::Color::Green);
-                            pauseButtonText.setString("Pause");
-                        }
-                        frameCount = 0; 
-                        frameRates.clear();
-                        cumulativeSum = 0.0f;
-                        totalElapsedTime = sf::seconds(0); // Reset the totalElapsedTime
-                    }
-                }
-            }
-        }
-
-        if (!isPaused) {
-            elapsedTime = clock.restart();
-
-            // Update agent positions
-            grid.clear(); // Clear the grid before updating positions
-            for (auto& agent : agents) {
-                agent.updatePosition();
-                agent.resetCollisionState(); // Reset collision state at the start of each frame for each agent
-                sf::Vector2i cellIndex = getGridCellIndex(agent.position, cellSize);
-                grid[cellIndex].agents.push_back(&agent);
-
-                // Resume agents if they are stopped
-                if (agent.stopped) {
-                    ++agent.stoppedFrameCounter;
-                    agent.resume(agents);
-                }
-            }
-
-            // Collision detection using grid with OpenMP parallelization
-            auto startTime = std::chrono::high_resolution_clock::now();
-            for (const auto& [cellIndex, cell] : grid) {
-                // Check collisions within the same cell
-                for (size_t i = 0; i < cell.agents.size(); ++i) {
-                    for (size_t j = i + 1; j < cell.agents.size(); ++j) {
-                        gridBasedCollisionCount++;
-                        globalCollisionCount++;
-
-                        Agent& agent1 = *cell.agents[i];
-                        Agent& agent2 = *cell.agents[j];
-
-                        {
-                            predictCollision(agent1, agent2);
-                        }
-                    }
-                }
-
-                // Check collisions with adjacent cells (parallelized)
-                for (int dx = -1; dx <= 1; ++dx) {
-                    for (int dy = -1; dy <= 1; ++dy) {
-                        if (dx == 0 && dy == 0) continue;
-
-                        sf::Vector2i adjacentCellIndex = cellIndex + sf::Vector2i(dx, dy);
-                        if (grid.find(adjacentCellIndex) == grid.end()) continue; // No agents in the adjacent cell
-
-                        const auto& adjacentCell = grid[adjacentCellIndex];
-                        for (Agent* agent1 : cell.agents) {
-                            for (Agent* agent2 : adjacentCell.agents) {
-                                gridBasedCollisionCount++;
-                                globalCollisionCount++;
-
-                                predictCollision(*agent1, *agent2);
-                            }
-                        }
-                    }
-                }
-            }
-
-            auto endTime = std::chrono::high_resolution_clock::now();
-            collisionTime += endTime - startTime;
-
-            std::cout << "Collision detection time: " << collisionTime.count() * 1000 << " milliseconds" << std::endl;
-            collisionTime = std::chrono::duration<double>(0.0);
-
-            // For global collision comparison, calculate once per frame outside grid-based collision detection
-            globalCollisionCount += agents.size() * (agents.size() - 1) / 2;
-
-            // Increment frame count
-            frameCount++;
-            // Calculate total elapsed time
-            totalElapsedTime += elapsedTime;
-        }
-
-        float frameRate = 1.0f / elapsedTime.asSeconds();
-
-        // Update frame rate buffer using cumulative sum
-        if (frameRates.size() == frameRateBufferSize) {
-            cumulativeSum -= frameRates[0];
-            frameRates.erase(frameRates.begin());
-        }
-
-        frameRates.push_back(frameRate);
-        cumulativeSum += frameRate;
-
-        // Calculate moving average of frame rate
-        float movingAverageFrameRate = cumulativeSum / frameRates.size();
-
-        // Update frame count text
-        frameText.setString("Frame " + std::to_string(frameCount) + "/" + (maxFrames > 0 ? std::to_string(maxFrames) : "∞"));
-        sf::FloatRect textRect = frameText.getLocalBounds();
-        frameText.setOrigin(textRect.width, 0);
-        frameText.setPosition(window.getSize().x - 10, 10); 
-
-        // Update frame rate text
-        frameRateText.setString("FPS: " + std::to_string(static_cast<int>(movingAverageFrameRate)));
-        textRect = frameRateText.getLocalBounds();
-        frameRateText.setOrigin(textRect.width, 0);
-        frameRateText.setPosition(window.getSize().x - 10, 40);
-
-        // Rendering
-        window.clear(sf::Color::White);
-
-        // Draw the grid (if enabled)
-        if (config["grid"]["show_grid"].as<bool>()) {
-            for (int x = 0; x <= numCellsX; ++x) {
-                sf::Vertex line[] = {
-                    sf::Vertex(sf::Vector2f(x * cellSize, 0), sf::Color(220, 220, 220)), // Light gray for grid
-                    sf::Vertex(sf::Vector2f(x * cellSize, window.getSize().y), sf::Color(220, 220, 220))
-                };
-                window.draw(line, 2, sf::Lines);
-            }
-            for (int y = 0; y <= numCellsY; ++y) {
-                sf::Vertex line[] = {
-                    sf::Vertex(sf::Vector2f(0, y * cellSize), sf::Color(220, 220, 220)),
-                    sf::Vertex(sf::Vector2f(window.getSize().x, y * cellSize), sf::Color(220, 220, 220))
-                };
-                window.draw(line, 2, sf::Lines);
-            }
-       }
-
-        for (const auto& agent : agents) {
-            // Draw the agent as a circle
-            sf::CircleShape agentShape(agent.radius);
-            agentShape.setFillColor(agent.color);
-            agentShape.setOrigin(agentShape.getRadius(), agentShape.getRadius());
-            //agentShape.setOrigin(agent.radius, agent.radius);
-            agentShape.setPosition(agent.position);
-            window.draw(agentShape);
-
-            // Draw the buffer zone
-            sf::CircleShape bufferZone = agent.getBufferZone();
-            window.draw(bufferZone);
-
-            // Draw the arrow (a triangle) representing the velocity vector
-            sf::Vector2f direction = agent.velocity;
-            float arrowLength = agent.radius * 0.8f;
-            float arrowAngle = std::atan2(direction.y, direction.x);
-
-            // Normalize the direction vector for consistent arrow length
-            sf::Vector2f normalizedDirection = direction / std::sqrt(direction.x * direction.x + direction.y * direction.y);
-
-            sf::ConvexShape arrow(3);
-            arrow.setPoint(0, sf::Vector2f(0, 0)); // Tip of the arrow
-            arrow.setPoint(1, sf::Vector2f(-arrowLength, arrowLength / 2));
-            arrow.setPoint(2, sf::Vector2f(-arrowLength, -arrowLength / 2));
-            arrow.setFillColor(sf::Color::Black);
-
-            // Line (arrow body) - Offset the start by the agent's radius
-            sf::Vertex line[] =
-            {
-                sf::Vertex(agent.position + normalizedDirection * agent.radius, sf::Color::Black),  // Offset start point
-                sf::Vertex(agent.position + normalizedDirection * agent.radius + direction * (arrowLength / 2.0f), sf::Color::Black) // Ending point (base of arrowhead)
-            };
-
-            // Set the origin of the arrowhead to the base of the triangle
-            arrow.setOrigin(-arrowLength, 0); 
-            //arrow.setPosition(agent.position + normalizedDirection * (agentShape.getRadius() + 2.f)); // Position at the edge of the agent
-            arrow.setPosition(line[1].position); // Position the arrowhead at the end of the line
-            arrow.setRotation(arrowAngle * 180.0f / M_PI); // Convert radians to degrees for SFML
-            window.draw(arrow);
-            window.draw(line, 2, sf::Lines);
-
-            // Draw trajectory (if enabled in config)
-            if (showTrajectories) {
-                sf::Vertex trajectory[] =
-                {
-                    sf::Vertex(agent.initial_position, agent.initial_color),
-                    sf::Vertex(agent.position, agent.initial_color)
-                };
-                window.draw(trajectory, 2, sf::Lines);
-            }
-        }
-
-        // Draw frame count and frame rate text
-        window.draw(frameText);
-        window.draw(frameRateText);
-
-        // Draw buttons
-        window.draw(pauseButton);
-        window.draw(pauseButtonText);
-        window.draw(resetButton);
-        window.draw(resetButtonText);
-
-        window.display();
-
-    }
-
-    // Output collision statistics
-    std::cout << "Grid-based collision calculations: " << gridBasedCollisionCount << std::endl;
-    std::cout << "Global collision calculations (estimated): " << globalCollisionCount << std::endl;
-    std::cout << "Total procentual reduction: " << 100.0f * (1.0f - static_cast<float>(gridBasedCollisionCount) / globalCollisionCount) << "%" << std::endl;
-    return 0;
+    // Global collision count estimation (for comparison)
+    globalCollisionCount += agents.size() * (agents.size() - 1) / 2; 
 }

@@ -1,7 +1,7 @@
-CMakeFiles/RoadUserSimulation.dir/CollisionPrediction.cpp.o: \
-  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/CollisionPrediction.cpp \
-  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/CollisionPrediction.h \
-  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/Agent.h \
+CMakeFiles/RoadUserSimulation.dir/CollisionAvoidance.cpp.o: \
+  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/CollisionAvoidance.cpp \
+  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/CollisionAvoidance.hpp \
+  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/Agent.hpp \
   /usr/local/include/SFML/Graphics.hpp \
   /usr/local/include/SFML/Window.hpp /usr/local/include/SFML/System.hpp \
   /usr/local/include/SFML/Config.hpp \

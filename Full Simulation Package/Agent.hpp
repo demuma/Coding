@@ -1,5 +1,5 @@
-#ifndef AGENT_H
-#define AGENT_H
+#ifndef AGENT_HPP
+#define AGENT_HPP
 
 #include <SFML/Graphics.hpp>
 #include <vector>
@@ -34,4 +34,4 @@ public:
     void resume(const std::vector<Agent>& agents);
 };
 
-#endif // AGENT_H
+#endif // AGENT_HPP

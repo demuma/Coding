@@ -13,8 +13,9 @@ include_directories(${YAML_CPP_INCLUDE_DIR})
 add_executable(RoadUserSimulation
     Agent.cpp
     Simulation.cpp
-    CollisionPrediction.cpp
-    Grid.cpp   
+    CollisionAvoidance.cpp
+    Grid.cpp
+    Main.cpp
 )
 
 # Link SFML and yaml-cpp libraries to the executable

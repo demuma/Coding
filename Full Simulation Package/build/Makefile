@@ -153,29 +153,29 @@ Agent.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/Agent.cpp.s
 .PHONY : Agent.cpp.s
 
-CollisionPrediction.o: CollisionPrediction.cpp.o
-.PHONY : CollisionPrediction.o
+CollisionAvoidance.o: CollisionAvoidance.cpp.o
+.PHONY : CollisionAvoidance.o
 
 # target to build an object file
-CollisionPrediction.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/CollisionPrediction.cpp.o
-.PHONY : CollisionPrediction.cpp.o
+CollisionAvoidance.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/CollisionAvoidance.cpp.o
+.PHONY : CollisionAvoidance.cpp.o
 
-CollisionPrediction.i: CollisionPrediction.cpp.i
-.PHONY : CollisionPrediction.i
+CollisionAvoidance.i: CollisionAvoidance.cpp.i
+.PHONY : CollisionAvoidance.i
 
 # target to preprocess a source file
-CollisionPrediction.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/CollisionPrediction.cpp.i
-.PHONY : CollisionPrediction.cpp.i
+CollisionAvoidance.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/CollisionAvoidance.cpp.i
+.PHONY : CollisionAvoidance.cpp.i
 
-CollisionPrediction.s: CollisionPrediction.cpp.s
-.PHONY : CollisionPrediction.s
+CollisionAvoidance.s: CollisionAvoidance.cpp.s
+.PHONY : CollisionAvoidance.s
 
 # target to generate assembly for a file
-CollisionPrediction.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/CollisionPrediction.cpp.s
-.PHONY : CollisionPrediction.cpp.s
+CollisionAvoidance.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/CollisionAvoidance.cpp.s
+.PHONY : CollisionAvoidance.cpp.s
 
 Grid.o: Grid.cpp.o
 .PHONY : Grid.o
@@ -200,6 +200,30 @@ Grid.s: Grid.cpp.s
 Grid.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/Grid.cpp.s
 .PHONY : Grid.cpp.s
+
+Main.o: Main.cpp.o
+.PHONY : Main.o
+
+# target to build an object file
+Main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/Main.cpp.o
+.PHONY : Main.cpp.o
+
+Main.i: Main.cpp.i
+.PHONY : Main.i
+
+# target to preprocess a source file
+Main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/Main.cpp.i
+.PHONY : Main.cpp.i
+
+Main.s: Main.cpp.s
+.PHONY : Main.s
+
+# target to generate assembly for a file
+Main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/Main.cpp.s
+.PHONY : Main.cpp.s
 
 Simulation.o: Simulation.cpp.o
 .PHONY : Simulation.o
@@ -237,12 +261,15 @@ help:
 	@echo "... Agent.o"
 	@echo "... Agent.i"
 	@echo "... Agent.s"
-	@echo "... CollisionPrediction.o"
-	@echo "... CollisionPrediction.i"
-	@echo "... CollisionPrediction.s"
+	@echo "... CollisionAvoidance.o"
+	@echo "... CollisionAvoidance.i"
+	@echo "... CollisionAvoidance.s"
 	@echo "... Grid.o"
 	@echo "... Grid.i"
 	@echo "... Grid.s"
+	@echo "... Main.o"
+	@echo "... Main.i"
+	@echo "... Main.s"
 	@echo "... Simulation.o"
 	@echo "... Simulation.i"
 	@echo "... Simulation.s"

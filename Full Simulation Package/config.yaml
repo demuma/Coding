@@ -3,6 +3,7 @@ version: 1.0.0
 display:
   width: 3440
   height: 1440
+  frame_rate: 60
 
 grid:
   cell_size: 100
@@ -12,16 +13,16 @@ grid:
   show_grid: false
 
 agents:
-  num_agents: 100
+  num_agents: 1000
   road_user_taxonomy:
     - type: pedestrian
-      proportion: 0.5
+      proportion: 0.1
       radius: 5.0
       color: 'blue'
       min_velocity: 1
       max_velocity: 2
     - type: cyclist
-      proportion: 0.3
+      proportion: 0.1
       radius: 5.0
       color: 'green'
       min_velocity: 2
@@ -33,13 +34,13 @@ agents:
       min_velocity: 3
       max_velocity: 5
     - type: senior
-      proportion: 0.0
+      proportion: 0.1
       radius: 5.0
       color: 'purple'
       min_velocity: 0.5
       max_velocity: 1
     - type: child
-      proportion: 0.0
+      proportion: 0.1
       radius: 5.0
       color: 'orange'
       min_velocity: 1
@@ -47,6 +48,5 @@ agents:
 
 simulation:
   duration_seconds: 50000
-  fps: 60
   maximum_frames: 100000
   # scenario: random

@@ -10,12 +10,12 @@ public:
     sf::Vector2f initial_position;
     sf::Vector2f velocity;
     sf::Vector2f original_velocity; // To store original velocity
-    float radius = 5.0f; // Example radius
-    sf::Color color = sf::Color::Black; // Start color is black
+    sf::Color color; // Start color is black
     sf::Color initial_color = sf::Color::Black; // Initial color is black
     std::string initial_color_str;
     sf::Color bufferColor = sf::Color::Green; // Start buffer color is green
 
+    float radius; // Agent radius
     float min_velocity; // Minimum velocity
     float max_velocity; // Maximum velocity
     float bufferRadius;

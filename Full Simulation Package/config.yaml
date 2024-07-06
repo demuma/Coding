@@ -12,7 +12,7 @@ grid:
   show_grid: false
 
 agents:
-  num_agents: 1000
+  num_agents: 100
   road_user_taxonomy:
     - type: pedestrian
       proportion: 0.5

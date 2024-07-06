@@ -125,6 +125,7 @@
     "utility": "cpp",
     "format": "cpp",
     "text_encoding": "cpp",
-    "cinttypes": "cpp"
+    "cinttypes": "cpp",
+    "iostream": "cpp"
   }
 }

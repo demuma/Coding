@@ -113,6 +113,8 @@ int main() {
     int fps = config["simulation"]["fps"].as<int>();
     int maxFrames = config["simulation"]["maximum_frames"].as<int>();
 
+    std::chrono::duration<double> collisionTime(0.0);
+
     // Window setup
     sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Road User Simulation");
     window.setFramerateLimit(fps);
@@ -289,7 +291,8 @@ int main() {
                 }
             }
 
-            // Collision detection using grid (same as before)
+            // Collision detection using grid with OpenMP parallelization
+            auto startTime = std::chrono::high_resolution_clock::now();
             for (const auto& [cellIndex, cell] : grid) {
                 // Check collisions within the same cell
                 for (size_t i = 0; i < cell.agents.size(); ++i) {
@@ -300,14 +303,16 @@ int main() {
                         Agent& agent1 = *cell.agents[i];
                         Agent& agent2 = *cell.agents[j];
 
-                        predictCollision(agent1, agent2);
+                        {
+                            predictCollision(agent1, agent2);
+                        }
                     }
                 }
 
-                // Check collisions with adjacent cells
+                // Check collisions with adjacent cells (parallelized)
                 for (int dx = -1; dx <= 1; ++dx) {
                     for (int dy = -1; dy <= 1; ++dy) {
-                        if (dx == 0 && dy == 0) continue; // Skip the current cell
+                        if (dx == 0 && dy == 0) continue;
 
                         sf::Vector2i adjacentCellIndex = cellIndex + sf::Vector2i(dx, dy);
                         if (grid.find(adjacentCellIndex) == grid.end()) continue; // No agents in the adjacent cell
@@ -324,6 +329,12 @@ int main() {
                     }
                 }
             }
+
+            auto endTime = std::chrono::high_resolution_clock::now();
+            collisionTime += endTime - startTime;
+
+            std::cout << "Collision detection time: " << collisionTime.count() * 1000 << " milliseconds" << std::endl;
+            collisionTime = std::chrono::duration<double>(0.0);
 
             // For global collision comparison, calculate once per frame outside grid-based collision detection
             globalCollisionCount += agents.size() * (agents.size() - 1) / 2;
@@ -452,6 +463,5 @@ int main() {
     std::cout << "Grid-based collision calculations: " << gridBasedCollisionCount << std::endl;
     std::cout << "Global collision calculations (estimated): " << globalCollisionCount << std::endl;
     std::cout << "Total procentual reduction: " << 100.0f * (1.0f - static_cast<float>(gridBasedCollisionCount) / globalCollisionCount) << "%" << std::endl;
-
     return 0;
 }

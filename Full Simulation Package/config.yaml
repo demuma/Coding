@@ -11,6 +11,7 @@ grid:
   y_size: 10
   show_trajectories: true
   show_grid: true
+  show_info: true
 
 agents:
   num_agents: 1000

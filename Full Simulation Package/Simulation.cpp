@@ -24,6 +24,7 @@ void Simulation::loadConfiguration() {
     durationSeconds = config["simulation"]["duration_seconds"].as<float>();
     maxFrames = config["simulation"]["maximum_frames"].as<int>();
     fps = config["display"]["frame_rate"].as<int>();
+    showInfo = config["grid"]["show_info"].as<bool>();
 }
 
 // Function to initialize agents based on the YAML configuration
@@ -93,7 +94,7 @@ void Simulation::initializeUI() {
     // Pause button
     pauseButton.setSize(sf::Vector2f(100, 50)); 
     pauseButton.setFillColor(sf::Color::Green);
-    pauseButton.setPosition(window.getSize().x - 110, window.getSize().y - 160);
+    pauseButton.setPosition(window.getSize().x - 110, window.getSize().y - 60);
 
     pauseButtonText.setFont(font);
     pauseButtonText.setString("Pause");
@@ -110,7 +111,7 @@ void Simulation::initializeUI() {
     // Reset button
     resetButton.setSize(sf::Vector2f(100, 50));
     resetButton.setFillColor(sf::Color::Blue);
-    resetButton.setPosition(window.getSize().x - 110, window.getSize().y - 220); 
+    resetButton.setPosition(window.getSize().x - 110, window.getSize().y - 120); 
 
     resetButtonText.setFont(font);
     resetButtonText.setString("Reset");
@@ -289,14 +290,18 @@ void Simulation::render() {
         }
     }
 
-    // Draw frame count text
-    window.draw(frameText);
+    // Show simulation info (frame count, frame rate, agent count)
+    if(showInfo) {
 
-    // Draw frame rate text
-    window.draw(frameRateText);
+        // Draw frame count text
+        window.draw(frameText);
 
-    // Draw agent count text
-    window.draw(agentCountText);
+        // Draw frame rate text
+        window.draw(frameRateText);
+
+        // Draw agent count text
+        window.draw(agentCountText);
+    }
 
     // Draw pause button
     window.draw(pauseButton);
@@ -315,7 +320,7 @@ void Simulation::updateFrameRateText(float frameRate) {
     frameRateText.setString("FPS: " + std::to_string(static_cast<int>(frameRate)));
     sf::FloatRect textRect = frameRateText.getLocalBounds();
     frameRateText.setOrigin(textRect.width, 0); // Right-align the text
-    frameRateText.setPosition(window.getSize().x - 10, 40); // Position with padding
+    frameRateText.setPosition(window.getSize().x - 10, 35); // Position with padding
 }
 
 // Function to update the text that displays the current frame count
@@ -323,7 +328,7 @@ void Simulation::updateFrameCountText(int frameCount) {
     frameText.setString("Frame " + std::to_string(frameCount) + "/" + (maxFrames > 0 ? std::to_string(maxFrames) : "∞")); // ∞ for unlimited frames
     sf::FloatRect textRect = frameText.getLocalBounds();
     frameText.setOrigin(textRect.width, 0); // Right-align the text
-    frameText.setPosition(window.getSize().x - 10, 10); // Position with padding
+    frameText.setPosition(window.getSize().x - 10, 5); // Position with padding
 }
 
 // Function to update the text that displays the current agent count
@@ -331,7 +336,7 @@ void Simulation::updateAgentCountText() {
     agentCountText.setString("Agents " + std::to_string(agents.size()));
     sf::FloatRect textRect = agentCountText.getLocalBounds();
     agentCountText.setOrigin(textRect.width, 0); // Right-align the text
-    agentCountText.setPosition(window.getSize().x - 5, 70); // Position with padding
+    agentCountText.setPosition(window.getSize().x - 5, 65); // Position with padding
 }
 
 // Function to handle events (mouse clicks, window close, etc.)

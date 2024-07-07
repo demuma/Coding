@@ -31,6 +31,7 @@ private:
     float cellSize;
     bool showGrid;
     bool showTrajectories;
+    bool showInfo;
     int numAgents;
     float durationSeconds;
     int maxFrames;

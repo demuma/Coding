@@ -6,6 +6,25 @@ Agent::Agent() {
     hasCollision = false;
     stopped = false;
     stoppedFrameCounter = 0;
+    isActive = true;
+}
+
+std::string Agent::generateUUID() {
+    uuid_t uuid;
+    uuid_generate(uuid);
+    char uuidStr[37];
+    uuid_unparse(uuid, uuidStr);
+
+    return std::string(uuidStr);
+}
+
+std::string Agent::generateUUID(uuid_t uuid) {
+    
+    uuid_generate(uuid);
+    char uuidStr[37];
+    uuid_unparse(uuid, uuidStr);
+
+    return std::string(uuidStr);
 }
 
 void Agent::initialize() {

@@ -3,6 +3,7 @@
 #include <chrono> // For timing
 #include "CollisionAvoidance.hpp"
 #include <random>
+#include <uuid/uuid.h> // For generating UUIDs
 
 // Constructor
 Simulation::Simulation(sf::RenderWindow& window, const sf::Font& font, const YAML::Node& config) 
@@ -29,10 +30,17 @@ void Simulation::loadConfiguration() {
 
 // Function to initialize agents based on the YAML configuration
 void Simulation::initializeAgents() {
+
+    // Random number generation for initial agent positions and velocities
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(-1.0, 1.0);
 
+    // Generate general sensor ID
+    uuid_t sensor_uuid;
+    uuid_generate(sensor_uuid); 
+
+    // Initialize agents based on the proportion of each agent type (TODO: Find better way!!)
     for (const auto& agentType : config["agents"]["road_user_taxonomy"]) {
         int numTypeAgents = numAgents * agentType["proportion"].as<float>();
         sf::Color agentColor = stringToColor(agentType["color"].as<std::string>());
@@ -43,8 +51,12 @@ void Simulation::initializeAgents() {
             exit(1); // Exit with an error code
         }
 
+        // Create agents of the current type
         for (int i = 0; i < numTypeAgents; ++i) {
             Agent agent;
+            agent.uuid = agent.generateUUID();
+            agent.sensor_id = agent.generateUUID(sensor_uuid);
+            agent.type = agentType["type"].as<std::string>();
             agent.position = sf::Vector2f(rand() % windowWidth, rand() % windowHeight);
             agent.initial_position = agent.position;
             float minVelocity = agentType["min_velocity"].as<float>();
@@ -65,6 +77,7 @@ void Simulation::initializeAgents() {
             agent.initial_color = agentColor;
             agent.initialize();
             agents.push_back(agent);
+            std::cout << "Agent " << agent.uuid << " created with type " << agent.type << std::endl;
         }
     }
 }
@@ -333,7 +346,7 @@ void Simulation::updateFrameCountText(int frameCount) {
 
 // Function to update the text that displays the current agent count
 void Simulation::updateAgentCountText() {
-    agentCountText.setString("Agents " + std::to_string(agents.size()));
+    agentCountText.setString("Agents: " + std::to_string(agents.size()));
     sf::FloatRect textRect = agentCountText.getLocalBounds();
     agentCountText.setOrigin(textRect.width, 0); // Right-align the text
     agentCountText.setPosition(window.getSize().x - 5, 65); // Position with padding

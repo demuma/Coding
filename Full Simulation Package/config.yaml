@@ -14,7 +14,7 @@ grid:
   show_info: true
 
 agents:
-  num_agents: 1000
+  num_agents: 10
   road_user_taxonomy:
     - type: pedestrian
       proportion: 0.5
@@ -48,6 +48,6 @@ agents:
       max_velocity: 2
 
 simulation:
-  duration_seconds: 3
+  duration_seconds: 1
   maximum_frames: 1000
   # scenario: random

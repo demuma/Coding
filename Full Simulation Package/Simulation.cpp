@@ -70,6 +70,7 @@ void Simulation::initializeAgents() {
 
 // Function to initialize UI elements
 void Simulation::initializeUI() {
+
     // Frame count text
     frameText.setFont(font);
     frameText.setCharacterSize(24);
@@ -81,6 +82,13 @@ void Simulation::initializeUI() {
     frameRateText.setCharacterSize(24);
     frameRateText.setFillColor(sf::Color::Black);
     // Initial position will be updated in the main loop
+
+     // Frame count text
+    agentCountText.setFont(font);
+    agentCountText.setCharacterSize(24);
+    agentCountText.setFillColor(sf::Color::Black);
+    // Initial position will be updated in the main loop
+    
 
     // Pause button
     pauseButton.setSize(sf::Vector2f(100, 50)); 
@@ -151,18 +159,21 @@ void Simulation::run() {
     std::chrono::duration<double> collisionTime(0.0);
 
     // Frame rate buffer and calculation
-    //std::vector<float> frameRates;
     cumulativeSum = 0.0f;
 
     // Simulation duration control
     frameCount = 0;
 
-    while (window.isOpen() && (totalElapsedTime < sf::seconds(durationSeconds) || maxFrames == 0)) {
+    // Stop main loop if the window is closed, the simulation duration or maximum frames are reached
+    while (window.isOpen() && (totalElapsedTime < sf::seconds(durationSeconds) && (maxFrames > 0 && frameCount < maxFrames))) {
+        
+        // Event handling
         sf::Event event;
         while (window.pollEvent(event)) {
-            handleEvents(event); // Delegate event handling
+            handleEvents(event); // Delegate event handling (reset, pause, etc.)
         }
 
+        // Update the simulation
         if (!isPaused) {
             elapsedTime = clock.restart();
 
@@ -175,14 +186,8 @@ void Simulation::run() {
                 grid.addAgent(&agent);
             }
 
-            // Collision detection using grid (with timing)
-            auto startTime = std::chrono::high_resolution_clock::now();
+            // Collision detection using grid
             grid.checkCollisions();
-            auto endTime = std::chrono::high_resolution_clock::now();
-            collisionTime += endTime - startTime;
-
-            std::cout << "Collision detection time: " << collisionTime.count() * 1000 << " milliseconds" << std::endl;
-            collisionTime = std::chrono::duration<double>(0.0); // Reset timer
 
             // Global collision count estimation (for comparison)
             globalCollisionCount += agents.size() * (agents.size() - 1) / 2;
@@ -199,19 +204,15 @@ void Simulation::run() {
             }
             frameRates.push_back(frameRate);
             cumulativeSum += frameRate;
-            float movingAverageFrameRate = cumulativeSum / frameRates.size();
+            movingAverageFrameRate = cumulativeSum / frameRates.size();
 
             updateFrameRateText(movingAverageFrameRate);
             updateFrameCountText(frameCount);
+            updateAgentCountText();
         }
 
         render(); 
     }
-
-    // Output collision statistics
-    std::cout << "Grid-based collision calculations: " << gridBasedCollisionCount << std::endl;
-    std::cout << "Global collision calculations (estimated): " << globalCollisionCount << std::endl;
-    std::cout << "Total percentual reduction: " << 100.0f * (1.0f - static_cast<float>(gridBasedCollisionCount) / globalCollisionCount) << "%" << std::endl;
 }
 
 // Function to render the simulation
@@ -236,7 +237,7 @@ void Simulation::render() {
         }
     }
     
-
+    // Draw agents
     for (const auto& agent : agents) {
         // Draw the agent as a circle
         sf::CircleShape agentShape(agent.radius);
@@ -289,25 +290,24 @@ void Simulation::render() {
     }
 
     // Draw frame count text
-        window.draw(frameText);
+    window.draw(frameText);
 
-        // Draw frame rate text
-        window.draw(frameRateText);
+    // Draw frame rate text
+    window.draw(frameRateText);
 
-        // Draw pause button
-        window.draw(pauseButton);
-        window.draw(pauseButtonText);
+    // Draw agent count text
+    window.draw(agentCountText);
 
-        // Draw reset button
-        window.draw(resetButton);
-        window.draw(resetButtonText);
+    // Draw pause button
+    window.draw(pauseButton);
+    window.draw(pauseButtonText);
 
-        window.display();
+    // Draw reset button
+    window.draw(resetButton);
+    window.draw(resetButtonText);
 
-    // Output collision statistics
-    std::cout << "Grid-based collision calculations: " << gridBasedCollisionCount << std::endl;
-    std::cout << "Global collision calculations (estimated): " << globalCollisionCount << std::endl;
-    std::cout << "Total percentual reduction: " << 100.0f * (1.0f - static_cast<float>(gridBasedCollisionCount) / globalCollisionCount) << "%" << std::endl;
+    // Display the window
+    window.display();
 }
 
 // Function to update the text that displays the current frame rate
@@ -326,6 +326,14 @@ void Simulation::updateFrameCountText(int frameCount) {
     frameText.setPosition(window.getSize().x - 10, 10); // Position with padding
 }
 
+// Function to update the text that displays the current agent count
+void Simulation::updateAgentCountText() {
+    agentCountText.setString("Agents " + std::to_string(agents.size()));
+    sf::FloatRect textRect = agentCountText.getLocalBounds();
+    agentCountText.setOrigin(textRect.width, 0); // Right-align the text
+    agentCountText.setPosition(window.getSize().x - 5, 70); // Position with padding
+}
+
 // Function to handle events (mouse clicks, window close, etc.)
 void Simulation::handleEvents(sf::Event event) {
 
@@ -338,7 +346,7 @@ void Simulation::handleEvents(sf::Event event) {
             // Pause/Resume button click
             if (pauseButton.getGlobalBounds().contains(mousePos)) {
                 isPaused = !isPaused; // Toggle pause state
-                pauseButtonText.setString(isPaused ? "Resume" : "Pause");
+                pauseButtonText.setString(isPaused ? "  Play" : "Pause");
                 pauseButton.setFillColor(isPaused ? sf::Color::Red : sf::Color::Green);
             }
 
@@ -420,15 +428,6 @@ void Simulation::update(float deltaTime) {
         }
     }
 
-    // Collision detection using grid (with timing)
-    auto startTime = std::chrono::high_resolution_clock::now();
+    // Collision detection using grid
     grid.checkCollisions();
-    auto endTime = std::chrono::high_resolution_clock::now();
-    collisionTime += endTime - startTime;
-
-    std::cout << "Collision detection time: " << collisionTime.count() * 1000 << " milliseconds" << std::endl;
-    collisionTime = std::chrono::duration<double>(0.0); // Reset the timer
-
-    // Global collision count estimation (for comparison)
-    globalCollisionCount += agents.size() * (agents.size() - 1) / 2; 
 }

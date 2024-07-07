@@ -9,14 +9,14 @@ grid:
   cell_size: 100
   x_size: 10
   y_size: 10
-  show_trajectories: false
-  show_grid: false
+  show_trajectories: true
+  show_grid: true
 
 agents:
   num_agents: 1000
   road_user_taxonomy:
     - type: pedestrian
-      proportion: 0.1
+      proportion: 0.5
       radius: 5.0
       color: 'blue'
       min_velocity: 1
@@ -47,6 +47,6 @@ agents:
       max_velocity: 2
 
 simulation:
-  duration_seconds: 50000
-  maximum_frames: 100000
+  duration_seconds: 3
+  maximum_frames: 1000
   # scenario: random

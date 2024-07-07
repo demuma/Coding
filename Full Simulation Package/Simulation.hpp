@@ -34,13 +34,12 @@ private:
     int numAgents;
     float durationSeconds;
     int maxFrames;
-    float frameRate;
-    int frameCount;
     int fps;
 
     // UI Elements
     sf::Text frameText;
     sf::Text frameRateText;
+    sf::Text agentCountText;
     sf::RectangleShape pauseButton;
     sf::Text pauseButtonText;
     sf::RectangleShape resetButton;
@@ -49,11 +48,14 @@ private:
     // Frame Rate Calculation
     std::vector<float> frameRates;
     const size_t frameRateBufferSize = 100;
+    float frameRate;
+    int frameCount;
+    float movingAverageFrameRate;
 
+    // Simulation State
     bool isPaused = false;
     sf::Time elapsedTime;
     sf::Time totalElapsedTime;
-    std::chrono::duration<double> collisionTime;
 
     // Helper functions
     void loadConfiguration(); // Loads configuration data
@@ -65,6 +67,7 @@ private:
     void resetSimulation();
     void updateFrameRateText(float frameRate);
     void updateFrameCountText(int frameCount);
+    void updateAgentCountText();
 
     // Auxiliary functions
     sf::Color stringToColor(const std::string& colorStr);

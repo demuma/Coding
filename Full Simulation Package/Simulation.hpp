@@ -74,7 +74,35 @@ private:
     void updateAgentCountText();
 
     // Auxiliary functions
-    sf::Color stringToColor(const std::string& colorStr);
+    //sf::Color stringToColor(const std::string& colorStr);
+
+    // Function to convert a string to sf::Color (case-insensitive)
+    sf::Color stringToColor(const std::string& colorStr) {  // Note the Simulation:: scope
+        std::string lowerColorStr = colorStr;
+        std::transform(lowerColorStr.begin(), lowerColorStr.end(), lowerColorStr.begin(),
+                    [](unsigned char c) { return std::tolower(c); });
+
+        if (lowerColorStr == "red") return sf::Color::Red;
+        if (lowerColorStr == "green") return sf::Color::Green;
+        if (lowerColorStr == "blue") return sf::Color::Blue;
+        if (lowerColorStr == "black") return sf::Color::Black;
+        if (lowerColorStr == "white") return sf::Color::White;
+        if (lowerColorStr == "yellow") return sf::Color::Yellow;
+        if (lowerColorStr == "magenta") return sf::Color::Magenta;
+        if (lowerColorStr == "cyan") return sf::Color::Cyan;
+        if (lowerColorStr == "purple") return sf::Color::Magenta;  // Using Magenta for Purple
+        if (lowerColorStr == "orange") return sf::Color(255, 165, 0); // Orange
+
+        if (colorStr.length() == 7 && colorStr[0] == '#') {
+            int r, g, b;
+            if (sscanf(colorStr.c_str(), "#%02x%02x%02x", &r, &g, &b) == 3) {
+                return sf::Color(r, g, b);
+            }
+        }
+    
+        std::cerr << "Warning: Unrecognized color string '" << colorStr << "'. Using black instead." << std::endl;
+        return sf::Color::Black;
+    }
 };
 
 #endif // SIMULATION_HPP

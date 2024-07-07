@@ -2,7 +2,7 @@
 #include <cmath> // For std::sqrt
 
 // Function definition (implementation)
-bool predictCollision_v1(Agent& agent1, Agent& agent2) {
+bool predictCollision(Agent& agent1, Agent& agent2) {
     const float lookaheadStep = 0.5f; // Time step for predictions
     const float maxLookahead = 3.0f; // Maximum lookahead time
 
@@ -83,7 +83,7 @@ bool predictCollision_v2(Agent& agent1, Agent& agent2) {
     return false; // No collision detected in the lookahead time frame
 }
 
-bool predictCollision(Agent& agent1, Agent& agent2) {
+bool predictCollision_v1(Agent& agent1, Agent& agent2) {
 
     return false; // No collision detected in the lookahead time frame
 }

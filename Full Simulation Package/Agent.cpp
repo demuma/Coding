@@ -57,7 +57,7 @@ void Agent::resetCollisionState() {
 
 void Agent::stop() {
     if (!stopped) {
-        original_velocity = velocity;
+        originalVelocity = velocity;
         velocity = sf::Vector2f(0.0f, 0.0f);
         stopped = true;
         stoppedFrameCounter = 0;
@@ -82,7 +82,7 @@ bool Agent::canResume(const std::vector<Agent>& agents) {
 void Agent::resume(const std::vector<Agent>& agents) {
     if (stopped && stoppedFrameCounter >= 20) {
         if (canResume(agents)) {
-            velocity = original_velocity;
+            velocity = originalVelocity;
             stopped = false;
         }
     }

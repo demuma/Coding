@@ -9,8 +9,8 @@
 
 #include "Agent.hpp"
 #include "Grid.hpp"
-#include "CollisionPrediction.hpp"
-
+//#include "CollisionPrediction.hpp"
+#include "CollisionAvoidance.hpp"
 // Custom hash function for sf::Vector2i
 namespace std {
     template <> struct hash<sf::Vector2i> {
@@ -58,7 +58,7 @@ void resetSimulation(std::vector<Agent>& agents, std::mt19937& gen, std::uniform
     for (auto& agent : agents) {
         //agent.position = sf::Vector2f(dis(gen) * windowWidth / 2, dis(gen) * windowHeight) / 2;
         agent.position = sf::Vector2f(rand() % windowWidth, rand() % windowHeight);
-        agent.initial_position = agent.position;
+        agent.initialPosition = agent.position;
 
         // // Iterate over each agent type in the configuration
         // for (const auto& agentType : config["agents"]["road_user_taxonomy"]) {
@@ -78,7 +78,7 @@ void resetSimulation(std::vector<Agent>& agents, std::mt19937& gen, std::uniform
         //     }
         // }
 
-        agent.velocity = agent.original_velocity;
+        agent.velocity = agent.originalVelocity;
         agent.color = agent.initial_color;
         agent.bufferColor = sf::Color::Green;
         agent.hasCollision = false;
@@ -138,7 +138,7 @@ int main() {
             agent.position = sf::Vector2f(dis(gen) * (windowWidth / 2) + (windowWidth / 2), // Shift to window center
                                      dis(gen) * (windowHeight / 2) + (windowHeight / 2)); // Adjusted for half the window size
             agent.position = sf::Vector2f((rand() % windowWidth) + 1, (rand() % windowHeight) + 1);
-            agent.initial_position = agent.position;
+            agent.initialPosition = agent.position;
             float minVelocity = agentType["min_velocity"].as<float>();
             float maxVelocity = agentType["max_velocity"].as<float>();
             //agent.velocity = sf::Vector2f(dis(gen) * (maxVelocity - minVelocity) + minVelocity,
@@ -158,7 +158,7 @@ int main() {
                     agent.velocity.y = minVelocity;
                 }
             }
-            agent.original_velocity = agent.velocity;
+            agent.originalVelocity = agent.velocity;
             agent.radius = agentType["radius"].as<float>();
             agent.color = agentColor;
             agent.initial_color = agentColor;
@@ -438,7 +438,7 @@ int main() {
             if (showTrajectories) {
                 sf::Vertex trajectory[] =
                 {
-                    sf::Vertex(agent.initial_position, agent.initial_color),
+                    sf::Vertex(agent.initialPosition, agent.initial_color),
                     sf::Vertex(agent.position, agent.initial_color)
                 };
                 window.draw(trajectory, 2, sf::Lines);

@@ -12,9 +12,10 @@ public:
     std::string sensor_id;
     std::string type;
     sf::Vector2f position;
-    sf::Vector2f initial_position;
+    sf::Vector2f initialPosition;
     sf::Vector2f velocity;
-    sf::Vector2f original_velocity; // To store original velocity
+    sf::Vector2f acceleration;
+    sf::Vector2f originalVelocity; // To store original velocity
     sf::Color color; // Start color is black
     sf::Color initial_color = sf::Color::Black; // Initial color is black
     std::string initial_color_str;
@@ -22,8 +23,10 @@ public:
 
 
     float radius; // Agent radius
-    float min_velocity; // Minimum velocity
-    float max_velocity; // Maximum velocity
+    float minVelocity; // Minimum velocity
+    float maxVelocity; // Maximum velocity
+    float minAcceleration; // Minimum acceleration
+    float maxAcceleration; // Maximum acceleration
     float bufferRadius;
     bool hasCollision;
     bool stopped; // Flag indicating if the agent is stopped

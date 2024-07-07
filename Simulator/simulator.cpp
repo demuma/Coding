@@ -18,9 +18,9 @@ namespace std {
 class Agent {
 public:
     sf::Vector2f position;
-    sf::Vector2f initial_position;
+    sf::Vector2f initialPosition;
     sf::Vector2f velocity;
-    sf::Vector2f original_velocity; // To store original velocity
+    sf::Vector2f originalVelocity; // To store original velocity
     float radius = 5.0f; // Example radius
     sf::Color color = sf::Color::Black; // Start color is black
     sf::Color bufferColor = sf::Color::Green; // Start buffer color is green
@@ -70,7 +70,7 @@ public:
 
     void stop() {
         if (!stopped) {
-            original_velocity = velocity;
+            originalVelocity = velocity;
             velocity = sf::Vector2f(0.0f, 0.0f);
             stopped = true;
             stoppedFrameCounter = 0; // Reset the counter when stopping
@@ -96,7 +96,7 @@ public:
     void resume(const std::vector<Agent>& agents) {
         if (stopped && stoppedFrameCounter >= 20) { // Resume after 20 frames (adjust as needed)
             if (canResume(agents)) {
-                velocity = original_velocity;
+                velocity = originalVelocity;
                 stopped = false;
             }
         }
@@ -154,9 +154,9 @@ void resetSimulation(std::vector<Agent>& agents, std::mt19937& gen, std::uniform
     // Reset each agent's position and velocity
     for (auto& agent : agents) {
         agent.position = sf::Vector2f(rand() % 3440, rand() % 1440);
-        agent.initial_position = agent.position;
+        agent.initialPosition = agent.position;
         agent.velocity = sf::Vector2f(dis(gen), dis(gen)); // Random velocity
-        agent.original_velocity = agent.velocity; // Store initial velocity
+        agent.originalVelocity = agent.velocity; // Store initial velocity
         agent.color = sf::Color::Black; // Reset color
         agent.bufferColor = sf::Color::Green; // Reset buffer color
         agent.hasCollision = false;
@@ -180,9 +180,9 @@ int main() {
     for (int i = 0; i < 1000; ++i) {
         Agent agent;
         agent.position = sf::Vector2f(rand() % 3440, rand() % 1440);
-        agent.initial_position = agent.position;
+        agent.initialPosition = agent.position;
         agent.velocity = sf::Vector2f(dis(gen), dis(gen)); // Random velocity
-        agent.original_velocity = agent.velocity; // Store initial velocity
+        agent.originalVelocity = agent.velocity; // Store initial velocity
         agent.initialize(); // Calculate the buffer zone based on initial velocity
         agents.push_back(agent);
     }
@@ -432,7 +432,7 @@ int main() {
             // Draw trajectory
             sf::Vertex trajectory[] =
             {
-                sf::Vertex(agent.initial_position, sf::Color::Red),
+                sf::Vertex(agent.initialPosition, sf::Color::Red),
                 sf::Vertex(agent.position, sf::Color::Red)
             };
 

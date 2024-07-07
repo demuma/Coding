@@ -14,40 +14,85 @@ grid:
   show_info: true
 
 agents:
-  num_agents: 10
+  groups: false
+  group_size: 2
+  families: false
+  family_size: 3
+  num_agents: 100
   road_user_taxonomy:
     - type: pedestrian
       proportion: 0.5
       radius: 5.0
       color: 'blue'
-      min_velocity: 1
-      max_velocity: 2
+      velocity:
+        min: 1
+        max: 2
+     # min_velocity: 1
+     # max_velocity: 2
+      acceleration:
+        min: 0.1
+        max: 0.5
     - type: cyclist
       proportion: 0.1
       radius: 5.0
       color: 'green'
-      min_velocity: 2
-      max_velocity: 4
+      velocity:
+        min: 2
+        max: 4
+      acceleration:
+        min: 0.1
+        max: 0.5
+      # min_velocity: 2
+      # max_velocity: 4
     - type: e-scooter
       proportion: 0.2
       radius: 5.0
       color: 'red'
-      min_velocity: 3
-      max_velocity: 5
+      velocity:
+        min: 3
+        max: 5
+      acceleration:
+        min: 0.1
+        max: 0.5
+      # min_velocity: 3
+      # max_velocity: 5
     - type: senior
       proportion: 0.1
       radius: 5.0
       color: 'purple'
-      min_velocity: 0.5
-      max_velocity: 1
+      velocity:
+        min: 0.5
+        max: 1
+      acceleration:
+        min: 0.1
+        max: 0.5
+      # min_velocity: 0.5
+      # max_velocity: 1
     - type: child
       proportion: 0.1
       radius: 5.0
       color: 'orange'
-      min_velocity: 1
-      max_velocity: 2
+      velocity:
+        min: 0.5
+        max: 1
+      acceleration:
+        min: 0.1
+        max: 0.5
+      # min_velocity: 1
+      # max_velocity: 2
 
 simulation:
-  duration_seconds: 1
+  duration_seconds: 100
   maximum_frames: 1000
   # scenario: random
+
+common:
+  debug: false
+  log_level: info
+  headless: false
+
+database:
+  host: localhost
+  port: 27017
+  db_name: simulation
+  collection_name: agents

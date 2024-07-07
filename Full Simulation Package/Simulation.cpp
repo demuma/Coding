@@ -4,11 +4,12 @@
 #include "CollisionAvoidance.hpp"
 #include <random>
 #include <uuid/uuid.h> // For generating UUIDs
+#include "Grid.hpp"
 
 // Constructor
 Simulation::Simulation(sf::RenderWindow& window, const sf::Font& font, const YAML::Node& config) 
-    : window(window), font(font), config(config), grid(cellSize, window.getSize().x / cellSize, window.getSize().y / cellSize)
-{
+    : window(window), font(font), config(config), grid(cellSize, window.getSize().x / cellSize, window.getSize().y / cellSize){
+    
     loadConfiguration(); 
     initializeAgents();
     initializeUI(); 
@@ -53,31 +54,52 @@ void Simulation::initializeAgents() {
 
         // Create agents of the current type
         for (int i = 0; i < numTypeAgents; ++i) {
+
+            // Create a new agent
             Agent agent;
+
+            // Assign the agent type, UUID, and sensor ID, radius and color
             agent.uuid = agent.generateUUID();
             agent.sensor_id = agent.generateUUID(sensor_uuid);
             agent.type = agentType["type"].as<std::string>();
-            agent.position = sf::Vector2f(rand() % windowWidth, rand() % windowHeight);
-            agent.initial_position = agent.position;
-            float minVelocity = agentType["min_velocity"].as<float>();
-            float maxVelocity = agentType["max_velocity"].as<float>();
-            agent.velocity = sf::Vector2f(dis(gen) * maxVelocity, dis(gen) * maxVelocity); 
-
-            // Ensure minimum velocity
-            if (std::abs(agent.velocity.x) < minVelocity) {
-                agent.velocity.x = agent.velocity.x < 0 ? -minVelocity : minVelocity;
-            }
-            if (std::abs(agent.velocity.y) < minVelocity) {
-                agent.velocity.y = agent.velocity.y < 0 ? -minVelocity : minVelocity;
-            }
-            
-            agent.original_velocity = agent.velocity;
             agent.radius = agentType["radius"].as<float>();
             agent.color = agentColor;
             agent.initial_color = agentColor;
+
+            // Random initial position within the window bounds
+            agent.position = sf::Vector2f(rand() % windowWidth, rand() % windowHeight);
+            agent.initialPosition = agent.position;
+
+            // Random initial velocity
+            agent.minVelocity = agentType["velocity"]["min"].as<float>();
+            agent.maxVelocity = agentType["velocity"]["max"].as<float>();
+            agent.velocity = sf::Vector2f(dis(gen) * agent.maxVelocity, dis(gen) * agent.maxVelocity);
+            agent.originalVelocity = agent.velocity;
+
+            // Random initial acceleration
+            agent.minAcceleration = agentType["acceleration"]["min"].as<float>();
+            agent.maxAcceleration = agentType["acceleration"]["max"].as<float>();
+            agent.acceleration = sf::Vector2f(dis(gen) * agent.maxAcceleration, dis(gen) * agent.maxAcceleration);
+
+            // Ensure minimum velocity
+            if (std::abs(agent.velocity.x) < agent.minVelocity) {
+                agent.velocity.x = agent.velocity.x < 0 ? -agent.minVelocity : agent.minVelocity;
+            }
+            if (std::abs(agent.velocity.y) < agent.minVelocity) {
+                agent.velocity.y = agent.velocity.y < 0 ? -agent.minVelocity : agent.minVelocity;
+            }
+
+            // Ensure minimum acceleration
+            if (std::abs(agent.acceleration.x) < agent.minAcceleration) {
+                agent.acceleration.x = agent.acceleration.x < 0 ? -agent.minAcceleration : agent.minAcceleration;
+            }
+            if (std::abs(agent.acceleration.y) < agent.minAcceleration) {
+                agent.acceleration.y = agent.acceleration.y < 0 ? -agent.minAcceleration : agent.minAcceleration;
+            }
+            
+            // Initialize the agent
             agent.initialize();
             agents.push_back(agent);
-            std::cout << "Agent " << agent.uuid << " created with type " << agent.type << std::endl;
         }
     }
 }
@@ -139,52 +161,22 @@ void Simulation::initializeUI() {
                                 resetButton.getPosition().y + resetButton.getSize().y / 2.0f);
 }
 
-// Function to convert a string to sf::Color (case-insensitive)
-sf::Color Simulation::stringToColor(const std::string& colorStr) {  // Note the Simulation:: scope
-    std::string lowerColorStr = colorStr;
-    std::transform(lowerColorStr.begin(), lowerColorStr.end(), lowerColorStr.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
-
-    if (lowerColorStr == "red") return sf::Color::Red;
-    if (lowerColorStr == "green") return sf::Color::Green;
-    if (lowerColorStr == "blue") return sf::Color::Blue;
-    if (lowerColorStr == "black") return sf::Color::Black;
-    if (lowerColorStr == "white") return sf::Color::White;
-    if (lowerColorStr == "yellow") return sf::Color::Yellow;
-    if (lowerColorStr == "magenta") return sf::Color::Magenta;
-    if (lowerColorStr == "cyan") return sf::Color::Cyan;
-    if (lowerColorStr == "purple") return sf::Color::Magenta;  // Using Magenta for Purple
-    if (lowerColorStr == "orange") return sf::Color(255, 165, 0); // Orange
-
-    if (colorStr.length() == 7 && colorStr[0] == '#') {
-        int r, g, b;
-        if (sscanf(colorStr.c_str(), "#%02x%02x%02x", &r, &g, &b) == 3) {
-            return sf::Color(r, g, b);
-        }
-    }
-    
-    std::cerr << "Warning: Unrecognized color string '" << colorStr << "'. Using black instead." << std::endl;
-    return sf::Color::Black;
-}
-
 // Main simulation loop
 void Simulation::run() {
-    // Collision timing
-    std::chrono::duration<double> collisionTime(0.0);
 
     // Frame rate buffer and calculation
     cumulativeSum = 0.0f;
+    frameRates.clear(); // Clear frameRates to start fresh
 
     // Simulation duration control
     frameCount = 0;
 
     // Stop main loop if the window is closed, the simulation duration or maximum frames are reached
-    while (window.isOpen() && (totalElapsedTime < sf::seconds(durationSeconds) && (maxFrames > 0 && frameCount < maxFrames))) {
-        
+    while (window.isOpen() && (totalElapsedTime < sf::seconds(durationSeconds) || maxFrames == 0) && frameCount < maxFrames) {
         // Event handling
         sf::Event event;
         while (window.pollEvent(event)) {
-            handleEvents(event); // Delegate event handling (reset, pause, etc.)
+            handleEvents(event); 
         }
 
         // Update the simulation
@@ -193,44 +185,42 @@ void Simulation::run() {
 
             // Clear the grid
             grid.clear();
-            
-            // Update agent positions and add them to the grid
-            for (auto& agent : agents) {
-                agent.updatePosition(); // Pass deltaTime
-                grid.addAgent(&agent);
-            }
 
-            // Collision detection using grid
-            grid.checkCollisions();
+            update(elapsedTime.asSeconds());
 
-            // Global collision count estimation (for comparison)
-            globalCollisionCount += agents.size() * (agents.size() - 1) / 2;
+            // Frame rate calculation 
+            frameRate = 1.0f / elapsedTime.asSeconds();
+
+            // Update FPS display (only if not the reset frame)
+            if (frameCount > 0) {
+                if (frameRates.size() == frameRateBufferSize) {
+                    cumulativeSum -= frameRates[0];
+                    frameRates.erase(frameRates.begin());
+                }
+                frameRates.push_back(frameRate);
+                cumulativeSum += frameRate;
+                movingAverageFrameRate = cumulativeSum / frameRates.size();
+
+                updateFrameRateText(movingAverageFrameRate);
+            } 
+
+            updateFrameCountText(frameCount);
+            updateAgentCountText();
 
             // Increment frame count and total elapsed time
             frameCount++;
             totalElapsedTime += elapsedTime;
-
-            // Frame rate calculation
-            frameRate = 1.0f / elapsedTime.asSeconds();
-            if (frameRates.size() == frameRateBufferSize) {
-                cumulativeSum -= frameRates[0];
-                frameRates.erase(frameRates.begin());
-            }
-            frameRates.push_back(frameRate);
-            cumulativeSum += frameRate;
-            movingAverageFrameRate = cumulativeSum / frameRates.size();
-
-            updateFrameRateText(movingAverageFrameRate);
-            updateFrameCountText(frameCount);
-            updateAgentCountText();
         }
 
         render(); 
     }
 }
 
+
 // Function to render the simulation
 void Simulation::render() {
+
+    // Clear the window
     window.clear(sf::Color::White);
 
     // Draw the grid (if enabled)
@@ -296,7 +286,7 @@ void Simulation::render() {
         if (showTrajectories) {
             sf::Vertex trajectory[] =
             {
-                sf::Vertex(agent.initial_position, agent.initial_color),
+                sf::Vertex(agent.initialPosition, agent.initial_color),
                 sf::Vertex(agent.position, agent.initial_color)
             };
             window.draw(trajectory, 2, sf::Lines);
@@ -330,6 +320,7 @@ void Simulation::render() {
 
 // Function to update the text that displays the current frame rate
 void Simulation::updateFrameRateText(float frameRate) {
+
     frameRateText.setString("FPS: " + std::to_string(static_cast<int>(frameRate)));
     sf::FloatRect textRect = frameRateText.getLocalBounds();
     frameRateText.setOrigin(textRect.width, 0); // Right-align the text
@@ -338,6 +329,7 @@ void Simulation::updateFrameRateText(float frameRate) {
 
 // Function to update the text that displays the current frame count
 void Simulation::updateFrameCountText(int frameCount) {
+
     frameText.setString("Frame " + std::to_string(frameCount) + "/" + (maxFrames > 0 ? std::to_string(maxFrames) : "∞")); // ∞ for unlimited frames
     sf::FloatRect textRect = frameText.getLocalBounds();
     frameText.setOrigin(textRect.width, 0); // Right-align the text
@@ -346,6 +338,7 @@ void Simulation::updateFrameCountText(int frameCount) {
 
 // Function to update the text that displays the current agent count
 void Simulation::updateAgentCountText() {
+
     agentCountText.setString("Agents: " + std::to_string(agents.size()));
     sf::FloatRect textRect = agentCountText.getLocalBounds();
     agentCountText.setOrigin(textRect.width, 0); // Right-align the text
@@ -390,62 +383,52 @@ void Simulation::handleEvents(sf::Event event) {
 
 // Function to reset the simulation
 void Simulation::resetSimulation() {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(-1.0, 1.0);
 
-    for (auto& agent : agents) {
-        agent.position = sf::Vector2f(rand() % windowWidth, rand() % windowHeight);
-        agent.initial_position = agent.position;
-        
-        // Update agent's velocity with the original velocity to make it look like all agents change direction at once
-        agent.velocity = agent.original_velocity; 
+    agents.clear();     // Clear the existing agents
+    initializeAgents(); // Recreate agents based on config
 
-        agent.color = agent.initial_color;
-        agent.bufferColor = sf::Color::Green;
-        agent.hasCollision = false;
-        agent.stopped = false;
-        agent.stoppedFrameCounter = 0;
-        agent.initialize();
-    }
-    
+    // Reset other simulation elements
+    clock.restart();
+    frameRates.clear();
+    cumulativeSum = 0.0f;
+    totalElapsedTime = sf::seconds(0.0f);
+
+    // Reset the grid
     grid.clear();
-    gridBasedCollisionCount = 0;
-    globalCollisionCount = 0;
+
+    // Resume simulation if it was paused
+    if (isPaused) {
+        isPaused = false;
+        pauseButtonText.setString("Pause");
+        pauseButton.setFillColor(sf::Color::Green);
+    }
 }
 
 void Simulation::update(float deltaTime) {
-    for (auto& agent : agents) {
-        agent.updatePosition();
-        agent.resetCollisionState(); // Reset collision state at the start of each frame for each agent
 
-        // Check if agent is out of bounds and wrap around
-        if (agent.position.x > windowWidth + agent.radius) {
-            agent.position.x = -agent.radius; // Wrap around from right to left
-            agent.initial_position.x = agent.position.x; // Reset initial position for trajectory
-        } else if (agent.position.x < -agent.radius) {
-            agent.position.x = windowWidth + agent.radius; // Wrap around from left to right
-            agent.initial_position.x = agent.position.x; // Reset initial position for trajectory
-        }
+    for (auto agent = agents.begin(); agent != agents.end(); ) {
+        agent->updatePosition();
+        agent->resetCollisionState(); // Reset collision state at the start of each frame for each agent
 
-        if (agent.position.y > windowHeight + agent.radius) {
-            agent.position.y = -agent.radius; // Wrap around from bottom to top
-            agent.initial_position.y = agent.position.y; // Reset initial position for trajectory
-        } else if (agent.position.y < -agent.radius) {
-            agent.position.y = windowHeight + agent.radius; // Wrap around from top to bottom
-            agent.initial_position.y = agent.position.y; // Reset initial position for trajectory
-        }
+        // Check if agent is out of bounds
+        if (agent->position.x > windowWidth + agent->radius || agent->position.x < -agent->radius ||
+            agent->position.y > windowHeight + agent->radius || agent->position.y < -agent->radius) {
+            agent = agents.erase(agent); // Remove the agent from the vector and update the iterator
+            continue; // Skip to the next agent (the iterator is already updated)
+        } 
 
-        sf::Vector2i cellIndex = getGridCellIndex(agent.position, cellSize);
-        grid.getCells()[cellIndex].agents.push_back(&agent);
+        // Assign the agent to the correct grid cell
+        grid.addAgent(&(*agent)); // Add agent to the grid
 
         // Resume agents if they are stopped
-        if (agent.stopped) {
-            ++agent.stoppedFrameCounter;
-            agent.resume(agents); 
+        if (agent->stopped) {
+            ++(agent->stoppedFrameCounter);
+            agent->resume(agents); 
         }
-    }
 
+        ++agent; // Move to the next agent
+    }
+    
     // Collision detection using grid
     grid.checkCollisions();
 }

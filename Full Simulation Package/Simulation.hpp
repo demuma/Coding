@@ -14,11 +14,8 @@ public:
     void run(); // Main simulation loop
 
 private:
-    sf::RenderWindow& window;
-    const sf::Font& font;
-    std::vector<Agent> agents;
-    Grid grid;
-
+    
+    // Data Members
     sf::Clock clock;
     size_t gridBasedCollisionCount = 0;
     size_t globalCollisionCount = 0;
@@ -28,7 +25,7 @@ private:
     // Configuration Data Members (read from YAML)
     int windowWidth;
     int windowHeight;
-    float cellSize;
+    float cellSize = 100.0f;
     bool showGrid;
     bool showTrajectories;
     bool showInfo;
@@ -36,6 +33,12 @@ private:
     float durationSeconds;
     int maxFrames;
     int fps;
+
+    // Simulation Data Members
+    sf::RenderWindow& window;
+    const sf::Font& font;
+    std::vector<Agent> agents;
+    Grid grid;
 
     // UI Elements
     sf::Text frameText;

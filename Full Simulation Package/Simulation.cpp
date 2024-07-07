@@ -9,7 +9,7 @@
 Simulation::Simulation(sf::RenderWindow& window, const sf::Font& font, const YAML::Node& config) 
     : window(window), font(font), config(config), grid(cellSize, window.getSize().x / cellSize, window.getSize().y / cellSize)
 {
-    loadConfiguration(); // Load configuration at the beginning
+    loadConfiguration(); 
     initializeAgents();
     initializeUI(); 
 }

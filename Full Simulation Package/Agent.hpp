@@ -35,9 +35,9 @@ public:
 
     Agent();
     void initialize();
-    void updatePosition();
+    void updatePosition(float deltaTime);
     std::string generateUUID();
-    std::string generateUUID(uuid_t uuid);
+    std::string generateUUID(uuid_t uuid); // Overloaded function
     sf::Vector2f getFuturePositionAtTime(float time) const;
     sf::CircleShape getBufferZone() const;
     void resetCollisionState();

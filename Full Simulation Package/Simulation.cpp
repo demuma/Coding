@@ -17,6 +17,7 @@ Simulation::Simulation(sf::RenderWindow& window, const sf::Font& font, const YAM
 
 // Function to load simulation parameters from the YAML configuration file
 void Simulation::loadConfiguration() {
+
     windowWidth = config["display"]["width"].as<int>();
     windowHeight = config["display"]["height"].as<int>();
     cellSize = config["grid"]["cell_size"].as<float>();
@@ -25,8 +26,19 @@ void Simulation::loadConfiguration() {
     numAgents = config["agents"]["num_agents"].as<int>();
     durationSeconds = config["simulation"]["duration_seconds"].as<float>();
     maxFrames = config["simulation"]["maximum_frames"].as<int>();
-    fps = config["display"]["frame_rate"].as<int>();
+    fps = config["simulation"]["frame_rate"].as<int>();
     showInfo = config["grid"]["show_info"].as<bool>();
+
+    // Default frame rate based on time step
+    float timeStepFloat = 1.0f / fps;
+    
+    // Check if the simulation uses a fixed time step
+    if (config["simulation"]["use_time_step"].as<bool>()) {
+        timeStepFloat = config["simulation"]["time_step"].as<float>();
+    }
+
+    // Convert to sf::Time using sf::seconds()
+    timeStep = sf::seconds(timeStepFloat);
 }
 
 // Function to initialize agents based on the YAML configuration
@@ -43,7 +55,7 @@ void Simulation::initializeAgents() {
 
     // Initialize agents based on the proportion of each agent type (TODO: Find better way!!)
     for (const auto& agentType : config["agents"]["road_user_taxonomy"]) {
-        int numTypeAgents = numAgents * agentType["proportion"].as<float>();
+        int numTypeAgents = numAgents * agentType["probability"].as<float>();
         sf::Color agentColor = stringToColor(agentType["color"].as<std::string>());
 
         // Error handling for invalid colors
@@ -163,58 +175,62 @@ void Simulation::initializeUI() {
 
 // Main simulation loop
 void Simulation::run() {
+    // Frame timing variables
+    sf::Clock clock;  
+    sf::Time timeSinceLastUpdate = sf::Time::Zero;
 
-    // Frame rate buffer and calculation
-    cumulativeSum = 0.0f;
-    frameRates.clear(); // Clear frameRates to start fresh
-
-    // Simulation duration control
+    // Simulation duration control and FPS variables
     frameCount = 0;
+    cumulativeSum = 0.0f;
+    frameRates.clear();
 
-    // Stop main loop if the window is closed, the simulation duration or maximum frames are reached
-    while (window.isOpen() && (totalElapsedTime < sf::seconds(durationSeconds) || maxFrames == 0) && frameCount < maxFrames) {
-        // Event handling
+    // Main simulation loop
+    while (window.isOpen() && 
+           (totalElapsedTime < sf::seconds(durationSeconds) || maxFrames == 0) && 
+           frameCount < maxFrames) 
+    {
         sf::Event event;
         while (window.pollEvent(event)) {
             handleEvents(event); 
         }
 
-        // Update the simulation
-        if (!isPaused) {
-            elapsedTime = clock.restart();
+        // Timestep-based update
+        timeSinceLastUpdate += clock.restart(); 
+        while (timeSinceLastUpdate >= timeStep) { 
+            if (!isPaused) {
+                // Update the simulation
+                // Clear the grid
+                grid.clear();
+                update(timeStep.asSeconds());  // Use timeStep for consistent updates
 
-            // Clear the grid
-            grid.clear();
+                // Frame rate calculation (same as before)
+                frameRate = 1.0f / timeStep.asSeconds();
+                if (frameCount > 0) {
+                    if (frameRates.size() == frameRateBufferSize) {
+                        cumulativeSum -= frameRates[0];
+                        frameRates.erase(frameRates.begin());
+                    }
+                    frameRates.push_back(frameRate);
+                    cumulativeSum += frameRate;
+                    movingAverageFrameRate = cumulativeSum / frameRates.size();
 
-            update(elapsedTime.asSeconds());
-
-            // Frame rate calculation 
-            frameRate = 1.0f / elapsedTime.asSeconds();
-
-            // Update FPS display (only if not the reset frame)
-            if (frameCount > 0) {
-                if (frameRates.size() == frameRateBufferSize) {
-                    cumulativeSum -= frameRates[0];
-                    frameRates.erase(frameRates.begin());
+                    updateFrameRateText(movingAverageFrameRate);
                 }
-                frameRates.push_back(frameRate);
-                cumulativeSum += frameRate;
-                movingAverageFrameRate = cumulativeSum / frameRates.size();
 
-                updateFrameRateText(movingAverageFrameRate);
-            } 
+                updateFrameCountText(frameCount);
+                updateAgentCountText();
 
-            updateFrameCountText(frameCount);
-            updateAgentCountText();
-
-            // Increment frame count and total elapsed time
-            frameCount++;
-            totalElapsedTime += elapsedTime;
+                // Increment frame count and total elapsed time
+                frameCount++;
+                totalElapsedTime += timeStep;
+            }
+            timeSinceLastUpdate -= timeStep;  // Decrement accumulator
         }
 
         render(); 
     }
 }
+
 
 
 // Function to render the simulation
@@ -407,7 +423,7 @@ void Simulation::resetSimulation() {
 void Simulation::update(float deltaTime) {
 
     for (auto agent = agents.begin(); agent != agents.end(); ) {
-        agent->updatePosition();
+        agent->updatePosition(deltaTime);
         agent->resetCollisionState(); // Reset collision state at the start of each frame for each agent
 
         // Check if agent is out of bounds

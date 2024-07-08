@@ -33,6 +33,7 @@ private:
     float durationSeconds;
     int maxFrames;
     int fps;
+    sf::Time timeStep;
 
     // Simulation Data Members
     sf::RenderWindow& window;

@@ -3,96 +3,107 @@ version: 1.0.0
 display:
   width: 3440
   height: 1440
-  frame_rate: 60
 
 grid:
   cell_size: 100
-  x_size: 10
-  y_size: 10
   show_trajectories: true
   show_grid: true
   show_info: true
 
 agents:
-  groups: false
-  group_size: 2
-  families: false
-  family_size: 3
+  grouping:
+    families:
+      allow: false
+      size: 3
+      probability: 0.1
+    general:
+      allow: false
+      size: 2
+      probability: 0.1
   num_agents: 100
   road_user_taxonomy:
-    - type: pedestrian
-      proportion: 0.5
-      radius: 5.0
-      color: 'blue'
-      velocity:
-        min: 1
-        max: 2
-     # min_velocity: 1
-     # max_velocity: 2
-      acceleration:
-        min: 0.1
-        max: 0.5
-    - type: cyclist
-      proportion: 0.1
-      radius: 5.0
-      color: 'green'
-      velocity:
-        min: 2
-        max: 4
-      acceleration:
-        min: 0.1
-        max: 0.5
-      # min_velocity: 2
-      # max_velocity: 4
-    - type: e-scooter
-      proportion: 0.2
-      radius: 5.0
-      color: 'red'
-      velocity:
-        min: 3
-        max: 5
-      acceleration:
-        min: 0.1
-        max: 0.5
-      # min_velocity: 3
-      # max_velocity: 5
-    - type: senior
-      proportion: 0.1
-      radius: 5.0
-      color: 'purple'
-      velocity:
-        min: 0.5
-        max: 1
-      acceleration:
-        min: 0.1
-        max: 0.5
-      # min_velocity: 0.5
-      # max_velocity: 1
-    - type: child
-      proportion: 0.1
-      radius: 5.0
+    - type: child pedestrian
+      probability: 0.1
+      priority: 1
+      radius: 0.2
       color: 'orange'
       velocity:
-        min: 0.5
-        max: 1
+        min: 0.8    # 2.9 km/h  
+        max: 1.667  # 6 km/h
       acceleration:
-        min: 0.1
-        max: 0.5
-      # min_velocity: 1
-      # max_velocity: 2
-
+        min: 0.5
+        max: 1.5
+    - type: senior pedestrian
+      probability: 0.1
+      priority: 2
+      radius: 0.225
+      color: 'purple'
+      velocity:
+        min: 0.8  # 2.9 km/h  
+        max: 1.5  # 5.4 km/h
+      acceleration:
+        min: 0.5
+        max: 1.2
+    - type: adult pedestrian
+      probability: 0.2
+      priority: 3
+      radius: 0.25
+      color: 'blue'
+      velocity:
+        min: 1      # 3.6 km/h
+        max: 1.667  # 6 km/h
+      acceleration:
+        min: 0.68
+        max: 1.44
+    - type: senior cyclist
+      probability: 0.1
+      priority: 4
+      radius: 2.0
+      color: 'orange'
+      velocity:
+        min: 2.5  # 9 km/h
+        max: 5.5  # 20 km/h
+      acceleration:
+        min: 0.5
+        max: 1.5
+    - type: adult cyclist
+      probability: 0.1
+      priority: 5
+      radius: 2.0
+      color: 'green'
+      velocity:
+        min: 3.6  # 13 km/h
+        max: 10   # 36 km/h
+      acceleration:
+        min: 1.5
+        max: 4.0
+    - type: adult e-scooter driver
+      probability: 0.2
+      priority: 6
+      radius: 0.65
+      color: 'red'
+      velocity:
+        min: 5     # 18 km/h
+        max: 6.11  # 22 km/h
+      acceleration:
+        min: 2.0
+        max: 4.5
+   
 simulation:
+  frame_rate: 60
   duration_seconds: 100
   maximum_frames: 1000
-  # scenario: random
+  use_time_step: false
+  time_step: 0.033333333 # 30 fps
+  scenario: random # not used
 
 common:
-  debug: false
-  log_level: info
-  headless: false
+  debug: false # not used
+  log_level: info # not used
+  headless: false # not used
 
 database:
   host: localhost
   port: 27017
-  db_name: simulation
-  collection_name: agents
+  db_name: Simulation
+  collection_name: Agents

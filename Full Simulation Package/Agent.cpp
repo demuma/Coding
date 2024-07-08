@@ -1,6 +1,7 @@
 #include "Agent.hpp"
 #include <cmath> // For std::sqrt
 
+// Constructor
 Agent::Agent() {
     bufferRadius = 0;
     hasCollision = false;
@@ -9,7 +10,9 @@ Agent::Agent() {
     isActive = true;
 }
 
+// Generate a unique identifier for the agent
 std::string Agent::generateUUID() {
+
     uuid_t uuid;
     uuid_generate(uuid);
     char uuidStr[37];
@@ -18,6 +21,7 @@ std::string Agent::generateUUID() {
     return std::string(uuidStr);
 }
 
+// Generate a unique identifier for the agent with a given UUID
 std::string Agent::generateUUID(uuid_t uuid) {
     
     uuid_generate(uuid);
@@ -27,20 +31,26 @@ std::string Agent::generateUUID(uuid_t uuid) {
     return std::string(uuidStr);
 }
 
+// Initialize the agent with default values and calculate buffer radius
 void Agent::initialize() {
     float velocityMagnitude = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
     bufferRadius = radius * (2 + velocityMagnitude / 2.0f); 
 }
 
-void Agent::updatePosition() {
-    position += velocity;
+// Update the agent's position based on velocity
+void Agent::updatePosition(float deltaTime) {
+    position += velocity * deltaTime;
 }
 
+// Get the future position of the agent at a given time
 sf::Vector2f Agent::getFuturePositionAtTime(float time) const {
+
     return position + velocity * time;
 }
 
+// Get the buffer zone of the agent as a circle shape
 sf::CircleShape Agent::getBufferZone() const {
+
     sf::CircleShape bufferZone(bufferRadius);
     bufferZone.setOrigin(bufferRadius, bufferRadius);
     bufferZone.setPosition(position);
@@ -50,12 +60,16 @@ sf::CircleShape Agent::getBufferZone() const {
     return bufferZone;
 }
 
+// Reset the collision state of the agent
 void Agent::resetCollisionState() {
+
     bufferColor = sf::Color::Green;
     hasCollision = false;
 }
 
+// Stop the agent
 void Agent::stop() {
+
     if (!stopped) {
         originalVelocity = velocity;
         velocity = sf::Vector2f(0.0f, 0.0f);
@@ -64,7 +78,9 @@ void Agent::stop() {
     }
 }
 
+// Check if the agent can resume movement without colliding with other agents
 bool Agent::canResume(const std::vector<Agent>& agents) {
+
     for (const auto& other : agents) {
         if (&other == this) continue;
 
@@ -79,6 +95,7 @@ bool Agent::canResume(const std::vector<Agent>& agents) {
     return true;
 }
 
+// Resume the agent's movement if there are no collisions
 void Agent::resume(const std::vector<Agent>& agents) {
     if (stopped && stoppedFrameCounter >= 20) {
         if (canResume(agents)) {

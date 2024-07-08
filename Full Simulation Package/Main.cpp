@@ -3,6 +3,7 @@
 #include "Simulation.hpp"
 
 int main() {
+    
     // Configuration Loading
     YAML::Node config;
     try {
@@ -15,11 +16,10 @@ int main() {
     // Update parameters based on configuration
     int windowWidth = config["display"]["width"].as<int>();
     int windowHeight = config["display"]["height"].as<int>();
-    int fps = config["display"]["frame_rate"].as<int>();
 
     // Window setup
     sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Road User Simulation");
-    window.setFramerateLimit(fps);
+    //window.setFramerateLimit(fps);
 
     // Load font
     sf::Font font;

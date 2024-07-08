@@ -126,6 +126,8 @@
     "format": "cpp",
     "text_encoding": "cpp",
     "cinttypes": "cpp",
-    "iostream": "cpp"
+    "iostream": "cpp",
+    "iomanip": "cpp",
+    "istream": "cpp"
   }
 }

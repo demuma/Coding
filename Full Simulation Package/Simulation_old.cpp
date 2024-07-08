@@ -139,8 +139,8 @@ int main() {
                                      dis(gen) * (windowHeight / 2) + (windowHeight / 2)); // Adjusted for half the window size
             agent.position = sf::Vector2f((rand() % windowWidth) + 1, (rand() % windowHeight) + 1);
             agent.initialPosition = agent.position;
-            float minVelocity = agentType["min_velocity"].as<float>();
-            float maxVelocity = agentType["max_velocity"].as<float>();
+            float minVelocity = agentType["velocity"]["min_velocity"].as<float>();
+            float maxVelocity = agentType["velocity"]["max"].as<float>();
             //agent.velocity = sf::Vector2f(dis(gen) * (maxVelocity - minVelocity) + minVelocity,
                                         //dis(gen) * (maxVelocity - minVelocity) + minVelocity);
             agent.velocity = sf::Vector2f(dis(gen) * maxVelocity, dis(gen) * maxVelocity); // Random velocity         

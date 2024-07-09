@@ -34,7 +34,7 @@ std::string Agent::generateUUID(uuid_t uuid) {
 // Initialize the agent with default values and calculate buffer radius
 void Agent::initialize() {
     float velocityMagnitude = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-    bufferRadius = radius * (2 + velocityMagnitude / 2.0f); 
+    bufferRadius = minBufferZoneRadius + radius + (velocityMagnitude / maxVelocity); 
 }
 
 // Update the agent's position based on velocity
@@ -46,18 +46,6 @@ void Agent::updatePosition(float deltaTime) {
 sf::Vector2f Agent::getFuturePositionAtTime(float time) const {
 
     return position + velocity * time;
-}
-
-// Get the buffer zone of the agent as a circle shape
-sf::CircleShape Agent::getBufferZone() const {
-
-    sf::CircleShape bufferZone(bufferRadius);
-    bufferZone.setOrigin(bufferRadius, bufferRadius);
-    bufferZone.setPosition(position);
-    bufferZone.setFillColor(sf::Color::Transparent);
-    bufferZone.setOutlineThickness(2.f);
-    bufferZone.setOutlineColor(bufferColor);
-    return bufferZone;
 }
 
 // Reset the collision state of the agent

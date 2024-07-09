@@ -20,8 +20,8 @@ public:
     sf::Color initial_color = sf::Color::Black; // Initial color is black
     std::string initial_color_str;
     sf::Color bufferColor = sf::Color::Green; // Start buffer color is green
-
-
+    float minBufferZoneRadius = 0.5f; // Minimum buffer zone radius in meters
+    int scale; // Pixels per meter
     float radius; // Agent radius
     float minVelocity; // Minimum velocity
     float maxVelocity; // Maximum velocity
@@ -39,7 +39,6 @@ public:
     std::string generateUUID();
     std::string generateUUID(uuid_t uuid); // Overloaded function
     sf::Vector2f getFuturePositionAtTime(float time) const;
-    sf::CircleShape getBufferZone() const;
     void resetCollisionState();
     void stop();
     bool canResume(const std::vector<Agent>& agents);

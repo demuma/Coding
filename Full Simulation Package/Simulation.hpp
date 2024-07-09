@@ -17,14 +17,14 @@ private:
     
     // Data Members
     sf::Clock clock;
-    size_t gridBasedCollisionCount = 0;
-    size_t globalCollisionCount = 0;
     float cumulativeSum = 0.0f;
     const YAML::Node& config;
 
     // Configuration Data Members (read from YAML)
     int windowWidth;
     int windowHeight;
+    float windowWidthScaled = 0.0f;
+    float windowHeightScaled = 0.f;
     float cellSize = 100.0f;
     bool showGrid;
     bool showTrajectories;
@@ -34,6 +34,7 @@ private:
     int maxFrames;
     int fps;
     sf::Time timeStep;
+    int scale = 50; // Pixels per meter
 
     // Simulation Data Members
     sf::RenderWindow& window;
@@ -68,6 +69,7 @@ private:
     void initializeUI();
     void update(float deltaTime);
     void handleEvents(sf::Event event);
+    void calculateFrameRate();
     void render();
     void resetSimulation();
     void updateFrameRateText(float frameRate);
@@ -92,7 +94,8 @@ private:
         if (lowerColorStr == "magenta") return sf::Color::Magenta;
         if (lowerColorStr == "cyan") return sf::Color::Cyan;
         if (lowerColorStr == "purple") return sf::Color::Magenta;  // Using Magenta for Purple
-        if (lowerColorStr == "orange") return sf::Color(255, 165, 0); // Orange
+        if (lowerColorStr == "orange") return sf::Color(198, 81, 2); // Orange
+        if (lowerColorStr == "indigo") return sf::Color(75, 0, 130); // Brown
 
         if (colorStr.length() == 7 && colorStr[0] == '#') {
             int r, g, b;

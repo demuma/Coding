@@ -3,8 +3,8 @@
 
 // Function definition (implementation)
 bool predictCollision(Agent& agent1, Agent& agent2) {
-    const float lookaheadStep = 0.5f; // Time step for predictions
-    const float maxLookahead = 6.0f; // Maximum lookahead time
+    const float lookaheadStep = 0.2f; // Time step for predictions
+    const float maxLookahead = 2.0f; // Maximum lookahead time
 
     for (float t = 0; t <= maxLookahead; t += lookaheadStep) {
         sf::Vector2f futurePos1 = agent1.getFuturePositionAtTime(t);
@@ -40,8 +40,8 @@ bool predictCollision(Agent& agent1, Agent& agent2) {
 
 // Function definition (implementation)
 bool predictCollision_v2(Agent& agent1, Agent& agent2) {
-    const float lookaheadStep = 0.5f; // Time step for predictions
-    const float maxLookahead = 6.0f; // Maximum lookahead time
+    const float lookaheadStep = 0.2f; // Time step for predictions
+    const float maxLookahead = 2.0f; // Maximum lookahead time
 
     for (float t = 0; t <= maxLookahead; t += lookaheadStep) {
         sf::Vector2f futurePos1 = agent1.getFuturePositionAtTime(t);
@@ -53,12 +53,13 @@ bool predictCollision_v2(Agent& agent1, Agent& agent2) {
         float distance = std::sqrt(dx * dx + dy * dy);
         float combinedRadius = agent1.bufferRadius + agent2.bufferRadius;
 
-        // Early prediction with gradual slowdown
-        if (distance < combinedRadius * 2.0f) { // Start predicting earlier
-            float slowdownFactor = std::max(0.0f, 1.0f - (distance - combinedRadius) / combinedRadius);
-            agent1.velocity *= slowdownFactor;
-            agent2.velocity *= slowdownFactor;
-        }
+        // // Early prediction with gradual slowdown
+        // if (distance < combinedRadius * 2.0f) { // Start predicting earlier
+        //     //float slowdownFactor = std::max(0.0f, 1.0f - (distance - combinedRadius) / combinedRadius);
+        //     float slowdownFactor = 0.99999f; // Fixed slowdown factor
+        //     agent1.velocity *= slowdownFactor;
+        //     agent2.velocity *= slowdownFactor;
+        // }
 
         if (distance < combinedRadius) {
             agent1.bufferColor = sf::Color::Red;

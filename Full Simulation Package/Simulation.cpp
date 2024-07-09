@@ -8,7 +8,7 @@
 
 // Constructor
 Simulation::Simulation(sf::RenderWindow& window, const sf::Font& font, const YAML::Node& config) 
-    : window(window), font(font), config(config), grid(cellSize, window.getSize().x / cellSize, window.getSize().y / cellSize){
+    : window(window), font(font), config(config), grid(cellSize, windowWidthScaled / cellSize, windowHeightScaled / cellSize){
     
     loadConfiguration(); 
     initializeAgents();
@@ -28,6 +28,11 @@ void Simulation::loadConfiguration() {
     maxFrames = config["simulation"]["maximum_frames"].as<int>();
     fps = config["simulation"]["frame_rate"].as<int>();
     showInfo = config["grid"]["show_info"].as<bool>();
+    scale = config["display"]["pixels_per_meter"].as<int>();
+
+    // Scale window dimensions
+    windowWidthScaled = windowWidth * static_cast<float>(scale);
+    windowHeightScaled = windowHeight * static_cast<float>(scale);
 
     // Default frame rate based on time step
     float timeStepFloat = 1.0f / fps;
@@ -48,6 +53,8 @@ void Simulation::initializeAgents() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(-1.0, 1.0);
+    std::uniform_real_distribution<> disX(0.0, static_cast<float>(windowWidth) / static_cast<float>(scale));
+    std::uniform_real_distribution<> disY(0.0, static_cast<float>(windowHeight) / static_cast<float>(scale));
 
     // Generate general sensor ID
     uuid_t sensor_uuid;
@@ -77,9 +84,10 @@ void Simulation::initializeAgents() {
             agent.radius = agentType["radius"].as<float>();
             agent.color = agentColor;
             agent.initial_color = agentColor;
+            agent.scale = scale;
 
             // Random initial position within the window bounds
-            agent.position = sf::Vector2f(rand() % windowWidth, rand() % windowHeight);
+            agent.position = sf::Vector2f(disX(gen), disY(gen)); // Random position in meters
             agent.initialPosition = agent.position;
 
             // Random initial velocity
@@ -173,6 +181,24 @@ void Simulation::initializeUI() {
                                 resetButton.getPosition().y + resetButton.getSize().y / 2.0f);
 }
 
+// Calculate frame rate
+void Simulation::calculateFrameRate() {
+    // Calculate frame rate
+    frameRate = 1.0f / clock.restart().asSeconds();
+    if (frameCount > 0) {
+        if (frameRates.size() == frameRateBufferSize) {
+            cumulativeSum -= frameRates[0];
+            frameRates.erase(frameRates.begin());
+        }
+        frameRates.push_back(frameRate);
+        cumulativeSum += frameRate;
+        movingAverageFrameRate = cumulativeSum / frameRates.size();
+
+        // Update frame rate text
+        updateFrameRateText(movingAverageFrameRate);
+    }
+}
+
 // Main simulation loop
 void Simulation::run() {
     // Frame timing variables
@@ -185,10 +211,10 @@ void Simulation::run() {
     frameRates.clear();
 
     // Main simulation loop
-    while (window.isOpen() && 
-           (totalElapsedTime < sf::seconds(durationSeconds) || maxFrames == 0) && 
-           frameCount < maxFrames) 
-    {
+    while (window.isOpen() && (totalElapsedTime < sf::seconds(durationSeconds) || maxFrames == 0) && 
+        frameCount < maxFrames) {
+        
+        // Event handling
         sf::Event event;
         while (window.pollEvent(event)) {
             handleEvents(event); 
@@ -203,20 +229,10 @@ void Simulation::run() {
                 grid.clear();
                 update(timeStep.asSeconds());  // Use timeStep for consistent updates
 
-                // Frame rate calculation (same as before)
-                frameRate = 1.0f / timeStep.asSeconds();
-                if (frameCount > 0) {
-                    if (frameRates.size() == frameRateBufferSize) {
-                        cumulativeSum -= frameRates[0];
-                        frameRates.erase(frameRates.begin());
-                    }
-                    frameRates.push_back(frameRate);
-                    cumulativeSum += frameRate;
-                    movingAverageFrameRate = cumulativeSum / frameRates.size();
+                // Frame rate calculation
+                calculateFrameRate();
 
-                    updateFrameRateText(movingAverageFrameRate);
-                }
-
+                // Update frame count and agent count text
                 updateFrameCountText(frameCount);
                 updateAgentCountText();
 
@@ -224,9 +240,11 @@ void Simulation::run() {
                 frameCount++;
                 totalElapsedTime += timeStep;
             }
+            // Decrement the accumulator
             timeSinceLastUpdate -= timeStep;  // Decrement accumulator
         }
 
+        // Render the simulation
         render(); 
     }
 }
@@ -239,7 +257,7 @@ void Simulation::render() {
     // Clear the window
     window.clear(sf::Color::White);
 
-    // Draw the grid (if enabled)
+    // Draw the grid
     if (showGrid) {
         for (int x = 0; x <= window.getSize().x / cellSize; ++x) {
             sf::Vertex line[] = {
@@ -260,39 +278,49 @@ void Simulation::render() {
     // Draw agents
     for (const auto& agent : agents) {
         // Draw the agent as a circle
-        sf::CircleShape agentShape(agent.radius);
+        sf::CircleShape agentShape(agent.radius * scale);
         agentShape.setFillColor(agent.color);
         agentShape.setOrigin(agentShape.getRadius(), agentShape.getRadius());
-        agentShape.setPosition(agent.position);
+        agentShape.setPosition(agent.position.x * scale, agent.position.y * scale); // Scale the position to pixels
         window.draw(agentShape);
 
         // Draw the buffer zone
-        sf::CircleShape bufferZone = agent.getBufferZone();
-        window.draw(bufferZone);
+        sf::CircleShape bufferZoneShape(agent.bufferRadius * scale);
+        bufferZoneShape.setOrigin(bufferZoneShape.getRadius(), bufferZoneShape.getRadius());
+        bufferZoneShape.setPosition(agent.position.x * scale, agent.position.y * scale);
+        bufferZoneShape.setFillColor(sf::Color::Transparent);
+        bufferZoneShape.setOutlineThickness(2.f);
+        bufferZoneShape.setOutlineColor(agent.bufferColor);
+        window.draw(bufferZoneShape);
 
         // Draw the arrow (a triangle) representing the velocity vector
-        sf::Vector2f direction = agent.velocity;
-        float arrowLength = agent.radius * 0.8f;
+        sf::Vector2f direction = agent.velocity;  // Direction of the arrow from velocity vector
+        float arrowLength = agent.radius * scale * 0.5f;
         float arrowAngle = std::atan2(direction.y, direction.x);
 
         // Normalize the direction vector for consistent arrow length
         sf::Vector2f normalizedDirection = direction / std::sqrt(direction.x * direction.x + direction.y * direction.y);
 
+        // Arrow shape factor
+        float arrowHeadLength = 0.4 * static_cast<float>(scale);
+        float arrowHeadWidth = 0.25 * static_cast<float>(scale);
+        int lineThickness = 3;
+
         sf::ConvexShape arrow(3);
         arrow.setPoint(0, sf::Vector2f(0, 0)); // Tip of the arrow
-        arrow.setPoint(1, sf::Vector2f(-arrowLength, arrowLength / 2));
-        arrow.setPoint(2, sf::Vector2f(-arrowLength, -arrowLength / 2));
+        arrow.setPoint(1, sf::Vector2f(-arrowHeadLength, arrowHeadWidth / 2));
+        arrow.setPoint(2, sf::Vector2f(-arrowHeadLength , -arrowHeadWidth / 2));
         arrow.setFillColor(sf::Color::Black);
 
         // Line (arrow body) - Offset the start by the agent's radius
         sf::Vertex line[] =
         {
-            sf::Vertex(agent.position + normalizedDirection * agent.radius, sf::Color::Black),  // Offset start point
-            sf::Vertex(agent.position + normalizedDirection * agent.radius + direction * (arrowLength / 2.0f), sf::Color::Black) // Ending point (base of arrowhead)
+            sf::Vertex(agent.position * static_cast<float>(scale) + normalizedDirection * agent.radius * static_cast<float>(scale), sf::Color::Black),  // Offset start point
+            sf::Vertex(agent.position * static_cast<float>(scale) + normalizedDirection * agent.radius * static_cast<float>(scale) + direction * (arrowLength / 2.0f), sf::Color::Black) // Ending point (base of arrowhead)
         };
 
         // Set the origin of the arrowhead to the base of the triangle
-        arrow.setOrigin(-arrowLength, 0); 
+        arrow.setOrigin(-arrowHeadLength, 0); 
         arrow.setPosition(line[1].position); 
         arrow.setRotation(arrowAngle * 180.0f / M_PI); // Convert radians to degrees for SFML
         window.draw(arrow);
@@ -300,10 +328,11 @@ void Simulation::render() {
 
         // Draw trajectory (if enabled in config)
         if (showTrajectories) {
+            
             sf::Vertex trajectory[] =
             {
-                sf::Vertex(agent.initialPosition, agent.initial_color),
-                sf::Vertex(agent.position, agent.initial_color)
+                sf::Vertex(agent.initialPosition * static_cast<float>(scale), agent.initial_color),
+                sf::Vertex(agent.position * static_cast<float>(scale), agent.initial_color)
             };
             window.draw(trajectory, 2, sf::Lines);
         }
@@ -427,8 +456,8 @@ void Simulation::update(float deltaTime) {
         agent->resetCollisionState(); // Reset collision state at the start of each frame for each agent
 
         // Check if agent is out of bounds
-        if (agent->position.x > windowWidth + agent->radius || agent->position.x < -agent->radius ||
-            agent->position.y > windowHeight + agent->radius || agent->position.y < -agent->radius) {
+        if (agent->position.x > windowWidthScaled + agent->radius || agent->position.x < -agent->radius ||
+            agent->position.y > windowHeightScaled + agent->radius || agent->position.y < -agent->radius) {
             agent = agents.erase(agent); // Remove the agent from the vector and update the iterator
             continue; // Skip to the next agent (the iterator is already updated)
         } 

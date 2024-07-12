@@ -144,8 +144,35 @@ bool agentAgentCollision(Agent& agent1, Agent& agent2) {
     return false; // No collision detected
 }
 
+// Check for collision between two agents
+bool agentAgentsCollision(Agent& agent, std::vector<Agent>& agents) {
+
+    // Check for collision with each agent
+    for(Agent& otherAgent : agents) {
+
+        if(&otherAgent == &agent) continue; // Skip self-comparison
+
+        // Calculate distance between agents
+        float dx = agent.position.x - otherAgent.position.x;
+        float dy = agent.position.y - otherAgent.position.y;
+        float distanceSquared = dx * dx + dy * dy;
+
+        // Calculate combined radius
+        float combinedRadius = agent.bufferRadius + otherAgent.bufferRadius;
+        float combinedRadiusSquared = combinedRadius * combinedRadius;
+
+        // Collision occurs if the distance is less than the combined radius
+        if(distanceSquared < combinedRadiusSquared) {
+            
+            return true; // Collision detected
+        }
+    }
+    return false; // No collision detected
+}
+
 // Check for collision between an agent and an obstacle
-bool agentObstacleCollision(Agent& agent, const std::vector<Obstacle>& obstacles) {
+bool agentObstaclesCollision(Agent& agent, const std::vector<Obstacle>& obstacles) {
+
     // Extract circle information from the Agent
     sf::Vector2f circleCenter = agent.position;
     float circleRadius = agent.bufferRadius;

@@ -12,10 +12,12 @@
 #include <iomanip>
 #include <unordered_map>
 #include <random>
+#include <random>
 
 #include "Agent.hpp"
 #include "Grid.hpp"
 #include "Obstacle.hpp"
+#include "PerlinNoise.hpp"
 #include "PerlinNoise.hpp"
 
 // Simulation class
@@ -173,6 +175,9 @@ private:
         std::cerr << "Warning: Unrecognized color string '" << colorStr << "'. Using black instead." << std::endl;
         return sf::Color::Black;
     }
+    sf::Color stringToColor(std::string colorStr);
+    float generateRandomNumberFromTND(float mean, float stddev, float min, float max);
+    sf::Vector2f generateRandomVelocityVector(float mu, float sigma, float min, float max);
 };
 
 #endif // SIMULATION_HPP

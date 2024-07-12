@@ -7,6 +7,8 @@
 
 #include "PerlinNoise.hpp"
 
+#include "PerlinNoise.hpp"
+
 class Agent {
 public:
     int id; // Agent ID

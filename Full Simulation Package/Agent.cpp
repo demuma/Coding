@@ -4,7 +4,7 @@
 // Constructor
 Agent::Agent() {
     bufferRadius = 0;
-    hasCollision = false;
+    collisionPredicted = false;
     stopped = false;
     stoppedFrameCounter = 0;
     isActive = true;
@@ -52,17 +52,17 @@ sf::Vector2f Agent::getFuturePositionAtTime(float time) const {
 void Agent::resetCollisionState() {
 
     bufferColor = sf::Color::Green;
-    hasCollision = false;
+    collisionPredicted = false;
 }
 
 // Stop the agent
 void Agent::stop() {
 
     if (!stopped) {
-        originalVelocity = velocity;
-        velocity = sf::Vector2f(0.0f, 0.0f);
-        stopped = true;
-        stoppedFrameCounter = 0;
+        this->originalVelocity = this->velocity;
+        this->velocity = sf::Vector2f(0.0f, 0.0f);
+        this->stopped = true;
+        this->stoppedFrameCounter = 0;
     }
 }
 
@@ -85,7 +85,8 @@ bool Agent::canResume(const std::vector<Agent>& agents) {
 
 // Resume the agent's movement if there are no collisions
 void Agent::resume(const std::vector<Agent>& agents) {
-    if (stopped && stoppedFrameCounter >= 20) {
+    //if (stopped && stoppedFrameCounter >= 20) {
+    if (stopped) {
         if (canResume(agents)) {
             velocity = originalVelocity;
             stopped = false;

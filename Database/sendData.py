@@ -118,6 +118,6 @@ post = {
 print(sys.getsizeof(bson.ObjectId()))
 
 # Post data (called documents) to database
-#collection.insert_one(post)
+collection.insert_one(post)
 
 

@@ -1,16 +1,18 @@
-#include "Simulation.hpp"
 #include <iostream>
 #include <chrono> // For timing
-#include "CollisionAvoidance.hpp"
 #include <random>
 #include <uuid/uuid.h> // For generating UUIDs
+
 #include "Grid.hpp"
+#include "Simulation.hpp"
+#include "CollisionAvoidance.hpp"
 
 // Constructor
 Simulation::Simulation(sf::RenderWindow& window, const sf::Font& font, const YAML::Node& config) 
     : window(window), font(font), config(config), grid(cellSize, windowWidthScaled / cellSize, windowHeightScaled / cellSize){
     
-    loadConfiguration(); 
+    loadConfiguration();
+    loadObstacles();
     initializeAgents();
     initializeUI(); 
 }
@@ -31,8 +33,8 @@ void Simulation::loadConfiguration() {
     scale = config["display"]["pixels_per_meter"].as<int>();
 
     // Scale window dimensions
-    windowWidthScaled = windowWidth * static_cast<float>(scale);
-    windowHeightScaled = windowHeight * static_cast<float>(scale);
+    windowWidthScaled = windowWidth / static_cast<float>(scale);
+    windowHeightScaled = windowHeight / static_cast<float>(scale);
 
     // Default frame rate based on time step
     float timeStepFloat = 1.0f / fps;
@@ -84,7 +86,6 @@ void Simulation::initializeAgents() {
             agent.radius = agentType["radius"].as<float>();
             agent.color = agentColor;
             agent.initial_color = agentColor;
-            agent.scale = scale;
 
             // Random initial position within the window bounds
             agent.position = sf::Vector2f(disX(gen), disY(gen)); // Random position in meters
@@ -201,6 +202,23 @@ void Simulation::calculateFrameRate() {
 
 // Main simulation loop
 void Simulation::run() {
+
+    // Set up the MongoDB database
+    // collection = setupDatabase();
+
+    // MongoDB Setup from Configuration
+    std::string mongoHost = config["database"]["host"].as<std::string>();
+    int mongoPort = config["database"]["port"].as<int>();
+    std::string mongoDbName = config["database"]["db_name"].as<std::string>();
+    std::string mongoCollectionName = config["database"]["collection_name"].as<std::string>();
+
+    std::string mongoUri = "mongodb://" + mongoHost + ":" + std::to_string(mongoPort);
+    mongocxx::instance inst{};
+    mongocxx::uri uri(mongoUri);
+    mongocxx::client client(uri);
+    mongocxx::database db = client[mongoDbName];
+    collection = db[mongoCollectionName];
+
     // Frame timing variables
     sf::Clock clock;  
     sf::Time timeSinceLastUpdate = sf::Time::Zero;
@@ -229,6 +247,9 @@ void Simulation::run() {
                 grid.clear();
                 update(timeStep.asSeconds());  // Use timeStep for consistent updates
 
+                // Store agent data in MongoDB
+                storeAgentData(agents);
+
                 // Frame rate calculation
                 calculateFrameRate();
 
@@ -248,8 +269,6 @@ void Simulation::run() {
         render(); 
     }
 }
-
-
 
 // Function to render the simulation
 void Simulation::render() {
@@ -273,6 +292,14 @@ void Simulation::render() {
             };
             window.draw(line, 2, sf::Lines);
         }
+    }
+
+    // Draw obstacles
+    for (const Obstacle& obstacle : obstacles) {
+        sf::RectangleShape obstacleShape(sf::Vector2f(obstacle.getBounds().width * scale, obstacle.getBounds().height * scale)); // No scaling here
+        obstacleShape.setPosition(obstacle.getBounds().left * scale, obstacle.getBounds().top * scale); // Scale only position here
+        obstacleShape.setFillColor(obstacle.getColor());
+        window.draw(obstacleShape);
     }
     
     // Draw agents
@@ -395,6 +422,10 @@ void Simulation::handleEvents(sf::Event event) {
 
     if (event.type == sf::Event::Closed) {
         window.close();
+    } else if (event.type == sf::Event::KeyPressed) {
+        if (event.key.code == sf::Keyboard::Escape) {
+            window.close();
+        }
     } else if (event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button == sf::Mouse::Left) {
             sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
@@ -449,18 +480,21 @@ void Simulation::resetSimulation() {
     }
 }
 
+// Update the simulation state on each frame based on the time step
 void Simulation::update(float deltaTime) {
 
     for (auto agent = agents.begin(); agent != agents.end(); ) {
         agent->updatePosition(deltaTime);
         agent->resetCollisionState(); // Reset collision state at the start of each frame for each agent
 
-        // Check if agent is out of bounds
+        // Check if agent is out of bounds TODO: make separate function
         if (agent->position.x > windowWidthScaled + agent->radius || agent->position.x < -agent->radius ||
             agent->position.y > windowHeightScaled + agent->radius || agent->position.y < -agent->radius) {
             agent = agents.erase(agent); // Remove the agent from the vector and update the iterator
             continue; // Skip to the next agent (the iterator is already updated)
-        } 
+        }
+        //std::cout << "Agent position: " << agent->position.x << ", " << agent->position.y << std::endl;
+        //std::cout << "Window width: " << windowWidthScaled << ", " << windowHeightScaled << std::endl;
 
         // Assign the agent to the correct grid cell
         grid.addAgent(&(*agent)); // Add agent to the grid
@@ -470,10 +504,85 @@ void Simulation::update(float deltaTime) {
             ++(agent->stoppedFrameCounter);
             agent->resume(agents); 
         }
+        // Check for agent-obstacle collisions
+        agentObstacleCollision(*agent, obstacles);
 
         ++agent; // Move to the next agent
     }
     
     // Collision detection using grid
     grid.checkCollisions();
+}
+
+// Function to load obstacles from the YAML configuration file
+void Simulation::loadObstacles() {
+
+    // Check if the 'obstacles' key exists and is a sequence
+    if (config["obstacles"] && config["obstacles"].IsSequence()) {
+        for (const auto& obstacleNode : config["obstacles"]) {
+            std::string type = obstacleNode["type"] && obstacleNode["type"].IsScalar()
+                ? obstacleNode["type"].as<std::string>()
+                : "unknown";
+
+            if (type == "rectangle") { // Only handle rectangles
+                std::vector<float> position = obstacleNode["position"].as<std::vector<float>>();
+                std::vector<float> size = obstacleNode["size"].as<std::vector<float>>();
+                obstacles.push_back(Obstacle(
+                    sf::FloatRect(position[0], position[1], size[0], size[1]), 
+                    stringToColor(obstacleNode["color"].as<std::string>())
+                ));
+            } else {
+                std::cerr << "Error: Unknown obstacle type '" << type << "' in config file." << std::endl;
+            }
+        }
+    } else {
+        std::cerr << "Error: Could not find 'obstacles' key in config file or it is not a sequence." << std::endl;
+    }
+}
+
+// Store agent data in MongoDB
+void Simulation::storeAgentData(const std::vector<Agent>& agents) {
+
+    for (const auto& agent : agents) {
+
+        // Prepare data for MongoDB
+        bsoncxx::builder::stream::document document{};
+
+        // Get current timestamp in ISO format
+        std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&now), "%FT%TZ");
+
+        document << "timestamp" << ss.str()
+                << "sensor_id" << agent.sensor_id
+                << "agent_id" << agent.uuid
+                << "type" << agent.type
+                << "position" << bsoncxx::builder::stream::open_array
+                    << agent.position.x << agent.position.y
+                    << bsoncxx::builder::stream::close_array
+                << "velocity" << bsoncxx::builder::stream::open_array
+                    << agent.velocity.x << agent.velocity.y
+                    << bsoncxx::builder::stream::close_array;
+
+        // Insert document into MongoDB
+        collection.insert_one(document.view());
+    }
+}
+
+// Setup the MongoDB database
+mongocxx::collection Simulation::setupDatabase() {
+    // MongoDB Setup from Configuration
+    std::string mongoHost = config["database"]["host"].as<std::string>();
+    int mongoPort = config["database"]["port"].as<int>();
+    std::string mongoDbName = config["database"]["db_name"].as<std::string>();
+    std::string mongoCollectionName = config["database"]["collection_name"].as<std::string>();
+
+    std::string mongoUri = "mongodb://" + mongoHost + ":" + std::to_string(mongoPort);
+    mongocxx::instance inst{};
+    mongocxx::uri uri(mongoUri);
+    mongocxx::client client(uri);
+    mongocxx::database db = client[mongoDbName];
+
+    // Return the collection directly 
+    return db[mongoCollectionName];
 }

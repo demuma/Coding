@@ -225,6 +225,30 @@ Main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/Main.cpp.s
 .PHONY : Main.cpp.s
 
+Obstacle.o: Obstacle.cpp.o
+.PHONY : Obstacle.o
+
+# target to build an object file
+Obstacle.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.o
+.PHONY : Obstacle.cpp.o
+
+Obstacle.i: Obstacle.cpp.i
+.PHONY : Obstacle.i
+
+# target to preprocess a source file
+Obstacle.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.i
+.PHONY : Obstacle.cpp.i
+
+Obstacle.s: Obstacle.cpp.s
+.PHONY : Obstacle.s
+
+# target to generate assembly for a file
+Obstacle.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.s
+.PHONY : Obstacle.cpp.s
+
 Simulation.o: Simulation.cpp.o
 .PHONY : Simulation.o
 
@@ -270,6 +294,9 @@ help:
 	@echo "... Main.o"
 	@echo "... Main.i"
 	@echo "... Main.s"
+	@echo "... Obstacle.o"
+	@echo "... Obstacle.i"
+	@echo "... Obstacle.s"
 	@echo "... Simulation.o"
 	@echo "... Simulation.i"
 	@echo "... Simulation.s"

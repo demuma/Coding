@@ -21,14 +21,13 @@ public:
     std::string initial_color_str;
     sf::Color bufferColor = sf::Color::Green; // Start buffer color is green
     float minBufferZoneRadius = 0.5f; // Minimum buffer zone radius in meters
-    int scale; // Pixels per meter
     float radius; // Agent radius
     float minVelocity; // Minimum velocity
     float maxVelocity; // Maximum velocity
     float minAcceleration; // Minimum acceleration
     float maxAcceleration; // Maximum acceleration
     float bufferRadius;
-    bool hasCollision;
+    bool collisionPredicted;
     bool stopped; // Flag indicating if the agent is stopped
     int stoppedFrameCounter; // Counter to handle stopping duration
     bool isActive; // Flag indicating if the agent is active

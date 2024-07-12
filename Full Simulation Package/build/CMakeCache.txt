@@ -222,11 +222,29 @@ RoadUserSimulation_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 RoadUserSimulation_SOURCE_DIR:STATIC=/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package
 
+//Header include-directory for Cyrus libsasl2
+SASL2_INCLUDE_DIR:PATH=/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include
+
+//Library file for Cyrus libsasl2
+SASL2_LIBRARY:FILEPATH=/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/lib/libsasl2.tbd
+
 //The directory containing a CMake configuration file for SFML.
 SFML_DIR:PATH=/usr/local/lib/cmake/SFML
 
 //Path to a file.
 SFML_DOC_DIR:PATH=/usr/local/share/doc/SFML
+
+//The directory containing a CMake configuration file for bson-1.0.
+bson-1.0_DIR:PATH=/usr/local/lib/cmake/bson-1.0
+
+//The directory containing a CMake configuration file for bsoncxx.
+bsoncxx_DIR:PATH=/usr/local/lib/cmake/bsoncxx-3.10.1
+
+//The directory containing a CMake configuration file for mongoc-1.0.
+mongoc-1.0_DIR:PATH=/usr/local/lib/cmake/mongoc-1.0
+
+//The directory containing a CMake configuration file for mongocxx.
+mongocxx_DIR:PATH=/usr/local/lib/cmake/mongocxx-3.10.1
 
 //The directory containing a CMake configuration file for yaml-cpp.
 yaml-cpp_DIR:PATH=/usr/local/lib/cmake/yaml-cpp
@@ -308,6 +326,8 @@ CMAKE_GENERATOR_INSTANCE:INTERNAL=
 CMAKE_GENERATOR_PLATFORM:INTERNAL=
 //Name of generator toolset.
 CMAKE_GENERATOR_TOOLSET:INTERNAL=
+//Test CMAKE_HAVE_LIBC_PTHREAD
+CMAKE_HAVE_LIBC_PTHREAD:INTERNAL=1
 //Source directory with the top level CMakeLists.txt file for this
 // project
 CMAKE_HOME_DIRECTORY:INTERNAL=/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package
@@ -375,4 +395,8 @@ CMAKE_TAPI-ADVANCED:INTERNAL=1
 CMAKE_UNAME:INTERNAL=/usr/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
+//Details about finding SASL2
+FIND_PACKAGE_MESSAGE_DETAILS_SASL2:INTERNAL=[2.1.26][/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include][/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/lib/libsasl2.tbd][v2.1.26(2.0)]
+//Details about finding Threads
+FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 

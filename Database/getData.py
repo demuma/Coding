@@ -26,17 +26,17 @@ client = MongoClient("localhost", 27017)
 
 # Get list of databases on server
 db_list = client.list_database_names()
-print(db_list)
+#print(db_list)
 
 # Define database
 db = client["Simulation"]
-print(db)
+#print(db)
 
 # Define data collection within database
 collection = db["Pedestrians"]
 
 # Get data (called documents) from database
-results = collection.find({"class":"senior"})
+results = collection.find({"class":"Adult Cyclist"})
 
 for result in results:
     print(result)

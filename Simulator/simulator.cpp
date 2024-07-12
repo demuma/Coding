@@ -26,13 +26,13 @@ public:
     sf::Color bufferColor = sf::Color::Green; // Start buffer color is green
 
     float bufferRadius;
-    bool hasCollision;
+    bool collisionPredicted;
     bool stopped; // Flag indicating if the agent is stopped
     int stoppedFrameCounter; // Counter to handle stopping duration
 
     Agent() {
         bufferRadius = 0;
-        hasCollision = false;
+        collisionPredicted = false;
         stopped = false;
         stoppedFrameCounter = 0;
     }
@@ -65,7 +65,7 @@ public:
 
     void resetCollisionState() {
         bufferColor = sf::Color::Green;
-        hasCollision = false;
+        collisionPredicted = false;
     }
 
     void stop() {
@@ -114,7 +114,7 @@ sf::Vector2i getGridCellIndex(const sf::Vector2f& position, float cellSize) {
 }
 
 // Improved collision prediction using incremental lookahead steps
-bool predictCollision(Agent& agent1, Agent& agent2) {
+bool predictCollisionAgents(Agent& agent1, Agent& agent2) {
     const float lookaheadStep = 0.5f; // Time step for predictions
     const float maxLookahead = 3.0f; // Maximum lookahead time
 
@@ -130,8 +130,8 @@ bool predictCollision(Agent& agent1, Agent& agent2) {
         if (distance < agent1.bufferRadius + agent2.bufferRadius) {
             agent1.bufferColor = sf::Color::Red;
             agent2.bufferColor = sf::Color::Red;
-            agent1.hasCollision = true;
-            agent2.hasCollision = true;
+            agent1.collisionPredicted = true;
+            agent2.collisionPredicted = true;
 
             // Implement collision avoidance: stop the slower agent
             float speed1 = std::sqrt(agent1.velocity.x * agent1.velocity.x + agent1.velocity.y * agent1.velocity.y);
@@ -159,7 +159,7 @@ void resetSimulation(std::vector<Agent>& agents, std::mt19937& gen, std::uniform
         agent.originalVelocity = agent.velocity; // Store initial velocity
         agent.color = sf::Color::Black; // Reset color
         agent.bufferColor = sf::Color::Green; // Reset buffer color
-        agent.hasCollision = false;
+        agent.collisionPredicted = false;
         agent.stopped = false; // Reset stopped state
         agent.stoppedFrameCounter = 0; // Reset the counter
         agent.initialize(); // Calculate the buffer zone based on the initial velocity
@@ -324,7 +324,7 @@ int main() {
                         Agent& agent1 = *cell.agents[i];
                         Agent& agent2 = *cell.agents[j];
 
-                        predictCollision(agent1, agent2);
+                        predictCollisionAgents(agent1, agent2);
                     }
                 }
 
@@ -342,7 +342,7 @@ int main() {
                                 gridBasedCollisionCount++;
                                 globalCollisionCount++;
 
-                                predictCollision(*agent1, *agent2);
+                                predictCollisionAgents(*agent1, *agent2);
                             }
                         }
                     }

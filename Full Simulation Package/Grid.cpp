@@ -23,11 +23,13 @@ void Grid::checkCollisions() {
         // Check collisions within the same cell
         for (size_t i = 0; i < cell.agents.size(); ++i) {
             for (size_t j = i + 1; j < cell.agents.size(); ++j) {
-                if (predictCollision(*cell.agents[i], *cell.agents[j])) {
+                if(collisionPossible(*cell.agents[i], *cell.agents[j])) {
+                    predictCollisionAgents(*cell.agents[i], *cell.agents[j]);
                     // Handle collision if detected
                     // You might call the agent's handleCollision() function here
                 }
-            }
+
+            }   
         }
 
         // Check collisions with agents in adjacent cells
@@ -36,7 +38,8 @@ void Grid::checkCollisions() {
                 const GridCell& adjacentCell = cells[adjacentIndex];
                 for (Agent* agent1 : cell.agents) {
                     for (Agent* agent2 : adjacentCell.agents) {
-                        if (predictCollision(*agent1, *agent2)) {
+                        if (collisionPossible(*agent1, *agent2)) {
+                            predictCollisionAgents(*agent1, *agent2);
                             // Handle collision if detected
                             // You might call the agent's handleCollision() function here
                         }

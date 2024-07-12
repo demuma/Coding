@@ -12,7 +12,7 @@ grid:
   show_info: true
 
 agents:
-  num_agents: 100
+  num_agents: 50
   grouping:
     families:
       allow: false
@@ -23,7 +23,7 @@ agents:
       size: 2
       probability: 0.1
   road_user_taxonomy:
-    - type: child pedestrian
+    - type: Child Pedestrian
       probability: 0.1
       priority: 1
       radius: 0.2
@@ -34,7 +34,7 @@ agents:
       acceleration:
         min: 0.5
         max: 1.5
-    - type: senior pedestrian
+    - type: Senior Pedestrian
       probability: 0.1
       priority: 2
       radius: 0.225
@@ -45,7 +45,7 @@ agents:
       acceleration:
         min: 0.5
         max: 1.2
-    - type: adult pedestrian
+    - type: Adult Pedestrian
       probability: 0.4
       priority: 3
       radius: 0.25
@@ -56,7 +56,7 @@ agents:
       acceleration:
         min: 0.68
         max: 1.44
-    - type: senior cyclist
+    - type: Senior Cyclist
       probability: 0.1
       priority: 4
       radius: 1.0
@@ -67,7 +67,7 @@ agents:
       acceleration:
         min: 0.5
         max: 1.5
-    - type: adult cyclist
+    - type: Adult Cyclist
       probability: 0.1
       priority: 5
       radius: 1.0
@@ -78,7 +78,7 @@ agents:
       acceleration:
         min: 1.5
         max: 4.0
-    - type: adult e-scooter driver
+    - type: Adult E-Scooter Driver
       probability: 0.2
       priority: 6
       radius: 0.65
@@ -109,5 +109,12 @@ database:
   port: 27017
   db_name: Simulation
   collection_name: Agents
+  db_directory: /User/${whoami}/data/db # mongod --dbpath /User/${whoami}/data/db
 
   # TODO: include buffer radius, buffer offset
+
+obstacles:
+  - type: rectangle
+    position: [10.0, 10.0]  # Position in meters
+    size: [10, 5.0]      # Size in meters
+    color: grey

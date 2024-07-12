@@ -81,7 +81,7 @@ void resetSimulation(std::vector<Agent>& agents, std::mt19937& gen, std::uniform
         agent.velocity = agent.originalVelocity;
         agent.color = agent.initial_color;
         agent.bufferColor = sf::Color::Green;
-        agent.hasCollision = false;
+        agent.collisionPredicted = false;
         agent.stopped = false;
         agent.stoppedFrameCounter = 0;
         agent.initialize();
@@ -304,7 +304,7 @@ int main() {
                         Agent& agent2 = *cell.agents[j];
 
                         {
-                            predictCollision(agent1, agent2);
+                            predictCollisionAgents(agent1, agent2);
                         }
                     }
                 }
@@ -323,7 +323,7 @@ int main() {
                                 gridBasedCollisionCount++;
                                 globalCollisionCount++;
 
-                                predictCollision(*agent1, *agent2);
+                                predictCollisionAgents(*agent1, *agent2);
                             }
                         }
                     }

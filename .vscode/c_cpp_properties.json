@@ -1,19 +1,22 @@
 {
-  "configurations": [
-    {
-      "name": "macos-clang-x64",
-      "includePath": [
-        "${workspaceFolder}/**"
-      ],
-      "defines": [],
-      "macFrameworkPath": [
-        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
-      ],
-      "compilerPath": "/usr/bin/clang",
-      "cStandard": "c17",
-      "cppStandard": "c++17",
-      "intelliSenseMode": "macos-clang-x64"
-    }
-  ],
-  "version": 4
+    "configurations": [
+        {
+            "name": "macos-clang-x64",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/local/include/mongocxx/v_noabi",
+                "/usr/local/include/bsoncxx/v_noabi",
+                "/usr/local/include/bsoncxx/v_noabi/bsoncxx/third_party/mnmlstc"
+            ],
+            "defines": [],
+            "macFrameworkPath": [
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-x64"
+        }
+    ],
+    "version": 4
 }

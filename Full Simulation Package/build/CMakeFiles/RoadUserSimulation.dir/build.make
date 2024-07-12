@@ -111,10 +111,24 @@ CMakeFiles/RoadUserSimulation.dir/CollisionAvoidance.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/RoadUserSimulation.dir/CollisionAvoidance.cpp.s"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/CollisionAvoidance.cpp" -o CMakeFiles/RoadUserSimulation.dir/CollisionAvoidance.cpp.s
 
+CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.o: CMakeFiles/RoadUserSimulation.dir/flags.make
+CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/Obstacle.cpp
+CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.o: CMakeFiles/RoadUserSimulation.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.o -MF CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.o.d -o CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/Obstacle.cpp"
+
+CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/Obstacle.cpp" > CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.i
+
+CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/Obstacle.cpp" -o CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.s
+
 CMakeFiles/RoadUserSimulation.dir/Grid.cpp.o: CMakeFiles/RoadUserSimulation.dir/flags.make
 CMakeFiles/RoadUserSimulation.dir/Grid.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/Grid.cpp
 CMakeFiles/RoadUserSimulation.dir/Grid.cpp.o: CMakeFiles/RoadUserSimulation.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/RoadUserSimulation.dir/Grid.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/RoadUserSimulation.dir/Grid.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/RoadUserSimulation.dir/Grid.cpp.o -MF CMakeFiles/RoadUserSimulation.dir/Grid.cpp.o.d -o CMakeFiles/RoadUserSimulation.dir/Grid.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/Grid.cpp"
 
 CMakeFiles/RoadUserSimulation.dir/Grid.cpp.i: cmake_force
@@ -128,7 +142,7 @@ CMakeFiles/RoadUserSimulation.dir/Grid.cpp.s: cmake_force
 CMakeFiles/RoadUserSimulation.dir/Main.cpp.o: CMakeFiles/RoadUserSimulation.dir/flags.make
 CMakeFiles/RoadUserSimulation.dir/Main.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/Main.cpp
 CMakeFiles/RoadUserSimulation.dir/Main.cpp.o: CMakeFiles/RoadUserSimulation.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/RoadUserSimulation.dir/Main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/RoadUserSimulation.dir/Main.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/RoadUserSimulation.dir/Main.cpp.o -MF CMakeFiles/RoadUserSimulation.dir/Main.cpp.o.d -o CMakeFiles/RoadUserSimulation.dir/Main.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/Main.cpp"
 
 CMakeFiles/RoadUserSimulation.dir/Main.cpp.i: cmake_force
@@ -144,6 +158,7 @@ RoadUserSimulation_OBJECTS = \
 "CMakeFiles/RoadUserSimulation.dir/Agent.cpp.o" \
 "CMakeFiles/RoadUserSimulation.dir/Simulation.cpp.o" \
 "CMakeFiles/RoadUserSimulation.dir/CollisionAvoidance.cpp.o" \
+"CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.o" \
 "CMakeFiles/RoadUserSimulation.dir/Grid.cpp.o" \
 "CMakeFiles/RoadUserSimulation.dir/Main.cpp.o"
 
@@ -153,6 +168,7 @@ RoadUserSimulation_EXTERNAL_OBJECTS =
 RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/Agent.cpp.o
 RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/Simulation.cpp.o
 RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/CollisionAvoidance.cpp.o
+RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.o
 RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/Grid.cpp.o
 RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/Main.cpp.o
 RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/build.make
@@ -160,8 +176,10 @@ RoadUserSimulation: /usr/local/lib/libsfml-graphics.2.6.1.dylib
 RoadUserSimulation: /usr/local/lib/libsfml-window.2.6.1.dylib
 RoadUserSimulation: /usr/local/lib/libsfml-system.2.6.1.dylib
 RoadUserSimulation: /usr/local/lib/libyaml-cpp.0.8.0.dylib
+RoadUserSimulation: /usr/local/lib/libmongocxx.3.10.1.dylib
+RoadUserSimulation: /usr/local/lib/libbsoncxx.3.10.1.dylib
 RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable RoadUserSimulation"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable RoadUserSimulation"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/RoadUserSimulation.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

@@ -1,16 +1,21 @@
 #include <SFML/Graphics.hpp>
 #include <yaml-cpp/yaml.h>
-#include "Simulation.hpp"
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/json.hpp>
 #include <bsoncxx/types.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/exception/exception.hpp>
+#include <iostream>
+#include <cmath>
+#include <vector>
+#include <algorithm>
+#include <random>
 
+#include "Simulation.hpp"
 
 int main() {
-    
+
     // Configuration Loading
     YAML::Node config;
     try {

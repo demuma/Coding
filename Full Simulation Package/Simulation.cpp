@@ -43,7 +43,7 @@ void Simulation::initializeAgents() {
     // Random number generation for initial agent positions and velocities
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(-1.0, 1.0);
+    //std::uniform_real_distribution<> dis(-1.0, 1.0);
     std::uniform_real_distribution<> disX(0.0, static_cast<float>(windowWidth) / static_cast<float>(scale));
     std::uniform_real_distribution<> disY(0.0, static_cast<float>(windowHeight) / static_cast<float>(scale));
 
@@ -80,32 +80,30 @@ void Simulation::initializeAgents() {
             agent.position = sf::Vector2f(disX(gen), disY(gen)); // Random position in meters
             agent.initialPosition = agent.position;
 
-            // Random initial velocity
+            // Set velocity from individual truncated normal distribution
             agent.minVelocity = agentType["velocity"]["min"].as<float>();
             agent.maxVelocity = agentType["velocity"]["max"].as<float>();
-            agent.velocity = sf::Vector2f(dis(gen) * agent.maxVelocity, dis(gen) * agent.maxVelocity);
+            agent.velocityMu = agentType["velocity"]["mu"].as<float>();
+            agent.velocitySigma = agentType["velocity"]["sigma"].as<float>();
+            agent.velocityNoiseFactor = agentType["velocity"]["noise_factor"].as<float>();
+
+            // Convert angle to velocity vector from truncated normal distribution
+            agent.velocity = generateRandomVelocityVector(agent.velocityMu, agent.velocitySigma, agent.minVelocity, agent.maxVelocity);
+            
+            // Store the original velocity for future reference
             agent.originalVelocity = agent.velocity;
+
+            // Generate seed for Perlin noise
+            agent.noiseSeed = std::random_device{}();
+            agent.perlinNoise = PerlinNoise(agent.noiseSeed);
+            
+            // Random initial velocity
+            //agent.velocity = sf::Vector2f(dis(gen) * agent.maxVelocity, dis(gen) * agent.maxVelocity);
+            //agent.originalVelocity = agent.velocity;
 
             // Random initial acceleration
             agent.minAcceleration = agentType["acceleration"]["min"].as<float>();
             agent.maxAcceleration = agentType["acceleration"]["max"].as<float>();
-            agent.acceleration = sf::Vector2f(dis(gen) * agent.maxAcceleration, dis(gen) * agent.maxAcceleration);
-
-            // Ensure minimum velocity
-            if (std::abs(agent.velocity.x) < agent.minVelocity) {
-                agent.velocity.x = agent.velocity.x < 0 ? -agent.minVelocity : agent.minVelocity;
-            }
-            if (std::abs(agent.velocity.y) < agent.minVelocity) {
-                agent.velocity.y = agent.velocity.y < 0 ? -agent.minVelocity : agent.minVelocity;
-            }
-
-            // Ensure minimum acceleration
-            if (std::abs(agent.acceleration.x) < agent.minAcceleration) {
-                agent.acceleration.x = agent.acceleration.x < 0 ? -agent.minAcceleration : agent.minAcceleration;
-            }
-            if (std::abs(agent.acceleration.y) < agent.minAcceleration) {
-                agent.acceleration.y = agent.acceleration.y < 0 ? -agent.minAcceleration : agent.minAcceleration;
-            }
             
             // Initialize the agent
             agent.initialize();
@@ -483,8 +481,6 @@ void Simulation::update(float deltaTime) {
             agent = agents.erase(agent); // Remove the agent from the vector and update the iterator
             continue; // Skip to the next agent (the iterator is already updated)
         }
-        //std::cout << "Agent position: " << agent->position.x << ", " << agent->position.y << std::endl;
-        //std::cout << "Window width: " << windowWidthScaled << ", " << windowHeightScaled << std::endl;
 
         // Assign the agent to the correct grid cell
         grid.addAgent(&(*agent)); // Add agent to the grid

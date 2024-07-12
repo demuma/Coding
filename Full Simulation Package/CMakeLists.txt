@@ -19,6 +19,7 @@ add_executable(RoadUserSimulation
     Obstacle.cpp
     Grid.cpp
     Main.cpp
+    PerlinNoise.cpp
 )
 
 # Link libraries to the executable

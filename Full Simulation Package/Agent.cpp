@@ -1,5 +1,6 @@
-#include "Agent.hpp"
 #include <cmath> // For std::sqrt
+
+#include "Agent.hpp"
 
 // Constructor
 Agent::Agent() {
@@ -40,6 +41,18 @@ void Agent::initialize() {
 // Update the agent's position based on velocity
 void Agent::updatePosition(float deltaTime) {
     position += velocity * deltaTime;
+}
+
+// Update the agent's velocity based on Perlin noise
+void Agent::updateVelocity(float deltaTime, sf::Time totalElapsedTime) {
+    
+    // Use the agent's own Perlin noise generator to fluctuate velocity
+    float noiseX = perlinNoise.noise(position.x * 0.01f, totalElapsedTime.asSeconds(), 0);
+    float noiseY = perlinNoise.noise(position.y * 0.01f, totalElapsedTime.asSeconds() + 1000.0f, 0);
+
+    // Apply noise to velocity
+    velocity.x += noiseX * velocityNoiseFactor * originalVelocity.x * deltaTime;
+    velocity.y += noiseY * velocityNoiseFactor * originalVelocity.y * deltaTime;
 }
 
 // Get the future position of the agent at a given time

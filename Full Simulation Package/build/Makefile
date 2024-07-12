@@ -249,6 +249,30 @@ Obstacle.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.s
 .PHONY : Obstacle.cpp.s
 
+PerlinNoise.o: PerlinNoise.cpp.o
+.PHONY : PerlinNoise.o
+
+# target to build an object file
+PerlinNoise.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/PerlinNoise.cpp.o
+.PHONY : PerlinNoise.cpp.o
+
+PerlinNoise.i: PerlinNoise.cpp.i
+.PHONY : PerlinNoise.i
+
+# target to preprocess a source file
+PerlinNoise.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/PerlinNoise.cpp.i
+.PHONY : PerlinNoise.cpp.i
+
+PerlinNoise.s: PerlinNoise.cpp.s
+.PHONY : PerlinNoise.s
+
+# target to generate assembly for a file
+PerlinNoise.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/PerlinNoise.cpp.s
+.PHONY : PerlinNoise.cpp.s
+
 Simulation.o: Simulation.cpp.o
 .PHONY : Simulation.o
 
@@ -297,6 +321,9 @@ help:
 	@echo "... Obstacle.o"
 	@echo "... Obstacle.i"
 	@echo "... Obstacle.s"
+	@echo "... PerlinNoise.o"
+	@echo "... PerlinNoise.i"
+	@echo "... PerlinNoise.s"
 	@echo "... Simulation.o"
 	@echo "... Simulation.i"
 	@echo "... Simulation.s"

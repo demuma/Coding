@@ -5,6 +5,8 @@
 #include <vector>
 #include <uuid/uuid.h>
 
+#include "PerlinNoise.hpp"
+
 class Agent {
 public:
     int id; // Agent ID
@@ -24,6 +26,10 @@ public:
     float radius; // Agent radius
     float minVelocity; // Minimum velocity
     float maxVelocity; // Maximum velocity
+    float velocityMu; // Mean velocity
+    float velocitySigma; // Standard deviation of velocity
+    float velocityMagnitude; // Magnitude of velocity
+    float velocityNoiseFactor; // Noise factor for velocity
     float minAcceleration; // Minimum acceleration
     float maxAcceleration; // Maximum acceleration
     float bufferRadius;
@@ -31,10 +37,14 @@ public:
     bool stopped; // Flag indicating if the agent is stopped
     int stoppedFrameCounter; // Counter to handle stopping duration
     bool isActive; // Flag indicating if the agent is active
+    unsigned int noiseSeed; // Seed for Perlin noise
+    PerlinNoise perlinNoise; // Perlin noise generator
+    
 
     Agent();
     void initialize();
     void updatePosition(float deltaTime);
+    void updateVelocity(float deltaTime, sf::Time totalElapsedTime);
     std::string generateUUID();
     std::string generateUUID(uuid_t uuid); // Overloaded function
     sf::Vector2f getFuturePositionAtTime(float time) const;

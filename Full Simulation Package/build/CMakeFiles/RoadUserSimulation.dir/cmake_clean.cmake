@@ -9,6 +9,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/RoadUserSimulation.dir/Main.cpp.o.d"
   "CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.o"
   "CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.o.d"
+  "CMakeFiles/RoadUserSimulation.dir/PerlinNoise.cpp.o"
+  "CMakeFiles/RoadUserSimulation.dir/PerlinNoise.cpp.o.d"
   "CMakeFiles/RoadUserSimulation.dir/Simulation.cpp.o"
   "CMakeFiles/RoadUserSimulation.dir/Simulation.cpp.o.d"
   "RoadUserSimulation"

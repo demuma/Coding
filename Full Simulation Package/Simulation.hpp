@@ -11,10 +11,12 @@
 #include <mongocxx/exception/exception.hpp>
 #include <iomanip>
 #include <unordered_map>
+#include <random>
 
 #include "Agent.hpp"
 #include "Grid.hpp"
 #include "Obstacle.hpp"
+#include "PerlinNoise.hpp"
 
 // Simulation class
 class Simulation {
@@ -92,8 +94,38 @@ private:
     void loadObstacles();
     void storeAgentData(const std::vector<Agent>& agents);
 
-    // Auxiliary functions
-    //sf::Color stringToColor(const std::string& colorStr);
+    // Generate velocity from truncated normal distribution
+    float generateRandomNumberFromTND(float mean, float stddev, float min, float max) {
+
+        // Generate normal distribution
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        std::normal_distribution<float> generateNormal(mean, stddev);
+
+        // Generate random number until it falls within the specified range
+        float value;
+        do {
+            value = generateNormal(gen);
+        } while (value < min || value > max);
+        return value;
+    }
+
+    // Generate random velocity vector
+    sf::Vector2f generateRandomVelocityVector(float mu, float sigma, float min, float max) {
+        
+        // Generate distribution for angle
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<float> disAngle(0.0, 2 * M_PI);
+        sf::Vector2f velocity;
+
+        // Generate random velocity magnitude
+        float velocityMagnitude = generateRandomNumberFromTND(mu, sigma, min, max);
+        float angle = disAngle(gen);
+        velocity = sf::Vector2f(velocityMagnitude * std::cos(angle), velocityMagnitude * std::sin(angle));
+        
+        return velocity;
+    }
 
     // Function to convert a string to sf::Color (case-insensitive)
     sf::Color stringToColor(std::string colorStr) {

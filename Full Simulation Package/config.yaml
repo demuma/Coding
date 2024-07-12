@@ -91,12 +91,9 @@ agents:
         max: 4.5
    
 simulation:
-  use_variable_frame_rate: false
-  frame_rate: 60
   duration_seconds: 100
-  maximum_frames: 1000
-  use_time_step: false
-  time_step: 0.05
+  maximum_frames: 50
+  time_step: 0.02
   scenario: random # not used
 
 common:

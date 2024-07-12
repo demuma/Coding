@@ -41,7 +41,6 @@ private:
     int numAgents;
     float durationSeconds;
     int maxFrames;
-    int fps;
     sf::Time timeStep;
     int scale = 20; // Pixels per meter
 
@@ -91,7 +90,6 @@ private:
     void updateFrameCountText(int frameCount);
     void updateAgentCountText();
     void loadObstacles();
-    mongocxx::collection setupDatabase();
     void storeAgentData(const std::vector<Agent>& agents);
 
     // Auxiliary functions

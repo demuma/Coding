@@ -28,24 +28,13 @@ void Simulation::loadConfiguration() {
     numAgents = config["agents"]["num_agents"].as<int>();
     durationSeconds = config["simulation"]["duration_seconds"].as<float>();
     maxFrames = config["simulation"]["maximum_frames"].as<int>();
-    fps = config["simulation"]["frame_rate"].as<int>();
     showInfo = config["grid"]["show_info"].as<bool>();
     scale = config["display"]["pixels_per_meter"].as<int>();
+    timeStep = sf::seconds(config["simulation"]["time_step"].as<float>());
 
     // Scale window dimensions
     windowWidthScaled = windowWidth / static_cast<float>(scale);
     windowHeightScaled = windowHeight / static_cast<float>(scale);
-
-    // Default frame rate based on time step
-    float timeStepFloat = 1.0f / fps;
-    
-    // Check if the simulation uses a fixed time step
-    if (config["simulation"]["use_time_step"].as<bool>()) {
-        timeStepFloat = config["simulation"]["time_step"].as<float>();
-    }
-
-    // Convert to sf::Time using sf::seconds()
-    timeStep = sf::seconds(timeStepFloat);
 }
 
 // Function to initialize agents based on the YAML configuration
@@ -203,9 +192,6 @@ void Simulation::calculateFrameRate() {
 // Main simulation loop
 void Simulation::run() {
 
-    // Set up the MongoDB database
-    // collection = setupDatabase();
-
     // MongoDB Setup from Configuration
     std::string mongoHost = config["database"]["host"].as<std::string>();
     int mongoPort = config["database"]["port"].as<int>();
@@ -220,7 +206,7 @@ void Simulation::run() {
     collection = db[mongoCollectionName];
 
     // Frame timing variables
-    sf::Clock clock;  
+    sf::Clock clock;
     sf::Time timeSinceLastUpdate = sf::Time::Zero;
 
     // Simulation duration control and FPS variables
@@ -241,8 +227,10 @@ void Simulation::run() {
         // Timestep-based update
         timeSinceLastUpdate += clock.restart(); 
         while (timeSinceLastUpdate >= timeStep) { 
+            
+            // Check if the simulation is paused
             if (!isPaused) {
-                // Update the simulation
+
                 // Clear the grid
                 grid.clear();
                 update(timeStep.asSeconds());  // Use timeStep for consistent updates
@@ -259,11 +247,13 @@ void Simulation::run() {
 
                 // Increment frame count and total elapsed time
                 frameCount++;
-                totalElapsedTime += timeStep;
             }
-            // Decrement the accumulator
+            // Subtract the consumed time step to avoid accumulating too much leftover time
             timeSinceLastUpdate -= timeStep;  // Decrement accumulator
         }
+
+        // Update totalElapsedTime with the remaining timeSinceLastUpdate
+        totalElapsedTime += timeSinceLastUpdate; // Update total elapsed time
 
         // Render the simulation
         render(); 
@@ -567,22 +557,4 @@ void Simulation::storeAgentData(const std::vector<Agent>& agents) {
         // Insert document into MongoDB
         collection.insert_one(document.view());
     }
-}
-
-// Setup the MongoDB database
-mongocxx::collection Simulation::setupDatabase() {
-    // MongoDB Setup from Configuration
-    std::string mongoHost = config["database"]["host"].as<std::string>();
-    int mongoPort = config["database"]["port"].as<int>();
-    std::string mongoDbName = config["database"]["db_name"].as<std::string>();
-    std::string mongoCollectionName = config["database"]["collection_name"].as<std::string>();
-
-    std::string mongoUri = "mongodb://" + mongoHost + ":" + std::to_string(mongoPort);
-    mongocxx::instance inst{};
-    mongocxx::uri uri(mongoUri);
-    mongocxx::client client(uri);
-    mongocxx::database db = client[mongoDbName];
-
-    // Return the collection directly 
-    return db[mongoCollectionName];
 }

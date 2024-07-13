@@ -13,6 +13,5 @@ bool agentAgentCollision(Agent& agent1, Agent& agent2);
 bool agentAgentsCollision(Agent& agent, std::vector<Agent>& agents);
 bool agentObstaclesCollision(Agent& agent, const std::vector<Obstacle>& obstacles);
 bool collisionPossible(Agent& agent1, Agent& agent2);
-float vectorLength(const sf::Vector2f vector);
 
 #endif // COLLISIONAVOIDANCE_HPP

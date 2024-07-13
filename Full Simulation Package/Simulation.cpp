@@ -253,9 +253,10 @@ void Simulation::run() {
 
                 // Increment frame count and total elapsed time
                 frameCount++;
+            
+                // Subtract the consumed time step to avoid accumulating too much leftover time
+                timeSinceLastUpdate -= timeStep;  // Decrement accumulator
             }
-            // Subtract the consumed time step to avoid accumulating too much leftover time
-            timeSinceLastUpdate -= timeStep;  // Decrement accumulator
         }
 
         // Update totalElapsedTime with the remaining timeSinceLastUpdate

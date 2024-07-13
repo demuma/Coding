@@ -55,6 +55,8 @@ void Simulation::initializeAgents() {
     for (const auto& agentType : config["agents"]["road_user_taxonomy"]) {
         int numTypeAgents = numAgents * agentType["probability"].as<float>();
         sf::Color agentColor = stringToColor(agentType["color"].as<std::string>());
+        int agentPriority = agentType["priority"].as<int>();
+        float agentLookAheadTime = agentType["look_ahead_time"].as<float>();
 
         // Error handling for invalid colors
         if (agentColor == sf::Color::Black) {
@@ -75,13 +77,16 @@ void Simulation::initializeAgents() {
             agent.radius = agentType["radius"].as<float>();
             agent.color = agentColor;
             agent.initial_color = agentColor;
+            agent.priority = agentPriority;
+            agent.lookAheadTime = agentLookAheadTime;
 
             // Random initial position within the window bounds
             agent.position = sf::Vector2f(disX(gen), disY(gen)); // Random position in meters
             
             // Ensure agents are not too close to each other
             while (agentAgentsCollision(agent, agents) || agentObstaclesCollision(agent, obstacles)) {
-                
+
+                // If collision detected, reposition the agent
                 agent.position = sf::Vector2f(disX(gen), disY(gen)); // Random position in meters
             }
             
@@ -213,7 +218,9 @@ void Simulation::run() {
 
     // Frame timing variables
     sf::Clock clock;
-    sf::Time timeSinceLastUpdate = sf::Time::Zero;
+    sf::Time timeSinceLastUpdate = sf::seconds(0.0f);
+    sf::Time totalElapsedTime = sf::seconds(0.0f);
+    sf::Time elapsedTime = sf::seconds(0.0f);
 
     // Simulation duration control and FPS variables
     frameCount = 0;
@@ -231,7 +238,10 @@ void Simulation::run() {
         }
 
         // Timestep-based update
-        timeSinceLastUpdate += clock.restart(); 
+        elapsedTime = clock.restart();
+        timeSinceLastUpdate += elapsedTime; 
+
+        // Update the simulation based on the time step
         while (timeSinceLastUpdate >= timeStep) { 
             
             // Check if the simulation is paused
@@ -260,7 +270,7 @@ void Simulation::run() {
         }
 
         // Update totalElapsedTime with the remaining timeSinceLastUpdate
-        totalElapsedTime += timeSinceLastUpdate; // Update total elapsed time
+        totalElapsedTime += elapsedTime; // Update total elapsed time
 
         // Render the simulation
         render(); 
@@ -441,7 +451,6 @@ void Simulation::handleEvents(sf::Event event) {
                 frameCount = 0;
                 frameRates.clear();
                 cumulativeSum = 0.0f;
-                totalElapsedTime = sf::seconds(0.0f);
 
                 // Resume simulation if it was paused
                 if (isPaused) {
@@ -537,30 +546,37 @@ void Simulation::loadObstacles() {
 
 // Store agent data in MongoDB
 void Simulation::storeAgentData(const std::vector<Agent>& agents) {
+    try {
+        std::vector<bsoncxx::document::value> documents;
+        documents.reserve(agents.size());
 
-    for (const auto& agent : agents) {
+        for (const auto& agent : agents) {
+            // Prepare data for MongoDB
+            bsoncxx::builder::stream::document document{};
 
-        // Prepare data for MongoDB
-        bsoncxx::builder::stream::document document{};
+            // Get current timestamp in ISO format
+            std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+            std::stringstream ss;
+            ss << std::put_time(std::localtime(&now), "%FT%TZ");
 
-        // Get current timestamp in ISO format
-        std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        std::stringstream ss;
-        ss << std::put_time(std::localtime(&now), "%FT%TZ");
+            document << "timestamp" << ss.str()
+                     << "sensor_id" << agent.sensor_id
+                     << "agent_id" << agent.uuid
+                     << "type" << agent.type
+                     << "position" << bsoncxx::builder::stream::open_array
+                         << agent.position.x << agent.position.y
+                         << bsoncxx::builder::stream::close_array
+                     << "velocity" << bsoncxx::builder::stream::open_array
+                         << agent.velocity.x << agent.velocity.y
+                         << bsoncxx::builder::stream::close_array;
 
-        document << "timestamp" << ss.str()
-                << "sensor_id" << agent.sensor_id
-                << "agent_id" << agent.uuid
-                << "type" << agent.type
-                << "position" << bsoncxx::builder::stream::open_array
-                    << agent.position.x << agent.position.y
-                    << bsoncxx::builder::stream::close_array
-                << "velocity" << bsoncxx::builder::stream::open_array
-                    << agent.velocity.x << agent.velocity.y
-                    << bsoncxx::builder::stream::close_array;
+            documents.push_back(document << bsoncxx::builder::stream::finalize);
+        }
 
-        // Insert document into MongoDB
-        collection.insert_one(document.view());
+        // Insert documents into MongoDB in bulk
+        collection.insert_many(documents);
+    } catch (const mongocxx::exception& e) {
+        std::cerr << "An error occurred while inserting documents: " << e.what() << std::endl;
     }
 }
 

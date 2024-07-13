@@ -18,6 +18,8 @@ public:
     sf::Vector2f position;
     sf::Vector2f initialPosition;
     sf::Vector2f velocity;
+    int priority;
+    float lookAheadTime;
     sf::Vector2f acceleration;
     sf::Vector2f originalVelocity; // To store original velocity
     sf::Color color; // Start color is black

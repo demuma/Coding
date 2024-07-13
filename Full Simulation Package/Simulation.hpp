@@ -73,7 +73,6 @@ private:
 
     // Simulation State
     bool isPaused = false;
-    sf::Time elapsedTime;
     sf::Time totalElapsedTime;
 
     // Database

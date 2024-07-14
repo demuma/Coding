@@ -6,14 +6,17 @@
 #include "Grid.hpp"
 #include "Simulation.hpp"
 #include "CollisionAvoidance.hpp"
+#include "Sensor.hpp"
 
-// Constructor
+// Constructor with example sensor initialization
 Simulation::Simulation(sf::RenderWindow& window, const sf::Font& font, const YAML::Node& config) 
-    : window(window), font(font), config(config), grid(cellSize, windowWidthScaled / cellSize, windowHeightScaled / cellSize){
+    : window(window), font(font), config(config), grid(0, 0, 0) { // Initialize grid with dummy values
     
     loadConfiguration();
+    initializeGrid();
     loadObstacles();
     initializeAgents();
+    initializeSensors();
     initializeUI(); 
 }
 
@@ -37,13 +40,19 @@ void Simulation::loadConfiguration() {
     windowHeightScaled = windowHeight / static_cast<float>(scale);
 }
 
+// Function to initialize the grid based on the YAML configuration
+void Simulation::initializeGrid() {
+
+    // Initialize the grid
+    grid = Grid(cellSize, windowWidthScaled / cellSize, windowHeightScaled / cellSize);
+}
+
 // Function to initialize agents based on the YAML configuration
 void Simulation::initializeAgents() {
 
     // Random number generation for initial agent positions and velocities
     std::random_device rd;
     std::mt19937 gen(rd());
-    //std::uniform_real_distribution<> dis(-1.0, 1.0);
     std::uniform_real_distribution<> disX(0.0, static_cast<float>(windowWidth) / static_cast<float>(scale));
     std::uniform_real_distribution<> disY(0.0, static_cast<float>(windowHeight) / static_cast<float>(scale));
 
@@ -53,6 +62,8 @@ void Simulation::initializeAgents() {
 
     // Initialize agents based on the proportion of each agent type (TODO: Find better way!!)
     for (const auto& agentType : config["agents"]["road_user_taxonomy"]) {
+
+        // Calculate the number of agents of the current type
         int numTypeAgents = numAgents * agentType["probability"].as<float>();
         sf::Color agentColor = stringToColor(agentType["color"].as<std::string>());
         int agentPriority = agentType["priority"].as<int>();
@@ -72,7 +83,8 @@ void Simulation::initializeAgents() {
 
             // Assign the agent type, UUID, and sensor ID, radius and color
             agent.uuid = agent.generateUUID();
-            agent.sensor_id = agent.generateUUID(sensor_uuid);
+            //agent.sensor_id = agent.generateUUID(sensor_uuid);
+            agent.sensor_id = "0";
             agent.type = agentType["type"].as<std::string>();
             agent.radius = agentType["radius"].as<float>();
             agent.color = agentColor;
@@ -108,10 +120,6 @@ void Simulation::initializeAgents() {
             // Generate seed for Perlin noise
             agent.noiseSeed = std::random_device{}();
             agent.perlinNoise = PerlinNoise(agent.noiseSeed);
-            
-            // Random initial velocity
-            //agent.velocity = sf::Vector2f(dis(gen) * agent.maxVelocity, dis(gen) * agent.maxVelocity);
-            //agent.originalVelocity = agent.velocity;
 
             // Random initial acceleration
             agent.minAcceleration = agentType["acceleration"]["min"].as<float>();
@@ -179,6 +187,43 @@ void Simulation::initializeUI() {
                               resetButtonTextRect.top + resetButtonTextRect.height / 2.0f);
     resetButtonText.setPosition(resetButton.getPosition().x + resetButton.getSize().x / 2.0f,
                                 resetButton.getPosition().y + resetButton.getSize().y / 2.0f);
+}
+
+// Initialize sensors with YAML configuration
+void Simulation::initializeSensors() {
+
+    // Load sensors from the configuration file
+    const YAML::Node& sensorNodes = config["sensors"];
+
+    // Iterate over each sensor node in the configuration
+    for (const auto& sensorNode : sensorNodes) {
+
+        // Get the sensor type and frame rate
+        std::string type = sensorNode["type"].as<std::string>();
+        float frameRate = sensorNode["frame_rate"].as<float>();
+        sf::Color color = stringToColor(sensorNode["detection_area"]["color"].as<std::string>());
+        int alpha = sensorNode["detection_area"]["alpha"].as<float>() * 255;
+        sf::Color colorAlpha = sf::Color(color.r, color.g, color.b, alpha);
+
+        // Define the detection area for the sensor
+        sf::FloatRect detectionArea(
+
+            sensorNode["detection_area"]["left"].as<float>(),
+            sensorNode["detection_area"]["top"].as<float>(),
+            sensorNode["detection_area"]["width"].as<float>(),
+            sensorNode["detection_area"]["height"].as<float>()
+        );
+
+        // Create the sensor based on the type
+        if (type == "agent") {
+
+            sensors.push_back(std::make_unique<AgentBasedSensor>(frameRate, detectionArea, colorAlpha));
+        } else if (type == "grid") {
+
+            float cellSize = sensorNode["cell_size"].as<float>();
+            sensors.push_back(std::make_unique<GridBasedSensor>(frameRate, detectionArea, colorAlpha, cellSize));
+        }
+    }
 }
 
 // Calculate frame rate
@@ -285,17 +330,17 @@ void Simulation::render() {
 
     // Draw the grid
     if (showGrid) {
-        for (int x = 0; x <= window.getSize().x / cellSize; ++x) {
+        for (int x = 0; x <= window.getSize().x / cellSize * scale; ++x) {
             sf::Vertex line[] = {
-                sf::Vertex(sf::Vector2f(x * cellSize, 0), sf::Color(220, 220, 220)), // Light gray for grid
-                sf::Vertex(sf::Vector2f(x * cellSize, window.getSize().y), sf::Color(220, 220, 220))
+                sf::Vertex(sf::Vector2f(x * cellSize * scale, 0), sf::Color(220, 220, 220)), // Light gray for grid
+                sf::Vertex(sf::Vector2f(x * cellSize * scale, window.getSize().y), sf::Color(220, 220, 220))
             };
             window.draw(line, 2, sf::Lines);
         }
-        for (int y = 0; y <= window.getSize().y / cellSize; ++y) {
+        for (int y = 0; y <= window.getSize().y / cellSize * scale; ++y) {
             sf::Vertex line[] = {
-                sf::Vertex(sf::Vector2f(0, y * cellSize), sf::Color(220, 220, 220)),
-                sf::Vertex(sf::Vector2f(window.getSize().x, y * cellSize), sf::Color(220, 220, 220))
+                sf::Vertex(sf::Vector2f(0, y * cellSize * scale), sf::Color(220, 220, 220)),
+                sf::Vertex(sf::Vector2f(window.getSize().x, y * cellSize * scale), sf::Color(220, 220, 220))
             };
             window.draw(line, 2, sf::Lines);
         }
@@ -370,6 +415,19 @@ void Simulation::render() {
             };
             window.draw(trajectory, 2, sf::Lines);
         }
+    }
+
+    // Draw sensors
+    for (const auto& sensorPtr : sensors) { // Iterate over all sensor pointers
+
+        // Dereference the sensor pointer
+        const Sensor& sensor = *sensorPtr;
+
+        // Draw the detection area for each sensor
+        sf::RectangleShape detectionAreaShape(sf::Vector2f(sensor.detectionArea.width * scale, sensor.detectionArea.height * scale));
+        detectionAreaShape.setPosition(sensor.detectionArea.left * scale, sensor.detectionArea.top * scale);
+        detectionAreaShape.setFillColor(sensor.detectionAreaColor); // Set the color with alpha
+        window.draw(detectionAreaShape);
     }
 
     // Show simulation info (frame count, frame rate, agent count)
@@ -488,6 +546,12 @@ void Simulation::resetSimulation() {
 
 // Update the simulation state on each frame based on the time step
 void Simulation::update(float deltaTime) {
+
+    // Update sensors
+    for (auto& sensor : sensors) {
+        sensor->update(agents, timeStep.asSeconds());
+        sensor->saveData();
+    }
 
     for (auto agent = agents.begin(); agent != agents.end(); ) {
         agent->updatePosition(deltaTime);

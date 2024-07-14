@@ -1303,4 +1303,6 @@ CMakeFiles/RoadUserSimulation.dir/Main.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/sys/_types/_uuid_t.h \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/PerlinNoise.hpp \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/Grid.hpp \
-  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/Obstacle.hpp
+  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/Utilities.hpp \
+  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/Obstacle.hpp \
+  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/Sensor.hpp

@@ -6,10 +6,10 @@ display:
   pixels_per_meter: 20  # Default: 10
 
 grid:
-  cell_size: 100 # Default: 100
+  cell_size: 10 # Default: 100
   show_trajectories: true
-  show_grid: true
-  show_info: false
+  show_grid: false
+  show_info: true
 
 agents:
   num_agents: 100
@@ -132,10 +132,30 @@ database:
   collection_name: Agents
   db_directory: /User/${whoami}/data/db # mongod --dbpath /User/${whoami}/data/db
 
-  # TODO: include buffer radius, buffer offset
-
 obstacles:
   - type: rectangle
     position: [10.0, 10.0]  # Position in meters
     size: [10, 5.0]      # Size in meters
     color: grey
+
+sensors:
+  - type: agent
+    frame_rate: 10.0
+    detection_area:
+      left: 87.0
+      top: 0.0
+      width: 85.0
+      height: 72.0
+      color: blue
+      alpha: 0.1
+  - type: grid
+    frame_rate: 10.0
+    detection_area:
+      left: 0.0
+      top: 0.0
+      width: 85.0
+      height: 72.0
+      color: green
+      alpha: 0.1
+    cell_size: 10 # in meters
+    

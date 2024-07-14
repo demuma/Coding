@@ -273,6 +273,30 @@ PerlinNoise.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/PerlinNoise.cpp.s
 .PHONY : PerlinNoise.cpp.s
 
+Sensor.o: Sensor.cpp.o
+.PHONY : Sensor.o
+
+# target to build an object file
+Sensor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/Sensor.cpp.o
+.PHONY : Sensor.cpp.o
+
+Sensor.i: Sensor.cpp.i
+.PHONY : Sensor.i
+
+# target to preprocess a source file
+Sensor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/Sensor.cpp.i
+.PHONY : Sensor.cpp.i
+
+Sensor.s: Sensor.cpp.s
+.PHONY : Sensor.s
+
+# target to generate assembly for a file
+Sensor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/Sensor.cpp.s
+.PHONY : Sensor.cpp.s
+
 Simulation.o: Simulation.cpp.o
 .PHONY : Simulation.o
 
@@ -324,6 +348,9 @@ help:
 	@echo "... PerlinNoise.o"
 	@echo "... PerlinNoise.i"
 	@echo "... PerlinNoise.s"
+	@echo "... Sensor.o"
+	@echo "... Sensor.i"
+	@echo "... Sensor.s"
 	@echo "... Simulation.o"
 	@echo "... Simulation.i"
 	@echo "... Simulation.s"

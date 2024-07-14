@@ -17,6 +17,7 @@
 #include "Grid.hpp"
 #include "Obstacle.hpp"
 #include "PerlinNoise.hpp"
+#include "Sensor.hpp"
 
 // Simulation class
 class Simulation {
@@ -30,6 +31,7 @@ private:
     sf::Clock clock;
     float cumulativeSum = 0.0f;
     const YAML::Node& config;
+       const sf::Font& font;
 
     // Configuration Data Members (read from YAML)
     int windowWidth;
@@ -46,10 +48,13 @@ private:
     sf::Time timeStep;
     int scale = 20; // Pixels per meter
 
-    // Simulation Data Members
+    // Window
     sf::RenderWindow& window;
-    const sf::Font& font;
+
+    // Agents
     std::vector<Agent> agents;
+
+    // Grid
     Grid grid;
 
     // Obstacles
@@ -78,8 +83,12 @@ private:
     // Database
     mongocxx::collection collection;
 
+    // Sensors
+    std::vector<std::unique_ptr<Sensor>> sensors;
+
     // Helper functions
     void loadConfiguration(); // Loads configuration data
+    void initializeGrid(); // Initializes the grid
     void initializeAgents();
     void initializeUI();
     void update(float deltaTime);
@@ -91,6 +100,7 @@ private:
     void updateFrameCountText(int frameCount);
     void updateAgentCountText();
     void loadObstacles();
+    void initializeSensors();
     void storeAgentData(const std::vector<Agent>& agents);
     sf::Color stringToColor(std::string colorStr);
     float generateRandomNumberFromTND(float mean, float stddev, float min, float max);

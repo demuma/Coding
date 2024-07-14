@@ -1021,6 +1021,7 @@ CMakeFiles/RoadUserSimulation.dir/Simulation.cpp.o: \
   /usr/local/include/SFML/Graphics/Text.hpp \
   /usr/local/include/SFML/Graphics/VertexBuffer.hpp \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/PerlinNoise.hpp \
+  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/Utilities.hpp \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/Simulation.hpp \
   /usr/local/include/yaml-cpp/yaml.h \
   /usr/local/include/yaml-cpp/parser.h /usr/local/include/yaml-cpp/dll.h \
@@ -1302,4 +1303,5 @@ CMakeFiles/RoadUserSimulation.dir/Simulation.cpp.o: \
   /usr/local/include/mongocxx/v_noabi/mongocxx/exception/exception-fwd.hpp \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/iomanip \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/Obstacle.hpp \
+  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/Sensor.hpp \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/CollisionAvoidance.hpp

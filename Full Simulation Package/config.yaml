@@ -4,14 +4,15 @@ display:
   width: 3440
   height: 1440
   pixels_per_meter: 20  # Default: 10
-
-grid:
-  cell_size: 10 # Default: 100
-  show_trajectories: true
-  show_grid: false
   show_info: true
 
+collision:
+  grid:
+    cell_size: 10 # Default: 100
+    show_grid: false
+
 agents:
+  show_trajectories: true
   num_agents: 100
   grouping:
     families:

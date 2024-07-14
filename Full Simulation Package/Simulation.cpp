@@ -25,13 +25,13 @@ void Simulation::loadConfiguration() {
 
     windowWidth = config["display"]["width"].as<int>();
     windowHeight = config["display"]["height"].as<int>();
-    cellSize = config["grid"]["cell_size"].as<float>();
-    showGrid = config["grid"]["show_grid"].as<bool>();
-    showTrajectories = config["grid"]["show_trajectories"].as<bool>();
+    collisionGridCellSize = config["collision"]["grid"]["cell_size"].as<float>();
+    showCollisionGrid = config["collision"]["grid"]["show_grid"].as<bool>();
+    showTrajectories = config["agents"]["show_trajectories"].as<bool>();
     numAgents = config["agents"]["num_agents"].as<int>();
     durationSeconds = config["simulation"]["duration_seconds"].as<float>();
     maxFrames = config["simulation"]["maximum_frames"].as<int>();
-    showInfo = config["grid"]["show_info"].as<bool>();
+    showInfo = config["display"]["show_info"].as<bool>();
     scale = config["display"]["pixels_per_meter"].as<int>();
     timeStep = sf::seconds(config["simulation"]["time_step"].as<float>());
 
@@ -44,7 +44,7 @@ void Simulation::loadConfiguration() {
 void Simulation::initializeGrid() {
 
     // Initialize the grid
-    grid = Grid(cellSize, windowWidthScaled / cellSize, windowHeightScaled / cellSize);
+    grid = Grid(collisionGridCellSize, windowWidthScaled / collisionGridCellSize, windowHeightScaled / collisionGridCellSize);
 }
 
 // Function to initialize agents based on the YAML configuration
@@ -329,18 +329,18 @@ void Simulation::render() {
     window.clear(sf::Color::White);
 
     // Draw the collision grid
-    if (showGrid) {
-        for (int x = 0; x <= window.getSize().x / cellSize * scale; ++x) {
+    if (showCollisionGrid) {
+        for (int x = 0; x <= window.getSize().x / collisionGridCellSize * scale; ++x) {
             sf::Vertex line[] = {
-                sf::Vertex(sf::Vector2f(x * cellSize * scale, 0), sf::Color(220, 220, 220)), // Light gray for grid
-                sf::Vertex(sf::Vector2f(x * cellSize * scale, window.getSize().y), sf::Color(220, 220, 220))
+                sf::Vertex(sf::Vector2f(x * collisionGridCellSize * scale, 0), sf::Color(220, 220, 220)), // Light gray for grid
+                sf::Vertex(sf::Vector2f(x * collisionGridCellSize * scale, window.getSize().y), sf::Color(220, 220, 220))
             };
             window.draw(line, 2, sf::Lines);
         }
-        for (int y = 0; y <= window.getSize().y / cellSize * scale; ++y) {
+        for (int y = 0; y <= window.getSize().y / collisionGridCellSize * scale; ++y) {
             sf::Vertex line[] = {
-                sf::Vertex(sf::Vector2f(0, y * cellSize * scale), sf::Color(220, 220, 220)),
-                sf::Vertex(sf::Vector2f(window.getSize().x, y * cellSize * scale), sf::Color(220, 220, 220))
+                sf::Vertex(sf::Vector2f(0, y * collisionGridCellSize * scale), sf::Color(220, 220, 220)),
+                sf::Vertex(sf::Vector2f(window.getSize().x, y * collisionGridCellSize * scale), sf::Color(220, 220, 220))
             };
             window.draw(line, 2, sf::Lines);
         }

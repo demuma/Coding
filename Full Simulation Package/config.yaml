@@ -139,7 +139,7 @@ obstacles:
     color: grey
 
 sensors:
-  - type: agent
+  - type: agent-based
     frame_rate: 10.0
     detection_area:
       left: 87.0
@@ -148,7 +148,7 @@ sensors:
       height: 72.0
       color: blue
       alpha: 0.1
-  - type: grid
+  - type: grid-based
     frame_rate: 10.0
     detection_area:
       left: 0.0
@@ -157,5 +157,7 @@ sensors:
       height: 72.0
       color: green
       alpha: 0.1
-    cell_size: 10 # in meters
+    grid:
+      cell_size: 20 # in meters
+      show_grid: true
     

@@ -40,6 +40,7 @@ private:
     float windowHeightScaled = 0.f;
     float cellSize = 100.0f;
     bool showGrid;
+    bool showSensorGrid;
     bool showTrajectories;
     bool showInfo;
     int numAgents;

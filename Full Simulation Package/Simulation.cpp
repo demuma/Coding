@@ -215,12 +215,12 @@ void Simulation::initializeSensors() {
         );
 
         // Create the sensor based on the type
-        if (type == "agent") {
+        if (type == "agent-based") {
 
             sensors.push_back(std::make_unique<AgentBasedSensor>(frameRate, detectionArea, colorAlpha));
-        } else if (type == "grid") {
+        } else if (type == "grid-based") {
 
-            float cellSize = sensorNode["cell_size"].as<float>();
+            float cellSize = sensorNode["grid"]["cell_size"].as<float>();
             sensors.push_back(std::make_unique<GridBasedSensor>(frameRate, detectionArea, colorAlpha, cellSize));
         }
     }
@@ -328,7 +328,7 @@ void Simulation::render() {
     // Clear the window
     window.clear(sf::Color::White);
 
-    // Draw the grid
+    // Draw the collision grid
     if (showGrid) {
         for (int x = 0; x <= window.getSize().x / cellSize * scale; ++x) {
             sf::Vertex line[] = {

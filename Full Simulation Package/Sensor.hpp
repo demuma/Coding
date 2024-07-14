@@ -17,6 +17,7 @@ public:
     sf::Color detectionAreaColor;
     sf::FloatRect detectionArea;
     float frameRate;
+    bool showGrid;
 
 protected:
     

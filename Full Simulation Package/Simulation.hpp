@@ -39,6 +39,7 @@ private:
     float windowWidthScaled = 0.0f;
     float windowHeightScaled = 0.f;
     float collisionGridCellSize = 100.0f;
+    float sensorGridCellSize = 100.0f;
     bool showCollisionGrid;
     bool showSensorGrid;
     bool showTrajectories;

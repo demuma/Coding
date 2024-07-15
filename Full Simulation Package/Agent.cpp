@@ -89,8 +89,9 @@ bool Agent::canResume(const std::vector<Agent>& agents) {
         float dy = position.y - other.position.y;
         float distance = std::sqrt(dx * dx + dy * dy);
         
-        if (distance < radius + other.radius) {
-            return false;
+        if (distance < bufferRadius + other.bufferRadius) {
+            
+            //return false;
         }
     }
     return true;

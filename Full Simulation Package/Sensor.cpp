@@ -95,15 +95,15 @@ void GridBasedSensor::saveData() {
 
         const sf::Vector2i& cellIndex = kvp.first;
         const std::unordered_map<std::string, int>& cellData = kvp.second;
-        //std::cout << "Cell (" << cellIndex.x << ", " << cellIndex.y << "): ";
+        std::cout << "Cell (" << cellIndex.x << ", " << cellIndex.y << "): ";
 
         for (const auto& kvp : cellData) {
 
             const std::string& agentType = kvp.first;
             int count = kvp.second;
-            //std::cout << agentType << ": " << count << ", ";
+            std::cout << agentType << ": " << count << ", ";
         }
-        //std::cout << std::endl;
+        std::cout << std::endl;
     }
     dataStorage.push_back({currentTime, gridData});
     gridData.clear();

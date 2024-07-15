@@ -330,6 +330,7 @@ void Simulation::render() {
 
     // Draw the collision grid
     if (showCollisionGrid) {
+        // Draw vertical lines
         for (int x = 0; x <= window.getSize().x / collisionGridCellSize * scale; ++x) {
             sf::Vertex line[] = {
                 sf::Vertex(sf::Vector2f(x * collisionGridCellSize * scale, 0), sf::Color(220, 220, 220)), // Light gray for grid
@@ -337,12 +338,43 @@ void Simulation::render() {
             };
             window.draw(line, 2, sf::Lines);
         }
+        // Draw horizontal lines
         for (int y = 0; y <= window.getSize().y / collisionGridCellSize * scale; ++y) {
             sf::Vertex line[] = {
                 sf::Vertex(sf::Vector2f(0, y * collisionGridCellSize * scale), sf::Color(220, 220, 220)),
                 sf::Vertex(sf::Vector2f(window.getSize().x, y * collisionGridCellSize * scale), sf::Color(220, 220, 220))
             };
             window.draw(line, 2, sf::Lines);
+        }
+    }
+
+    // Draw the sensor grids
+    if (showSensorGrid) {
+
+        // Loop through sensors pointer
+        for (const auto& sensor : sensors) {
+
+            // Check if the sensor is grid-based
+            if (auto gridBasedSensor = dynamic_cast<GridBasedSensor*>(sensor.get())) {
+
+                // Draw vertical lines
+                for (int x = 0; x <= (gridBasedSensor->detectionArea.width / gridBasedSensor->cellSize); x++) {
+                    sf::Vertex line[] = {
+                        sf::Vertex(sf::Vector2f((gridBasedSensor->detectionArea.left + x * gridBasedSensor->cellSize) * scale, gridBasedSensor->detectionArea.top * scale), sf::Color(220, 220, 220)),
+                        sf::Vertex(sf::Vector2f((gridBasedSensor->detectionArea.left + x * gridBasedSensor->cellSize) * scale, (gridBasedSensor->detectionArea.height + gridBasedSensor->detectionArea.top) * scale), sf::Color(220, 220, 220))
+                    };
+                    window.draw(line, 2, sf::Lines);
+                }
+
+                // Draw horizontal lines
+                for (int x = 0; x <= (gridBasedSensor->detectionArea.height / gridBasedSensor->cellSize); x++) {
+                    sf::Vertex line[] = {
+                        sf::Vertex(sf::Vector2f(gridBasedSensor->detectionArea.left * scale, (gridBasedSensor->detectionArea.top + x * gridBasedSensor->cellSize) * scale), sf::Color(220, 220, 220)),
+                        sf::Vertex(sf::Vector2f((gridBasedSensor->detectionArea.left + gridBasedSensor->detectionArea.width) * scale, (gridBasedSensor->detectionArea.top + x * gridBasedSensor->cellSize) * scale), sf::Color(220, 220, 220))
+                    };
+                    window.draw(line, 2, sf::Lines);
+                }
+            }   
         }
     }
 

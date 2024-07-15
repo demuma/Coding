@@ -17,7 +17,6 @@ public:
     sf::Color detectionAreaColor;
     sf::FloatRect detectionArea;
     float frameRate;
-    bool showGrid;
 
 protected:
     
@@ -46,12 +45,12 @@ class GridBasedSensor : public Sensor {
 public:
     GridBasedSensor(float frameRate, sf::FloatRect detectionArea, sf::Color detectionAreaColor, float cellSize);
     ~GridBasedSensor();
+    float cellSize;
 
     void update(const std::vector<Agent>& agents, float deltaTime) override;
     void saveData() override;
 
 private:
-    float cellSize;
     std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash> gridData;
     std::vector<std::pair<std::chrono::system_clock::time_point, std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash>>> dataStorage;
 

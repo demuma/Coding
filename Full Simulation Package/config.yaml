@@ -133,11 +133,11 @@ database:
   collection_name: Agents
   db_directory: /User/${whoami}/data/db # mongod --dbpath /User/${whoami}/data/db
 
-obstacles:
-  - type: rectangle
-    position: [10.0, 10.0]  # Position in meters
-    size: [10, 5.0]      # Size in meters
-    color: grey
+# obstacles:
+#   - type: rectangle
+#     position: [10.0, 10.0]  # Position in meters
+#     size: [10, 5.0]      # Size in meters
+#     color: grey
 
 sensors:
   - type: agent-based
@@ -154,11 +154,10 @@ sensors:
     detection_area:
       left: 0.0
       top: 0.0
-      width: 85.0
-      height: 72.0
+      width: 85.0 # default: 85.0
+      height: 72.0 # default: 72.0
       color: green
       alpha: 0.1
     grid:
-      cell_size: 20 # in meters
+      cell_size: 10 # in meters
       show_grid: true
-    

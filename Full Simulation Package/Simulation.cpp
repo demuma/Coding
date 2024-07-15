@@ -284,38 +284,43 @@ void Simulation::run() {
 
         // Timestep-based update
         elapsedTime = clock.restart();
-        timeSinceLastUpdate += elapsedTime; 
+        
+        // Check if the simulation is not paused
+        if(!isPaused) {
+        
+            timeSinceLastUpdate += elapsedTime; 
 
-        // Update the simulation based on the time step
-        while (timeSinceLastUpdate >= timeStep) { 
-            
-            // Check if the simulation is paused
-            if (!isPaused) {
+            // Update the simulation based on the time step
+            while (timeSinceLastUpdate >= timeStep) { 
+                
+                // Check if the simulation is paused
+                if (!isPaused) {
 
-                // Clear the grid
-                grid.clear();
-                update(timeStep.asSeconds());  // Use timeStep for consistent updates
+                    // Clear the grid
+                    grid.clear();
+                    update(timeStep.asSeconds());  // Use timeStep for consistent updates
 
-                // Store agent data in MongoDB
-                storeAgentData(agents);
+                    // Store agent data in MongoDB
+                    storeAgentData(agents);
 
-                // Frame rate calculation
-                calculateFrameRate();
+                    // Frame rate calculation
+                    calculateFrameRate();
 
-                // Update frame count and agent count text
-                updateFrameCountText(frameCount);
-                updateAgentCountText();
+                    // Update frame count and agent count text
+                    updateFrameCountText(frameCount);
+                    updateAgentCountText();
 
-                // Increment frame count and total elapsed time
-                frameCount++;
-            
-                // Subtract the consumed time step to avoid accumulating too much leftover time
-                timeSinceLastUpdate -= timeStep;  // Decrement accumulator
+                    // Increment frame count and total elapsed time
+                    frameCount++;
+                
+                    // Subtract the consumed time step to avoid accumulating too much leftover time
+                    timeSinceLastUpdate -= timeStep;  // Decrement accumulator
+                }
             }
-        }
 
-        // Update totalElapsedTime with the remaining timeSinceLastUpdate
-        totalElapsedTime += elapsedTime; // Update total elapsed time
+            // Update totalElapsedTime with the remaining timeSinceLastUpdate
+            totalElapsedTime += elapsedTime; // Update total elapsed time
+        }
 
         // Render the simulation
         render(); 

@@ -116,7 +116,7 @@ agents:
       look_ahead_time: 2.0 # Part of behavior profile (foresightfulness)
    
 simulation:
-  duration_seconds: 100
+  duration_seconds: 5
   maximum_frames: 10000
   time_step: 0.05
   scenario: random # not used

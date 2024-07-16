@@ -91,7 +91,7 @@ void Simulation::initializeAgents() {
             Agent agent;
 
             // Assign the agent type, UUID, and sensor ID, radius and color
-            agent.uuid = agent.generateUUID();
+            agent.uuid = generateUUID();
             //agent.sensor_id = agent.generateUUID(sensor_uuid);
             agent.sensor_id = "0";
             agent.type = agentType["type"].as<std::string>();

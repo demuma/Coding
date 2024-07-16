@@ -11,26 +11,6 @@
 class Sensor {
 public:
 
-    struct AgentBasedSensorData {
-
-        // Sensor data structure
-        std::string sensor_id;
-        std::string agent_id;
-        std::string timestamp;
-        std::string type;
-        sf::Vector2f position;
-        sf::Vector2f estimatedVelocity;
-    };
-
-    struct GridBasedSensorData {
-
-        // Sensor data structure
-        std::string sensor_id;
-        std::string timestamp;
-        sf::Vector2i cellIndex;
-        int count;
-    };
-
     Sensor(float frameRate, sf::FloatRect detectionArea, sf::Color detectionAreaColor);
     virtual void update(const std::vector<Agent>& agents, float deltaTime) = 0;
     virtual void saveData() = 0;
@@ -51,10 +31,23 @@ protected:
 
 class AgentBasedSensor : public Sensor {
 public:
+
+    struct AgentBasedSensorData {
+
+        // Sensor data structure
+        std::string sensor_id;
+        std::string agent_id;
+        std::string timestamp;
+        std::string type;
+        sf::Vector2f position;
+        sf::Vector2f estimatedVelocity;
+    };
+
     AgentBasedSensor(float frameRate, sf::FloatRect detectionArea, sf::Color detectionAreaColor);
     ~AgentBasedSensor();
 
     void update(const std::vector<Agent>& agents, float deltaTime) override;
+    void captureAgentData(const std::vector<Agent>& agent);
     void saveData() override;
 
 private:
@@ -62,11 +55,23 @@ private:
     std::unordered_map<std::string, sf::Vector2f> estimatedVelocities;
 
     // Data storage structure
-    std::vector<std::pair<std::chrono::system_clock::time_point, std::unordered_map<std::string, sf::Vector2f>>> dataStorage;
+    //std::vector<std::pair<std::chrono::system_clock::time_point, std::unordered_map<std::string, sf::Vector2f>>> dataStorage;
+    std::vector<AgentBasedSensorData> dataStorage;
 };
 
 class GridBasedSensor : public Sensor {
+
 public:
+
+    struct GridBasedSensorData {
+
+        // Sensor data structure
+        std::string sensor_id;
+        std::string timestamp;
+        sf::Vector2i cellIndex;
+        int count;
+    };
+
     GridBasedSensor(float frameRate, sf::FloatRect detectionArea, sf::Color detectionAreaColor, float cellSize, bool showGrid);
     ~GridBasedSensor();
     float cellSize;

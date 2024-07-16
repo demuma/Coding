@@ -22,16 +22,6 @@ std::string Agent::generateUUID() {
     return std::string(uuidStr);
 }
 
-// Generate a unique identifier for the agent with a given UUID
-std::string Agent::generateUUID(uuid_t uuid) {
-    
-    uuid_generate(uuid);
-    char uuidStr[37];
-    uuid_unparse(uuid, uuidStr);
-
-    return std::string(uuidStr);
-}
-
 // Initialize the agent with default values and calculate buffer radius
 void Agent::initialize() {
     float velocityMagnitude = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);

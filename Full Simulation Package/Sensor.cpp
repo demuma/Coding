@@ -4,6 +4,8 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <random>
+#include <uuid/uuid.h>
 
 // Base Sensor constructor
 Sensor::Sensor(float frameRate, sf::FloatRect detectionArea, sf::Color detectionAreaColor)
@@ -33,12 +35,13 @@ AgentBasedSensor::AgentBasedSensor(float frameRate, sf::FloatRect detectionArea,
     : Sensor(frameRate, detectionArea, detectionAreaColor) {
         this->detectionArea = detectionArea;
         this->detectionAreaColor = detectionAreaColor;
+        this->sensor_id = generateUUID();
     }
 
 // Destructor
 AgentBasedSensor::~AgentBasedSensor() {}
 
-// Update method for agent-based sensor
+// Update method for agent-based sensor, taking snapshot of agents in detection area
 void AgentBasedSensor::update(const std::vector<Agent>& agents, float deltaTime) {
     
     // Update the time since the last update
@@ -47,30 +50,73 @@ void AgentBasedSensor::update(const std::vector<Agent>& agents, float deltaTime)
     // Update the estimated velocities at the specified frame rate
     if (timeSinceLastUpdate >= 1.0f / frameRate) {
 
-        // Clear the current positions
-        for (const Agent& agent : agents) {
+        // Capture agent data (Modified)
+        captureAgentData(agents);
 
-            // Check if the agent is within the detection area
-            if (detectionArea.contains(agent.position)) {
-
-                // Store the current position of a specific agent using its UUID 
-                currentPositions[agent.uuid] = agent.position;
-            }
-        }
-
+        // Estimate the velocities of the agents
         estimateVelocities(estimatedVelocities);
+
+        // Reset for next update
         previousPositions = currentPositions;
         currentPositions.clear();
         timeSinceLastUpdate = 0.0f;
     }
 }
 
+// Make a snapshot of the agents in the detection area
+void AgentBasedSensor::captureAgentData(const std::vector<Agent>& agents) {
+
+    // Capture the current positions of the agents
+    for (const Agent& agent : agents) {
+
+        // Check if the agent is within the detection area
+        if (detectionArea.contains(agent.position)) {
+
+            // Prepare SensorData object for the agent
+            AgentBasedSensorData agentData;
+            agentData.sensor_id = this->sensor_id;
+            agentData.agent_id = agent.uuid;
+            agentData.timestamp = generateISOTimestamp();
+            agentData.type = agent.type;
+            agentData.position = agent.position;
+
+            // Estimate and store the velocity of the agent TODO: Only save with velocity
+            if (previousPositions.find(agent.uuid) != previousPositions.end()) {
+                sf::Vector2f prevPos = previousPositions[agent.uuid];
+                agentData.estimatedVelocity = (agent.position - previousPositions[agent.uuid]) * frameRate;
+            }
+
+            // Print the agent data
+            // std::cout << "Agent " << agent.uuid << " detected at " << agent.position.x << ", " << agent.position.y << std::endl;
+
+            // Store the agent data
+            dataStorage.push_back(agentData);
+
+            // Store the current position of a specific agent using its UUID 
+            currentPositions[agent.uuid] = agent.position;
+        }
+    }
+}
+
 // Save data method for agent-based sensor
 void AgentBasedSensor::saveData() {
 
-    auto currentTime = std::chrono::system_clock::now();
-    dataStorage.push_back({currentTime, estimatedVelocities});
-    estimatedVelocities.clear();
+    // Now responsible only for printing/saving the stored data
+    // std::cout << "Agent-Based Sensor Data:" << std::endl;
+
+    // Print the stored data
+    // for (const AgentBasedSensorData& data : dataStorage) {
+
+    //     std::cout << "  Timestamp: " << data.timestamp << std::endl;
+    //     std::cout << "  Sensor ID: " << data.sensor_id << std::endl;
+    //     std::cout << "  Agent ID: " << data.agent_id << std::endl;
+    //     std::cout << "  Agent Type: " << data.type << std::endl;
+    //     std::cout << "  Position: (" << data.position.x << ", " << data.position.y << ")" << std::endl;
+    //     std::cout << "  Estimated Velocity: (" << data.estimatedVelocity.x << ", " << data.estimatedVelocity.y << ")" << std::endl;
+    //     std::cout << std::endl;
+    // }
+
+    // Optionally, save to MongoDB or another storage here
 }
 
 // Constructor
@@ -79,6 +125,7 @@ GridBasedSensor::GridBasedSensor(float frameRate, sf::FloatRect detectionArea, s
         this->detectionArea = detectionArea;
         this->detectionAreaColor = detectionAreaColor;
         this->showGrid = showGrid;
+        this->sensor_id = generateUUID();
     }
 
 // Destructor

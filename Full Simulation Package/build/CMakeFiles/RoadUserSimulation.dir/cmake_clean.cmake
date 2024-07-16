@@ -15,6 +15,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/RoadUserSimulation.dir/Sensor.cpp.o.d"
   "CMakeFiles/RoadUserSimulation.dir/Simulation.cpp.o"
   "CMakeFiles/RoadUserSimulation.dir/Simulation.cpp.o.d"
+  "CMakeFiles/RoadUserSimulation.dir/Utilities.cpp.o"
+  "CMakeFiles/RoadUserSimulation.dir/Utilities.cpp.o.d"
   "RoadUserSimulation"
   "RoadUserSimulation.pdb"
 )

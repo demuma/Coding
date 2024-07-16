@@ -3,8 +3,16 @@
 
 #include <SFML/System/Vector2.hpp>
 #include <functional>
+#include <string>
+#include <uuid/uuid.h>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
 
-// Custom hash function for sf::Vector2i
+// Function declarations
+std::string generateUUID();
+std::string generateISOTimestamp();
+
 struct Vector2iHash {
     std::size_t operator()(const sf::Vector2i& v) const {
         std::hash<int> hasher;

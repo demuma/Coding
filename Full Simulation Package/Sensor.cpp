@@ -1,6 +1,9 @@
 #include "Sensor.hpp"
 #include <cmath>
 #include <iostream>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
 
 // Base Sensor constructor
 Sensor::Sensor(float frameRate, sf::FloatRect detectionArea, sf::Color detectionAreaColor)
@@ -9,11 +12,15 @@ Sensor::Sensor(float frameRate, sf::FloatRect detectionArea, sf::Color detection
 // Base Sensor velocity estimation
 void Sensor::estimateVelocities(std::unordered_map<std::string, sf::Vector2f>& estimatedVelocities) {
 
+    // Estimate the velocities of the agents
     for (const auto& kvp : previousPositions) {
 
         const std::string& agentUUID = kvp.first;
         const sf::Vector2f& previousPosition = kvp.second;
+
+        // If the agent is still in the detection area
         if (currentPositions.find(agentUUID) != currentPositions.end()) {
+
             const sf::Vector2f& currentPosition = currentPositions[agentUUID];
             sf::Vector2f estimatedVelocity = (currentPosition - previousPosition) * frameRate;
             estimatedVelocities[agentUUID] = estimatedVelocity;
@@ -33,11 +40,20 @@ AgentBasedSensor::~AgentBasedSensor() {}
 
 // Update method for agent-based sensor
 void AgentBasedSensor::update(const std::vector<Agent>& agents, float deltaTime) {
-
+    
+    // Update the time since the last update
     timeSinceLastUpdate += deltaTime;
+
+    // Update the estimated velocities at the specified frame rate
     if (timeSinceLastUpdate >= 1.0f / frameRate) {
+
+        // Clear the current positions
         for (const Agent& agent : agents) {
+
+            // Check if the agent is within the detection area
             if (detectionArea.contains(agent.position)) {
+
+                // Store the current position of a specific agent using its UUID 
                 currentPositions[agent.uuid] = agent.position;
             }
         }
@@ -58,10 +74,11 @@ void AgentBasedSensor::saveData() {
 }
 
 // Constructor
-GridBasedSensor::GridBasedSensor(float frameRate, sf::FloatRect detectionArea, sf::Color detectionAreaColor, float cellSize)
+GridBasedSensor::GridBasedSensor(float frameRate, sf::FloatRect detectionArea, sf::Color detectionAreaColor, float cellSize, bool showGrid)
     : Sensor(frameRate, detectionArea, detectionAreaColor), cellSize(cellSize) {
         this->detectionArea = detectionArea;
         this->detectionAreaColor = detectionAreaColor;
+        this->showGrid = showGrid;
     }
 
 // Destructor
@@ -90,15 +107,22 @@ void GridBasedSensor::saveData() {
 
     auto currentTime = std::chrono::system_clock::now();
 
+    std::time_t now = std::chrono::system_clock::to_time_t(currentTime);
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&now), "%FT%TZ");
+
     // Print grid data
     for (const auto& kvp : gridData) {
 
         const sf::Vector2i& cellIndex = kvp.first;
         const std::unordered_map<std::string, int>& cellData = kvp.second;
-        std::cout << "Cell (" << cellIndex.x << ", " << cellIndex.y << "): ";
 
+        std::cout << "Current time: " << ss.str() << " Cell (" << cellIndex.x << ", " << cellIndex.y << "): ";
+
+        // Going through key-value pairs in the cell data
         for (const auto& kvp : cellData) {
-
+            
+            // Print agent type and count
             const std::string& agentType = kvp.first;
             int count = kvp.second;
             std::cout << agentType << ": " << count << ", ";

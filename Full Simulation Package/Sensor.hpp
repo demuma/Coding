@@ -10,6 +10,27 @@
 
 class Sensor {
 public:
+
+    struct AgentBasedSensorData {
+
+        // Sensor data structure
+        std::string sensor_id;
+        std::string agent_id;
+        std::string timestamp;
+        std::string type;
+        sf::Vector2f position;
+        sf::Vector2f estimatedVelocity;
+    };
+
+    struct GridBasedSensorData {
+
+        // Sensor data structure
+        std::string sensor_id;
+        std::string timestamp;
+        sf::Vector2i cellIndex;
+        int count;
+    };
+
     Sensor(float frameRate, sf::FloatRect detectionArea, sf::Color detectionAreaColor);
     virtual void update(const std::vector<Agent>& agents, float deltaTime) = 0;
     virtual void saveData() = 0;
@@ -37,15 +58,19 @@ public:
     void saveData() override;
 
 private:
+    // Mapping of agent ID to estimated velocity
     std::unordered_map<std::string, sf::Vector2f> estimatedVelocities;
+
+    // Data storage structure
     std::vector<std::pair<std::chrono::system_clock::time_point, std::unordered_map<std::string, sf::Vector2f>>> dataStorage;
 };
 
 class GridBasedSensor : public Sensor {
 public:
-    GridBasedSensor(float frameRate, sf::FloatRect detectionArea, sf::Color detectionAreaColor, float cellSize);
+    GridBasedSensor(float frameRate, sf::FloatRect detectionArea, sf::Color detectionAreaColor, float cellSize, bool showGrid);
     ~GridBasedSensor();
     float cellSize;
+    bool showGrid = false;
 
     void update(const std::vector<Agent>& agents, float deltaTime) override;
     void saveData() override;

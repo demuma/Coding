@@ -33,7 +33,7 @@ private:
     const YAML::Node& config;
        const sf::Font& font;
 
-    // Configuration Data Members (read from YAML)
+    // Configuration Data Members (read from YAML) unit: meters
     int windowWidth;
     int windowHeight;
     float windowWidthScaled = 0.0f;
@@ -49,6 +49,10 @@ private:
     int maxFrames;
     sf::Time timeStep;
     int scale = 20; // Pixels per meter
+    float simulationWidth;
+    float simulationHeight;
+    float simulationWidthOffsetScaled = 0.0f;
+    float simulationHeightOffsetScaled = 0.0f;
 
     // Window
     sf::RenderWindow& window;

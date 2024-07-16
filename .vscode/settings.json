@@ -130,7 +130,15 @@
     "iomanip": "cpp",
     "istream": "cpp",
     "sstream": "cpp",
-    "chrono": "cpp"
+    "chrono": "cpp",
+    "deque": "cpp",
+    "list": "cpp",
+    "queue": "cpp",
+    "span": "cpp",
+    "stack": "cpp",
+    "valarray": "cpp",
+    "filesystem": "cpp",
+    "stop_token": "cpp"
   },
   "C_Cpp.default.compilerPath": "",
   "C_Cpp.default.includePath": [

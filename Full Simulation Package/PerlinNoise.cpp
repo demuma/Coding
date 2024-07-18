@@ -5,7 +5,9 @@
 
 #include "PerlinNoise.hpp"
 
+// Perlin noise class
 PerlinNoise::PerlinNoise(unsigned int seed) {
+
     p.resize(256);
 
     // Initialize the permutation vector with values 0 to 255
@@ -19,7 +21,9 @@ PerlinNoise::PerlinNoise(unsigned int seed) {
     p.insert(p.end(), p.begin(), p.end());
 }
 
+// Compute Perlin noise at coordinates x, y, z
 double PerlinNoise::noise(double x, double y, double z) {
+
     // Find unit cube that contains point
     int X = static_cast<int>(std::floor(x)) & 255;
     int Y = static_cast<int>(std::floor(y)) & 255;

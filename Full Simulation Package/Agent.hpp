@@ -32,6 +32,7 @@ public:
     float velocitySigma; // Standard deviation of velocity
     float velocityMagnitude; // Magnitude of velocity
     float velocityNoiseFactor; // Noise factor for velocity
+    float velocityNoiseScale;
     float minAcceleration; // Minimum acceleration
     float maxAcceleration; // Maximum acceleration
     float bufferRadius;

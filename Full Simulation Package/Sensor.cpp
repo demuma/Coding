@@ -119,6 +119,21 @@ void AgentBasedSensor::saveData() {
     // Optionally, save to MongoDB or another storage here
 }
 
+void AgentBasedSensor::printData() {
+
+    // Print the stored data
+    for (const AgentBasedSensorData& data : dataStorage) {
+
+        std::cout << "  Timestamp: " << data.timestamp << std::endl;
+        std::cout << "  Sensor ID: " << data.sensor_id << std::endl;
+        std::cout << "  Agent ID: " << data.agent_id << std::endl;
+        std::cout << "  Agent Type: " << data.type << std::endl;
+        std::cout << "  Position: (" << data.position.x << ", " << data.position.y << ")" << std::endl;
+        std::cout << "  Estimated Velocity: (" << data.estimatedVelocity.x << ", " << data.estimatedVelocity.y << ")" << std::endl;
+        std::cout << std::endl;
+    }
+}
+
 // Constructor
 GridBasedSensor::GridBasedSensor(float frameRate, sf::FloatRect detectionArea, sf::Color detectionAreaColor, float cellSize, bool showGrid)
     : Sensor(frameRate, detectionArea, detectionAreaColor), cellSize(cellSize) {
@@ -158,6 +173,19 @@ void GridBasedSensor::saveData() {
     std::stringstream ss;
     ss << std::put_time(std::localtime(&now), "%FT%TZ");
 
+    // Store grid data
+    dataStorage.push_back({currentTime, gridData});
+    //gridData.clear();
+}
+
+void GridBasedSensor::printData() {
+
+    auto currentTime = std::chrono::system_clock::now();
+
+    std::time_t now = std::chrono::system_clock::to_time_t(currentTime);
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&now), "%FT%TZ");
+    
     // Print grid data
     for (const auto& kvp : gridData) {
 
@@ -176,8 +204,8 @@ void GridBasedSensor::saveData() {
         }
         std::cout << std::endl;
     }
-    dataStorage.push_back({currentTime, gridData});
     gridData.clear();
+
 }
 
 // Helper function to get cell index based on position

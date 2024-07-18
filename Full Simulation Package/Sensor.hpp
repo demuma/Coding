@@ -14,6 +14,7 @@ public:
     Sensor(float frameRate, sf::FloatRect detectionArea, sf::Color detectionAreaColor);
     virtual void update(const std::vector<Agent>& agents, float deltaTime) = 0;
     virtual void saveData() = 0;
+    virtual void printData() = 0;
     virtual ~Sensor() = default;
     sf::Color detectionAreaColor;
     sf::FloatRect detectionArea;
@@ -49,6 +50,7 @@ public:
     void update(const std::vector<Agent>& agents, float deltaTime) override;
     void captureAgentData(const std::vector<Agent>& agent);
     void saveData() override;
+    void printData() override;
 
 private:
     // Mapping of agent ID to estimated velocity
@@ -79,6 +81,7 @@ public:
 
     void update(const std::vector<Agent>& agents, float deltaTime) override;
     void saveData() override;
+    void printData() override;
 
 private:
     std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash> gridData;

@@ -12,6 +12,8 @@
 // Function declarations
 std::string generateUUID();
 std::string generateISOTimestamp();
+sf::Vector2f generateRandomVelocityVector(float mu, float sigma, float min, float max);
+float generateRandomNumberFromTND(float mean, float stddev, float min, float max);
 
 struct Vector2iHash {
     std::size_t operator()(const sf::Vector2i& v) const {

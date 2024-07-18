@@ -34,6 +34,7 @@ void Simulation::loadConfiguration() {
     showInfo = config["display"]["show_info"].as<bool>();
     scale = config["display"]["pixels_per_meter"].as<int>();
     timeStep = sf::seconds(config["simulation"]["time_step"].as<float>());
+    speedFactor = config["simulation"]["speed_factor"].as<float>();
     simulationWidth = config["simulation"]["width"].as<float>();
     simulationHeight = config["simulation"]["height"].as<float>();
     
@@ -45,8 +46,6 @@ void Simulation::loadConfiguration() {
     // Simulation offsets
     simulationWidthOffsetScaled = (windowWidthScaled - simulationWidth) / 2.0f;
     simulationHeightOffsetScaled = (windowHeightScaled - simulationHeight) / 2.0f;
-    // simulationHeightOffset = 0.0f;
-    // simulationWidthOffset = 0.0f;
 }
 
 // Function to initialize the grid based on the YAML configuration
@@ -119,6 +118,7 @@ void Simulation::initializeAgents() {
             agent.velocityMu = agentType["velocity"]["mu"].as<float>();
             agent.velocitySigma = agentType["velocity"]["sigma"].as<float>();
             agent.velocityNoiseFactor = agentType["velocity"]["noise_factor"].as<float>();
+            agent.velocityNoiseScale = agentType["velocity"]["noise_scale"].as<float>();
 
             // Convert angle to velocity vector from truncated normal distribution
             agent.velocity = generateRandomVelocityVector(agent.velocityMu, agent.velocitySigma, agent.minVelocity, agent.maxVelocity);
@@ -282,6 +282,7 @@ void Simulation::run() {
     frameCount = 0;
     cumulativeSum = 0.0f;
     frameRates.clear();
+    float speedFactor = 1.0f;
 
     // Main simulation loop
     while (window.isOpen() && (totalElapsedTime < sf::seconds(durationSeconds) || maxFrames == 0) && 
@@ -299,7 +300,7 @@ void Simulation::run() {
         // Check if the simulation is not paused
         if(!isPaused) {
         
-            timeSinceLastUpdate += elapsedTime; 
+            timeSinceLastUpdate += elapsedTime * speedFactor; 
 
             // Update the simulation based on the time step
             while (timeSinceLastUpdate >= timeStep) { 
@@ -330,7 +331,7 @@ void Simulation::run() {
             }
 
             // Update totalElapsedTime with the remaining timeSinceLastUpdate
-            totalElapsedTime += elapsedTime; // Update total elapsed time
+            totalElapsedTime += elapsedTime * speedFactor; // Update total elapsed time
         }
 
         // Render the simulation
@@ -659,10 +660,21 @@ void Simulation::update(float deltaTime) {
     for (auto& sensor : sensors) {
         sensor->update(agents, timeStep.asSeconds());
         sensor->saveData();
+
+        // Print sensor data from grid-based sensors
+        // if (auto gridBasedSensor = dynamic_cast<GridBasedSensor*>(sensor.get())) {
+        //     gridBasedSensor->printData();
+        // }
+
+        // Print sensor data from grid-based sensors
+        // if (auto agentBasedSensor = dynamic_cast<AgentBasedSensor*>(sensor.get())) {
+        //     agentBasedSensor->printData();
+        // }
     }
 
     for (auto agent = agents.begin(); agent != agents.end(); ) {
         agent->updatePosition(deltaTime);
+        agent->updateVelocity(deltaTime, totalElapsedTime);
         agent->resetCollisionState(); // Reset collision state at the start of each frame for each agent
 
         // Check if agent is out of bounds TODO: make separate function
@@ -801,37 +813,4 @@ sf::Color Simulation::stringToColor(std::string colorStr) {
 
     std::cerr << "Warning: Unrecognized color string '" << colorStr << "'. Using black instead." << std::endl;
     return sf::Color::Black;
-}
-
-// Generate velocity from truncated normal distribution
-float Simulation::generateRandomNumberFromTND(float mean, float stddev, float min, float max) {
-
-    // Generate normal distribution
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::normal_distribution<float> generateNormal(mean, stddev);
-
-    // Generate random number until it falls within the specified range
-    float value;
-    do {
-        value = generateNormal(gen);
-    } while (value < min || value > max);
-    return value;
-}
-
-// Generate random velocity vector
-sf::Vector2f Simulation::generateRandomVelocityVector(float mu, float sigma, float min, float max) {
-    
-    // Generate distribution for angle
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> disAngle(0.0, 2 * M_PI);
-    sf::Vector2f velocity;
-
-    // Generate random velocity magnitude
-    float velocityMagnitude = generateRandomNumberFromTND(mu, sigma, min, max);
-    float angle = disAngle(gen);
-    velocity = sf::Vector2f(velocityMagnitude * std::cos(angle), velocityMagnitude * std::sin(angle));
-    
-    return velocity;
 }

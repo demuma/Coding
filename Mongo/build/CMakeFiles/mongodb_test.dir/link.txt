@@ -1,1 +1,0 @@
-/Library/Developer/CommandLineTools/usr/bin/c++  -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/mongodb_test.dir/mongodb_test.cpp.o -o mongodb_test  -Wl,-rpath,/usr/local/lib /usr/local/lib/libmongocxx.3.10.1.dylib /usr/local/lib/libbsoncxx.3.10.1.dylib

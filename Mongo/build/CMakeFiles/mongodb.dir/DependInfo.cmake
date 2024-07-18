@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Mongo/mongodb_test.cpp" "CMakeFiles/mongodb_test.dir/mongodb_test.cpp.o" "gcc" "CMakeFiles/mongodb_test.dir/mongodb_test.cpp.o.d"
+  "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Mongo/mongodb.cpp" "CMakeFiles/mongodb.dir/mongodb.cpp.o" "gcc" "CMakeFiles/mongodb.dir/mongodb.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

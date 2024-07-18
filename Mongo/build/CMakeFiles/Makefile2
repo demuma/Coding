@@ -63,7 +63,7 @@ CMAKE_BINARY_DIR = "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Mongo/
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/mongodb_test.dir/all
+all: CMakeFiles/mongodb.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -71,34 +71,34 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/mongodb_test.dir/clean
+clean: CMakeFiles/mongodb.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/mongodb_test.dir
+# Target rules for target CMakeFiles/mongodb.dir
 
 # All Build rule for target.
-CMakeFiles/mongodb_test.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mongodb_test.dir/build.make CMakeFiles/mongodb_test.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mongodb_test.dir/build.make CMakeFiles/mongodb_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Mongo/build/CMakeFiles" --progress-num=1,2 "Built target mongodb_test"
-.PHONY : CMakeFiles/mongodb_test.dir/all
+CMakeFiles/mongodb.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mongodb.dir/build.make CMakeFiles/mongodb.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mongodb.dir/build.make CMakeFiles/mongodb.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Mongo/build/CMakeFiles" --progress-num=1,2 "Built target mongodb"
+.PHONY : CMakeFiles/mongodb.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/mongodb_test.dir/rule: cmake_check_build_system
+CMakeFiles/mongodb.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Mongo/build/CMakeFiles" 2
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/mongodb_test.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/mongodb.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Mongo/build/CMakeFiles" 0
-.PHONY : CMakeFiles/mongodb_test.dir/rule
+.PHONY : CMakeFiles/mongodb.dir/rule
 
 # Convenience name for target.
-mongodb_test: CMakeFiles/mongodb_test.dir/rule
-.PHONY : mongodb_test
+mongodb: CMakeFiles/mongodb.dir/rule
+.PHONY : mongodb
 
 # clean rule for target.
-CMakeFiles/mongodb_test.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mongodb_test.dir/build.make CMakeFiles/mongodb_test.dir/clean
-.PHONY : CMakeFiles/mongodb_test.dir/clean
+CMakeFiles/mongodb.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mongodb.dir/build.make CMakeFiles/mongodb.dir/clean
+.PHONY : CMakeFiles/mongodb.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

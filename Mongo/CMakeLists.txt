@@ -42,20 +42,20 @@
 
 
 cmake_minimum_required(VERSION 3.10)
-project(mongodb_test)
+project(mongodb)
 
 # Find the MongoDB C++ driver
 find_package(mongocxx REQUIRED)
 find_package(bsoncxx REQUIRED)
 
 # Add the executable
-add_executable(mongodb_test mongodb_test.cpp)
+add_executable(mongodb mongodb.cpp)
 
 # Include directories and link libraries
-target_link_libraries(mongodb_test PRIVATE mongo::mongocxx_shared mongo::bsoncxx_shared)
+target_link_libraries(mongodb PRIVATE mongo::mongocxx_shared mongo::bsoncxx_shared)
 
 # Specify C++ standard
-set_target_properties(mongodb_test PROPERTIES
+set_target_properties(mongodb PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO

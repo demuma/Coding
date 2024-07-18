@@ -117,41 +117,41 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named mongodb_test
+# Target rules for targets named mongodb
 
 # Build rule for target.
-mongodb_test: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 mongodb_test
-.PHONY : mongodb_test
+mongodb: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 mongodb
+.PHONY : mongodb
 
 # fast build rule for target.
-mongodb_test/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mongodb_test.dir/build.make CMakeFiles/mongodb_test.dir/build
-.PHONY : mongodb_test/fast
+mongodb/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mongodb.dir/build.make CMakeFiles/mongodb.dir/build
+.PHONY : mongodb/fast
 
-mongodb_test.o: mongodb_test.cpp.o
-.PHONY : mongodb_test.o
+mongodb.o: mongodb.cpp.o
+.PHONY : mongodb.o
 
 # target to build an object file
-mongodb_test.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mongodb_test.dir/build.make CMakeFiles/mongodb_test.dir/mongodb_test.cpp.o
-.PHONY : mongodb_test.cpp.o
+mongodb.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mongodb.dir/build.make CMakeFiles/mongodb.dir/mongodb.cpp.o
+.PHONY : mongodb.cpp.o
 
-mongodb_test.i: mongodb_test.cpp.i
-.PHONY : mongodb_test.i
+mongodb.i: mongodb.cpp.i
+.PHONY : mongodb.i
 
 # target to preprocess a source file
-mongodb_test.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mongodb_test.dir/build.make CMakeFiles/mongodb_test.dir/mongodb_test.cpp.i
-.PHONY : mongodb_test.cpp.i
+mongodb.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mongodb.dir/build.make CMakeFiles/mongodb.dir/mongodb.cpp.i
+.PHONY : mongodb.cpp.i
 
-mongodb_test.s: mongodb_test.cpp.s
-.PHONY : mongodb_test.s
+mongodb.s: mongodb.cpp.s
+.PHONY : mongodb.s
 
 # target to generate assembly for a file
-mongodb_test.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/mongodb_test.dir/build.make CMakeFiles/mongodb_test.dir/mongodb_test.cpp.s
-.PHONY : mongodb_test.cpp.s
+mongodb.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/mongodb.dir/build.make CMakeFiles/mongodb.dir/mongodb.cpp.s
+.PHONY : mongodb.cpp.s
 
 # Help Target
 help:
@@ -161,10 +161,10 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... mongodb_test"
-	@echo "... mongodb_test.o"
-	@echo "... mongodb_test.i"
-	@echo "... mongodb_test.s"
+	@echo "... mongodb"
+	@echo "... mongodb.o"
+	@echo "... mongodb.i"
+	@echo "... mongodb.s"
 .PHONY : help
 
 

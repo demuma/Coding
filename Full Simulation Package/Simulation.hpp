@@ -48,6 +48,7 @@ private:
     float durationSeconds;
     int maxFrames;
     sf::Time timeStep;
+    float speedFactor = 1.0f;
     int scale = 20; // Pixels per meter
     float simulationWidth;
     float simulationHeight;
@@ -109,8 +110,6 @@ private:
     void initializeSensors();
     void storeAgentData(const std::vector<Agent>& agents);
     sf::Color stringToColor(std::string colorStr);
-    float generateRandomNumberFromTND(float mean, float stddev, float min, float max);
-    sf::Vector2f generateRandomVelocityVector(float mu, float sigma, float min, float max);
 };
 
 #endif // SIMULATION_HPP

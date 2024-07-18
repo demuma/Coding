@@ -1,8 +1,8 @@
 version: 1.0.0
 
 display:
-  width: 2000
-  height: 1000
+  width: 1800
+  height: 1200
   pixels_per_meter: 10   # Default: 10
   show_info: true
 
@@ -13,7 +13,7 @@ collision:
 
 agents:
   show_trajectories: true
-  num_agents: 10
+  num_agents: 100
   grouping:
     families:
       allow: false
@@ -34,7 +34,8 @@ agents:
         max: 1.667  # 6 km/h
         mu: 1.0     # 3.6 km/h
         sigma: 0.2
-        noise_factor: 0.1
+        noise_scale: 0.05
+        noise_factor: 0.5
       acceleration:
         min: 0.5
         max: 1.5
@@ -49,7 +50,8 @@ agents:
         max: 1.5  # 5.4 km/h
         mu: 0.9   # 3.2 km/h
         sigma: 0.2
-        noise_factor: 0.1
+        noise_scale: 0.05
+        noise_factor: 0.5
       acceleration:
         min: 0.5
         max: 1.2
@@ -64,7 +66,8 @@ agents:
         max: 1.667  # 6 km/h
         mu: 1.4     # 5 km/h
         sigma: 0.2
-        noise_factor: 0.1
+        noise_scale: 0.05
+        noise_factor: 0.5
       acceleration:
         min: 0.68
         max: 1.44
@@ -79,7 +82,8 @@ agents:
         max: 5.5  # 20 km/h
         mu: 4.0   # 14.4 km/h
         sigma: 0.2
-        noise_factor: 0.1
+        noise_scale: 0.05
+        noise_factor: 0.5
       acceleration:
         min: 0.5
         max: 1.5
@@ -94,7 +98,8 @@ agents:
         max: 10   # 36 km/h
         mu: 6.0 # 21.6 km/h
         sigma: 0.3
-        noise_factor: 0.1
+        noise_scale: 0.05
+        noise_factor: 0.5
       acceleration:
         min: 1.5
         max: 4.0
@@ -109,14 +114,16 @@ agents:
         max: 6.11  # 22 km/h
         mu: 5.6    # 20 km/h
         sigma: 0.1
-        noise_factor: 0.1
+        noise_scale: 0.05
+        noise_factor: 0.5
       acceleration:
         min: 2.0
         max: 4.5
       look_ahead_time: 2.0 # Part of behavior profile (foresightfulness)
    
 simulation:
-  duration_seconds: 50
+  speed_factor: 1.0
+  duration_seconds: 10000
   maximum_frames: 10000
   time_step: 0.03333
   scenario: random # not used
@@ -141,6 +148,20 @@ database:
 #     size: [10, 5.0]      # Size in meters
 #     color: grey
 
+corridors:
+  - type: start
+    position: [0.0, 0.0]
+    width: 2.0
+    height: 72.0
+    color: grey
+    alpha: 0.1
+  - type: end
+    position: [170.0, 0.0]
+    width: 2.0
+    height: 72.0
+    color: red
+    alpha: 0.1
+
 sensors:
   - type: agent-based
     frame_rate: 10.0
@@ -163,3 +184,7 @@ sensors:
     grid:
       cell_size: 10 # in meters
       show_grid: true
+
+location:
+  latitude: 53.55703
+  longitude: 10.02303

@@ -146,7 +146,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=mongodb_test
+CMAKE_PROJECT_NAME:STATIC=mongodb
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/Library/Developer/CommandLineTools/usr/bin/ranlib
@@ -232,13 +232,13 @@ mongoc-1.0_DIR:PATH=/usr/local/lib/cmake/mongoc-1.0
 mongocxx_DIR:PATH=/usr/local/lib/cmake/mongocxx-3.10.1
 
 //Value Computed by CMake
-mongodb_test_BINARY_DIR:STATIC=/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Mongo/build
+mongodb_BINARY_DIR:STATIC=/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Mongo/build
 
 //Value Computed by CMake
-mongodb_test_IS_TOP_LEVEL:STATIC=ON
+mongodb_IS_TOP_LEVEL:STATIC=ON
 
 //Value Computed by CMake
-mongodb_test_SOURCE_DIR:STATIC=/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Mongo
+mongodb_SOURCE_DIR:STATIC=/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Mongo
 
 
 ########################

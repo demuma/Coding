@@ -172,18 +172,24 @@ sensors:
       height: 72.0
       color: blue
       alpha: 0.1
-  - type: grid-based
-    frame_rate: 10.0
-    detection_area:
-      left: 87.0
-      top: 0.0
-      width: 85.0 # default: 85.0
-      height: 72.0 # default: 72.0
-      color: green
-      alpha: 0.1
-    grid:
-      cell_size: 10 # in meters
-      show_grid: true
+    database:
+      db_name: Simulation
+      collection_name: AB_Sensor_Data
+#   - type: grid-based
+#     frame_rate: 10.0
+#     detection_area:
+#       left: 87.0
+#       top: 0.0
+#       width: 85.0 # default: 85.0
+#       height: 72.0 # default: 72.0
+#       color: green
+#       alpha: 0.1
+#     grid:
+#       cell_size: 10 # in meters
+#       show_grid: true
+#     database:
+#       db_name: Simulation
+#       collection_name: GB_Sensor_Data
 
 location:
   latitude: 53.55703

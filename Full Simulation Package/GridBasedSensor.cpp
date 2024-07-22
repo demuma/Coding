@@ -31,12 +31,6 @@ void GridBasedSensor::update(const std::vector<Agent>& agents, float deltaTime, 
     // Clear data storage
     dataStorage.clear();
 
-    // // Get the current time
-    // auto currentTime = std::chrono::system_clock::now();
-    // std::time_t now = std::chrono::system_clock::to_time_t(currentTime);
-    // std::stringstream ss;
-    // ss << std::put_time(std::localtime(&now), "%FT%TZ");
-
     std::string currentTime = generateISOTimestamp(totalElapsedTime, datetime);
 
     // Update the time since the last update
@@ -49,7 +43,11 @@ void GridBasedSensor::update(const std::vector<Agent>& agents, float deltaTime, 
         // Clear the grid data
         gridData.clear();
 
+        // Reset boolean flag
         bool hasAgents = false;
+
+        // Declare a variable to store the cell index
+        sf::Vector2i cellIndex;
 
         // Iterate through the agents
         for (const Agent& agent : agents) {
@@ -61,7 +59,7 @@ void GridBasedSensor::update(const std::vector<Agent>& agents, float deltaTime, 
                 hasAgents = true;
 
                 // Get the cell index of the agent's position
-                sf::Vector2i cellIndex = getCellIndex(agent.position);
+                cellIndex = getCellIndex(agent.position);
 
                 // Increment the count of the agent type in the cell
                 gridData[cellIndex][agent.type]++;
@@ -72,7 +70,7 @@ void GridBasedSensor::update(const std::vector<Agent>& agents, float deltaTime, 
         if(hasAgents) {
 
             timeSinceLastUpdate = 0.0f;
-            dataStorage.push_back({currentTime, gridData});
+            dataStorage.push_back({currentTime, gridData}); // Pushing exactly one entry to dataStorage
         }
     }
 }
@@ -83,88 +81,55 @@ void GridBasedSensor::postData() {
     // Check if there is data to post
     if(!dataStorage.empty()) {
 
-        // Check if there is data to post
-        if (dataStorage.size() > 1) {
+        // Create a vector of documents for bulk insert
+        std::vector<bsoncxx::document::value> documents;
 
-            // Create a vector of documents for bulk insert
-            std::vector<bsoncxx::document::value> documents;
+        // Iterate through the data storage (currently only one entry in dataStorage)
+        for (const auto& [timestamp, gridData] : dataStorage) {
 
-            // Iterate through the data storage (currently only one entry in dataStorage)
-            for (const auto& [timestamp, gridData] : dataStorage) {
-
-                for (const auto& [cellIndex, cellData] : gridData) {
-
-                    bsoncxx::builder::stream::document document{}; // Document for the grid cell
-                    document << "timestamp" << timestamp;
-                    document << "sensor_id" << sensor_id;
-                    document << "cell_index" << bsoncxx::builder::stream::open_array 
-                        << cellIndex.x << cellIndex.y
-                        << bsoncxx::builder::stream::close_array;
-
-                    // Calculate the total agent count in the cell
-                    int totalAgents = 0;
-                    for (const auto& [agentType, count] : cellData) {
-                        totalAgents += count;
-                    }
-                    document << "total_agents" << totalAgents; // Add the total agent count to the document
-
-                    // Embed agent counts as a subdocument
-                    bsoncxx::builder::stream::document agentCountsBuilder{};
-                    for (const auto& [agentType, count] : cellData) {
-                        agentCountsBuilder << agentType << count;
-                    }
-                    document << "agent_type_counts" << agentCountsBuilder;
-                    
-                    // Add the document to the vector for bulk insert
-                    documents.push_back(document << bsoncxx::builder::stream::finalize);
-                }
-            }
-
-            // Bulk insert the documents into the collection
-            try {
-                collection.insert_many(documents);
-            } catch (const mongocxx::exception& e) {
-                // Handle errors
-                std::cerr << "Error inserting agent data: " << e.what() << std::endl;
-            }
-
-        } else {
-
-            // Get the first entry in the data storage
-            const auto& [timestamp, gridData] = dataStorage[0];
-
-            // Construct the BSON document directly from the gridSnapshot
-            bsoncxx::builder::stream::document document{};
-            document << "timestamp" << timestamp;
-            document << "sensor_id" << sensor_id;
-
-            bsoncxx::builder::stream::document agentCountsBuilder{};
-            int totalAgents = 0;
+            // Iterate through the grid data
             for (const auto& [cellIndex, cellData] : gridData) {
-
-                document << "cell_index" 
+                
+                // Document for the grid cell
+                bsoncxx::builder::stream::document document{}; 
+                document << "timestamp" << timestamp;
+                document << "sensor_id" << sensor_id;
+                document << "cell_index" // Vector2i as an array
                     << bsoncxx::builder::stream::open_array 
                     << cellIndex.x 
                     << cellIndex.y
                     << bsoncxx::builder::stream::close_array;
-
+            
+                // Embed agent counts as a subdocument
+                bsoncxx::builder::stream::document agentCountsBuilder{};
                 for (const auto& [agentType, count] : cellData) {
                     agentCountsBuilder << agentType << count;
+                }
+
+                // Count the total agents in the cell
+                int totalAgents = 0;
+                for (const auto& [agentType, count] : cellData) {
                     totalAgents += count;
                 }
 
                 // Add total agent count for the cell
                 document << "total_agents" << totalAgents;
-                document << "agent_counts" << agentCountsBuilder; // Embed agent counts as a subdocument
-            }
 
-            try {
-                collection.insert_one(document << bsoncxx::builder::stream::finalize); // Use insert_one for a single document
-            } catch (const mongocxx::exception& e) {
-                std::cerr << "Error inserting agent data: " << e.what() << std::endl;
+                // Add the agent counts subdocument
+                document << "agent_type_counts" << agentCountsBuilder;
+                
+                // Add the document to the vector for bulk insert
+                documents.push_back(document << bsoncxx::builder::stream::finalize);
             }
         }
 
+        // Bulk insert the documents into the collection
+        try {
+            collection.insert_many(documents);
+        } catch (const mongocxx::exception& e) {
+            // Handle errors
+            std::cerr << "Error inserting agent data: " << e.what() << std::endl;
+        }
     }
 }
 

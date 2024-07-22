@@ -33,10 +33,10 @@ db = client["Simulation"]
 #print(db)
 
 # Define data collection within database
-collection = db["Pedestrians"]
+collection = db["AB_Sensor_Data"]
 
 # Get data (called documents) from database
-results = collection.find({"class":"Adult Cyclist"})
+results = collection.find({"type":"Adult Cyclist"})
 
 for result in results:
     print(result)

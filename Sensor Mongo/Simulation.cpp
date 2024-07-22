@@ -1,9 +1,23 @@
 #include "Simulation.hpp"
 #include <mongocxx/uri.hpp>
 #include <iostream>
+#include <fstream>
+#include <yaml-cpp/yaml.h>
 
-Simulation::Simulation(const std::string& dbUri, const std::string& databaseName)
-    : dbUri(dbUri), databaseName(databaseName), instance{} {}
+Simulation::Simulation()
+    : instance{} {}
+
+void Simulation::loadConfiguration() {
+    try {
+        config = YAML::LoadFile("../config.yaml");
+        dbUri = config["dbUri"].as<std::string>();
+        databaseName = config["database"].as<std::string>();
+        std::cout << "Configuration loaded from config.yaml" << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to load configuration: " << e.what() << std::endl;
+        throw;
+    }
+}
 
 void Simulation::initializeMongoDB() {
     mongocxx::uri uri(dbUri);
@@ -27,4 +41,11 @@ void Simulation::updateSensors() {
         sensor->postData();
     }
     std::cout << "Sensors updated." << std::endl;
+}
+
+void Simulation::run() {
+    loadConfiguration();
+    initializeMongoDB();
+    initializeSensors();
+    updateSensors();
 }

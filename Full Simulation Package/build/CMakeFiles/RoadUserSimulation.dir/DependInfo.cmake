@@ -9,8 +9,10 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/Agent.cpp" "CMakeFiles/RoadUserSimulation.dir/Agent.cpp.o" "gcc" "CMakeFiles/RoadUserSimulation.dir/Agent.cpp.o.d"
+  "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/AgentBasedSensor.cpp" "CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.o" "gcc" "CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/CollisionAvoidance.cpp" "CMakeFiles/RoadUserSimulation.dir/CollisionAvoidance.cpp.o" "gcc" "CMakeFiles/RoadUserSimulation.dir/CollisionAvoidance.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/Grid.cpp" "CMakeFiles/RoadUserSimulation.dir/Grid.cpp.o" "gcc" "CMakeFiles/RoadUserSimulation.dir/Grid.cpp.o.d"
+  "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/GridBasedSensor.cpp" "CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.o" "gcc" "CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/Main.cpp" "CMakeFiles/RoadUserSimulation.dir/Main.cpp.o" "gcc" "CMakeFiles/RoadUserSimulation.dir/Main.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/Obstacle.cpp" "CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.o" "gcc" "CMakeFiles/RoadUserSimulation.dir/Obstacle.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/PerlinNoise.cpp" "CMakeFiles/RoadUserSimulation.dir/PerlinNoise.cpp.o" "gcc" "CMakeFiles/RoadUserSimulation.dir/PerlinNoise.cpp.o.d"

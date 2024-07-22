@@ -18,20 +18,38 @@
 #include "Obstacle.hpp"
 #include "PerlinNoise.hpp"
 #include "Sensor.hpp"
+#include "AgentBasedSensor.hpp"
+#include "GridBasedSensor.hpp"
+
 
 // Simulation class
 class Simulation {
 public:
-    Simulation(sf::RenderWindow& window, const sf::Font& font, const YAML::Node& config);
+    Simulation(
+        sf::RenderWindow& window, 
+        const sf::Font& font, 
+        const YAML::Node& config);
     void run(); // Main simulation loop
+    void initializeDatabase();
+    void initializeSensors();
 
 private:
+
+    // Database
+    std::string dbUri;
+    std::string databaseName;
+    std::shared_ptr<mongocxx::client> client;
+    mongocxx::instance instance;
+    mongocxx::collection collection; // For agent data storage
     
+    // Sensors
+    std::vector<std::unique_ptr<Sensor>> sensors;
+
     // Data Members
     sf::Clock clock;
     float cumulativeSum = 0.0f;
-    const YAML::Node& config;
-       const sf::Font& font;
+    const YAML::Node& config; // not used
+    const sf::Font& font;
 
     // Configuration Data Members (read from YAML) unit: meters
     int windowWidth;
@@ -71,6 +89,7 @@ private:
     sf::Text frameText;
     sf::Text frameRateText;
     sf::Text agentCountText;
+    sf::Text timeText;
     sf::RectangleShape pauseButton;
     sf::Text pauseButtonText;
     sf::RectangleShape resetButton;
@@ -78,7 +97,8 @@ private:
 
     // Frame Rate Calculation
     std::vector<float> frameRates;
-    const size_t frameRateBufferSize = 100;
+    const size_t frameRateBufferSize = 50;
+    static const int warmupFrames = 10;
     float frameRate;
     int frameCount;
     float movingAverageFrameRate;
@@ -88,10 +108,6 @@ private:
     sf::Time totalElapsedTime;
 
     // Database
-    mongocxx::collection collection;
-
-    // Sensors
-    std::vector<std::unique_ptr<Sensor>> sensors;
 
     // Helper functions
     void loadConfiguration(); // Loads configuration data
@@ -106,8 +122,8 @@ private:
     void updateFrameRateText(float frameRate);
     void updateFrameCountText(int frameCount);
     void updateAgentCountText();
+    void updateTimeText();
     void loadObstacles();
-    void initializeSensors();
     void storeAgentData(const std::vector<Agent>& agents);
     sf::Color stringToColor(std::string colorStr);
 };

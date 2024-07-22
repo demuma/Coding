@@ -195,6 +195,34 @@ CMakeFiles/RoadUserSimulation.dir/Utilities.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/RoadUserSimulation.dir/Utilities.cpp.s"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/Utilities.cpp" -o CMakeFiles/RoadUserSimulation.dir/Utilities.cpp.s
 
+CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.o: CMakeFiles/RoadUserSimulation.dir/flags.make
+CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/AgentBasedSensor.cpp
+CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.o: CMakeFiles/RoadUserSimulation.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.o -MF CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.o.d -o CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/AgentBasedSensor.cpp"
+
+CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/AgentBasedSensor.cpp" > CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.i
+
+CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/AgentBasedSensor.cpp" -o CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.s
+
+CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.o: CMakeFiles/RoadUserSimulation.dir/flags.make
+CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Full\ Simulation\ Package/GridBasedSensor.cpp
+CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.o: CMakeFiles/RoadUserSimulation.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.o -MF CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.o.d -o CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/GridBasedSensor.cpp"
+
+CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/GridBasedSensor.cpp" > CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.i
+
+CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/GridBasedSensor.cpp" -o CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.s
+
 # Object files for target RoadUserSimulation
 RoadUserSimulation_OBJECTS = \
 "CMakeFiles/RoadUserSimulation.dir/Agent.cpp.o" \
@@ -205,7 +233,9 @@ RoadUserSimulation_OBJECTS = \
 "CMakeFiles/RoadUserSimulation.dir/Main.cpp.o" \
 "CMakeFiles/RoadUserSimulation.dir/PerlinNoise.cpp.o" \
 "CMakeFiles/RoadUserSimulation.dir/Sensor.cpp.o" \
-"CMakeFiles/RoadUserSimulation.dir/Utilities.cpp.o"
+"CMakeFiles/RoadUserSimulation.dir/Utilities.cpp.o" \
+"CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.o" \
+"CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.o"
 
 # External object files for target RoadUserSimulation
 RoadUserSimulation_EXTERNAL_OBJECTS =
@@ -219,6 +249,8 @@ RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/Main.cpp.o
 RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/PerlinNoise.cpp.o
 RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/Sensor.cpp.o
 RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/Utilities.cpp.o
+RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.o
+RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.o
 RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/build.make
 RoadUserSimulation: /usr/local/lib/libsfml-graphics.2.6.1.dylib
 RoadUserSimulation: /usr/local/lib/libsfml-window.2.6.1.dylib
@@ -227,7 +259,7 @@ RoadUserSimulation: /usr/local/lib/libyaml-cpp.0.8.0.dylib
 RoadUserSimulation: /usr/local/lib/libmongocxx.3.10.1.dylib
 RoadUserSimulation: /usr/local/lib/libbsoncxx.3.10.1.dylib
 RoadUserSimulation: CMakeFiles/RoadUserSimulation.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX executable RoadUserSimulation"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_12) "Linking CXX executable RoadUserSimulation"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/RoadUserSimulation.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

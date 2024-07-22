@@ -22,6 +22,8 @@ add_executable(RoadUserSimulation
     PerlinNoise.cpp
     Sensor.cpp
     Utilities.cpp
+    AgentBasedSensor.cpp
+    GridBasedSensor.cpp
 )
 
 # Link libraries to the executable

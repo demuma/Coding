@@ -1,22 +1,12 @@
 #include <SFML/Graphics.hpp>
 #include <yaml-cpp/yaml.h>
-#include <bsoncxx/builder/stream/document.hpp>
-#include <bsoncxx/json.hpp>
-#include <bsoncxx/types.hpp>
-#include <mongocxx/client.hpp>
-#include <mongocxx/instance.hpp>
-#include <mongocxx/exception/exception.hpp>
 #include <iostream>
-#include <cmath>
-#include <vector>
-#include <algorithm>
-#include <random>
 
 #include "Simulation.hpp"
 
 int main() {
 
-    // Configuration Loading
+    // Configuration Loading  -> TODO: Move to loadConfiguration function
     YAML::Node config;
     try {
         config = YAML::LoadFile("../config.yaml"); 
@@ -25,14 +15,14 @@ int main() {
         return 1;
     }
 
-    // Update parameters based on configuration
+    // Update parameters based on configuration -> TODO: Move to loadConfiguration function
     int windowWidth = config["display"]["width"].as<int>();
     int windowHeight = config["display"]["height"].as<int>();
 
-    // Window setup
+    // Window setup -> TODO: Move to separate function within Simulation class
     sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Road User Simulation");
 
-    // Load font
+    // Load font -> TODO: Move to separate function within Simulation class
     sf::Font font;
     if (!font.loadFromFile("/Library/Fonts/Arial Unicode.ttf")) { // Update with correct path if needed
         std::cerr << "Error loading font\n";

@@ -153,6 +153,30 @@ Agent.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/Agent.cpp.s
 .PHONY : Agent.cpp.s
 
+AgentBasedSensor.o: AgentBasedSensor.cpp.o
+.PHONY : AgentBasedSensor.o
+
+# target to build an object file
+AgentBasedSensor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.o
+.PHONY : AgentBasedSensor.cpp.o
+
+AgentBasedSensor.i: AgentBasedSensor.cpp.i
+.PHONY : AgentBasedSensor.i
+
+# target to preprocess a source file
+AgentBasedSensor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.i
+.PHONY : AgentBasedSensor.cpp.i
+
+AgentBasedSensor.s: AgentBasedSensor.cpp.s
+.PHONY : AgentBasedSensor.s
+
+# target to generate assembly for a file
+AgentBasedSensor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/AgentBasedSensor.cpp.s
+.PHONY : AgentBasedSensor.cpp.s
+
 CollisionAvoidance.o: CollisionAvoidance.cpp.o
 .PHONY : CollisionAvoidance.o
 
@@ -200,6 +224,30 @@ Grid.s: Grid.cpp.s
 Grid.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/Grid.cpp.s
 .PHONY : Grid.cpp.s
+
+GridBasedSensor.o: GridBasedSensor.cpp.o
+.PHONY : GridBasedSensor.o
+
+# target to build an object file
+GridBasedSensor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.o
+.PHONY : GridBasedSensor.cpp.o
+
+GridBasedSensor.i: GridBasedSensor.cpp.i
+.PHONY : GridBasedSensor.i
+
+# target to preprocess a source file
+GridBasedSensor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.i
+.PHONY : GridBasedSensor.cpp.i
+
+GridBasedSensor.s: GridBasedSensor.cpp.s
+.PHONY : GridBasedSensor.s
+
+# target to generate assembly for a file
+GridBasedSensor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RoadUserSimulation.dir/build.make CMakeFiles/RoadUserSimulation.dir/GridBasedSensor.cpp.s
+.PHONY : GridBasedSensor.cpp.s
 
 Main.o: Main.cpp.o
 .PHONY : Main.o
@@ -357,12 +405,18 @@ help:
 	@echo "... Agent.o"
 	@echo "... Agent.i"
 	@echo "... Agent.s"
+	@echo "... AgentBasedSensor.o"
+	@echo "... AgentBasedSensor.i"
+	@echo "... AgentBasedSensor.s"
 	@echo "... CollisionAvoidance.o"
 	@echo "... CollisionAvoidance.i"
 	@echo "... CollisionAvoidance.s"
 	@echo "... Grid.o"
 	@echo "... Grid.i"
 	@echo "... Grid.s"
+	@echo "... GridBasedSensor.o"
+	@echo "... GridBasedSensor.i"
+	@echo "... GridBasedSensor.s"
 	@echo "... Main.o"
 	@echo "... Main.i"
 	@echo "... Main.s"

@@ -6,13 +6,16 @@
 #include "Grid.hpp"
 #include "Simulation.hpp"
 #include "CollisionAvoidance.hpp"
-#include "Sensor.hpp"
 
 // Constructor with example sensor initialization
-Simulation::Simulation(sf::RenderWindow& window, const sf::Font& font, const YAML::Node& config) 
-    : window(window), font(font), config(config), grid(0, 0, 0) { // Initialize grid with dummy values
+Simulation::Simulation(
+    sf::RenderWindow& window, 
+    const sf::Font& font, 
+    const YAML::Node& config) 
+    : window(window), font(font), config(config), grid(0, 0, 0), instance {} { // Initialize grid with dummy values
     
     loadConfiguration();
+    initializeDatabase();
     initializeGrid();
     loadObstacles();
     initializeAgents();
@@ -37,6 +40,10 @@ void Simulation::loadConfiguration() {
     speedFactor = config["simulation"]["speed_factor"].as<float>();
     simulationWidth = config["simulation"]["width"].as<float>();
     simulationHeight = config["simulation"]["height"].as<float>();
+    std::string dbHost = config["database"]["host"].as<std::string>();
+    int dbPort = config["database"]["port"].as<int>();
+    databaseName = config["database"]["db_name"].as<std::string>();
+    dbUri = "mongodb://" + dbHost + ":" + std::to_string(dbPort);
     
 
     // Scale window dimensions
@@ -46,6 +53,16 @@ void Simulation::loadConfiguration() {
     // Simulation offsets
     simulationWidthOffsetScaled = (windowWidthScaled - simulationWidth) / 2.0f;
     simulationHeightOffsetScaled = (windowHeightScaled - simulationHeight) / 2.0f;
+}
+
+// Initialize the database connection
+void Simulation::initializeDatabase() {
+
+    // MongoDB URI
+    mongocxx::uri uri(dbUri);
+
+    // Initialize the MongoDB client
+    client = std::make_shared<mongocxx::client>(uri);
 }
 
 // Function to initialize the grid based on the YAML configuration
@@ -156,10 +173,16 @@ void Simulation::initializeUI() {
     frameRateText.setFillColor(sf::Color::Black);
     // Initial position will be updated in the main loop
 
-     // Frame count text
+    // Frame count text
     agentCountText.setFont(font);
     agentCountText.setCharacterSize(24);
     agentCountText.setFillColor(sf::Color::Black);
+    // Initial position will be updated in the main loop
+
+    // Frame count text
+    timeText.setFont(font);
+    timeText.setCharacterSize(24);
+    timeText.setFillColor(sf::Color::Black);
     // Initial position will be updated in the main loop
     
 
@@ -213,7 +236,8 @@ void Simulation::initializeSensors() {
         sf::Color color = stringToColor(sensorNode["detection_area"]["color"].as<std::string>());
         int alpha = sensorNode["detection_area"]["alpha"].as<float>() * 255;
         sf::Color colorAlpha = sf::Color(color.r, color.g, color.b, alpha);
-
+        std::string databaseName = sensorNode["database"]["db_name"].as<std::string>();
+        std::string collectionName = sensorNode["database"]["collection_name"].as<std::string>();
         // Define the detection area for the sensor
         sf::FloatRect detectionArea(
 
@@ -226,34 +250,45 @@ void Simulation::initializeSensors() {
         // Create the sensor based on the type
         if (type == "agent-based") {
 
-            sensors.push_back(std::make_unique<AgentBasedSensor>(frameRate, detectionArea, colorAlpha));
+            sensors.push_back(std::make_unique<AgentBasedSensor>(frameRate, detectionArea, colorAlpha, databaseName, collectionName, client));
         } else if (type == "grid-based") {
 
             float cellSize = sensorNode["grid"]["cell_size"].as<float>();
             bool showGrid = sensorNode["grid"]["show_grid"].as<bool>();
 
-            sensors.push_back(std::make_unique<GridBasedSensor>(frameRate, detectionArea, colorAlpha, cellSize, showGrid));
+            sensors.push_back(std::make_unique<GridBasedSensor>(frameRate, detectionArea, colorAlpha, cellSize, showGrid, databaseName, collectionName, client));
         }
     }
 }
 
-// Calculate frame rate
+
+// Calculate the current frame rate
 void Simulation::calculateFrameRate() {
 
-    // Calculate frame rate
-    frameRate = 1.0f / clock.restart().asSeconds();
-    if (frameCount > 0) {
+    // Calculate frame rate only after the warmup period
+    if (frameCount > warmupFrames) {
+        frameRate = 1.0f / clock.restart().asSeconds();
+
+        // Check if the frame rate buffer is full
         if (frameRates.size() == frameRateBufferSize) {
             cumulativeSum -= frameRates[0];
             frameRates.erase(frameRates.begin());
         }
+
+        // Add the new frame rate to the buffer
         frameRates.push_back(frameRate);
         cumulativeSum += frameRate;
-        movingAverageFrameRate = cumulativeSum / frameRates.size();
 
-        // Update frame rate text
-        updateFrameRateText(movingAverageFrameRate);
+        // Ensure you have enough samples for the moving average
+        if (frameRates.size() >= 2) {  
+            movingAverageFrameRate = cumulativeSum / frameRates.size();
+            updateFrameRateText(movingAverageFrameRate);
+        }
+    } else {
+        clock.restart(); // Discard the timing of the warmup frames
     }
+
+    frameCount++; // Increment frame count regardless of warmup
 }
 
 // Main simulation loop
@@ -266,7 +301,6 @@ void Simulation::run() {
     std::string mongoCollectionName = config["database"]["collection_name"].as<std::string>();
 
     std::string mongoUri = "mongodb://" + mongoHost + ":" + std::to_string(mongoPort);
-    mongocxx::instance inst{};
     mongocxx::uri uri(mongoUri);
     mongocxx::client client(uri);
     mongocxx::database db = client[mongoDbName];
@@ -275,7 +309,7 @@ void Simulation::run() {
     // Frame timing variables
     sf::Clock clock;
     sf::Time timeSinceLastUpdate = sf::seconds(0.0f);
-    sf::Time totalElapsedTime = sf::seconds(0.0f);
+    totalElapsedTime = sf::seconds(0.0f);
     sf::Time elapsedTime = sf::seconds(0.0f);
 
     // Simulation duration control and FPS variables
@@ -321,6 +355,9 @@ void Simulation::run() {
                     // Update frame count and agent count text
                     updateFrameCountText(frameCount);
                     updateAgentCountText();
+
+                    // Update the sensors
+                    updateTimeText();
 
                     // Increment frame count and total elapsed time
                     frameCount++;
@@ -497,14 +534,15 @@ void Simulation::render() {
             window.draw(trajectory, 2, sf::Lines);
         }
 
-        // Draw simulation canvas (check)
-        sf::RectangleShape canvas(sf::Vector2f(simulationWidth * scale, simulationHeight * scale));
-        canvas.setPosition(offsetScaled);
-        canvas.setFillColor(sf::Color::Transparent);
-        canvas.setOutlineColor(sf::Color::Black);
-        canvas.setOutlineThickness(1.0f);
-        window.draw(canvas);
     }
+
+    // Draw simulation canvas (check)
+    sf::RectangleShape canvas(sf::Vector2f(simulationWidth * scale, simulationHeight * scale));
+    canvas.setPosition(offsetScaled);
+    canvas.setFillColor(sf::Color::Transparent);
+    canvas.setOutlineColor(sf::Color::Black);
+    canvas.setOutlineThickness(1.0f);
+    window.draw(canvas);
 
     // Draw sensor detection areas (check)
     for (const auto& sensorPtr : sensors) { // Iterate over all sensor pointers
@@ -530,6 +568,9 @@ void Simulation::render() {
 
         // Draw agent count text
         window.draw(agentCountText);
+
+        // Draw time text
+        window.draw(timeText);
     }
 
     // Draw pause button
@@ -544,14 +585,6 @@ void Simulation::render() {
     window.display();
 }
 
-// Function to update the text that displays the current frame rate
-void Simulation::updateFrameRateText(float frameRate) {
-
-    frameRateText.setString("FPS: " + std::to_string(static_cast<int>(frameRate)));
-    sf::FloatRect textRect = frameRateText.getLocalBounds();
-    frameRateText.setOrigin(textRect.width, 0); // Right-align the text
-    frameRateText.setPosition(window.getSize().x - 10, 35); // Position with padding
-}
 
 // Function to update the text that displays the current frame count
 void Simulation::updateFrameCountText(int frameCount) {
@@ -559,7 +592,16 @@ void Simulation::updateFrameCountText(int frameCount) {
     frameText.setString("Frame " + std::to_string(frameCount) + "/" + (maxFrames > 0 ? std::to_string(maxFrames) : "∞")); // ∞ for unlimited frames
     sf::FloatRect textRect = frameText.getLocalBounds();
     frameText.setOrigin(textRect.width, 0); // Right-align the text
-    frameText.setPosition(window.getSize().x - 10, 5); // Position with padding
+    frameText.setPosition(window.getSize().x - 10, 40); // Position with padding
+}
+
+// Function to update the text that displays the current frame rate
+void Simulation::updateFrameRateText(float frameRate) {
+
+    frameRateText.setString("FPS: " + std::to_string(static_cast<int>(frameRate)));
+    sf::FloatRect textRect = frameRateText.getLocalBounds();
+    frameRateText.setOrigin(textRect.width, 0); // Right-align the text
+    frameRateText.setPosition(window.getSize().x - 10, 70); // Position with padding
 }
 
 // Function to update the text that displays the current agent count
@@ -568,7 +610,43 @@ void Simulation::updateAgentCountText() {
     agentCountText.setString("Agents: " + std::to_string(agents.size()));
     sf::FloatRect textRect = agentCountText.getLocalBounds();
     agentCountText.setOrigin(textRect.width, 0); // Right-align the text
-    agentCountText.setPosition(window.getSize().x - 5, 65); // Position with padding
+    agentCountText.setPosition(window.getSize().x - 10, 100); // Position with padding
+}
+
+// Function to update the text that displays the current elapsed time
+void Simulation::updateTimeText() {
+
+    // Convert seconds to HH:MM:SS for totalElapsedTime
+    int elapsedHours = static_cast<int>(totalElapsedTime.asSeconds()) / 3600;
+    int elapsedMinutes = (static_cast<int>(totalElapsedTime.asSeconds()) % 3600) / 60;
+    int elapsedSeconds = static_cast<int>(totalElapsedTime.asSeconds()) % 60;
+
+    // Convert seconds to HH:MM:SS for durationSeconds (if not infinite)
+    std::string durationString = "∞";  // Default to infinity symbol
+    if (durationSeconds > 0) {
+        int durationToHours = static_cast<int>(durationSeconds) / 3600;
+        int durationToMinutes = (static_cast<int>(durationSeconds) % 3600) / 60;
+        int durationToSeconds = static_cast<int>(durationSeconds) % 60;
+
+        // Format the duration string using stringstream
+        std::ostringstream durationStream;
+        durationStream << std::setfill('0') << std::setw(2) << durationToHours << ":"
+                       << std::setw(2) << durationToMinutes << ":"
+                       << std::setw(2) << durationToSeconds;
+        durationString = durationStream.str();
+    }
+
+    // Format the time string using stringstream
+    std::ostringstream timeStream;
+    timeStream << "Time: " << std::setfill('0') << std::setw(2) << elapsedHours << ":"
+               << std::setw(2) << elapsedMinutes << ":"
+               << std::setw(2) << elapsedSeconds << " / " << durationString;
+    timeText.setString(timeStream.str()); 
+
+    // Right-align and position the text
+    sf::FloatRect textRect = timeText.getLocalBounds();
+    timeText.setOrigin(textRect.width, 0); 
+    timeText.setPosition(window.getSize().x - 10, 10); 
 }
 
 // Function to handle events (mouse clicks, window close, etc.)
@@ -615,9 +693,6 @@ void Simulation::handleEvents(sf::Event event) {
             else if (resetButton.getGlobalBounds().contains(mousePos)) {
                 resetSimulation();
                 // Reset frame count, frame rate, and total elapsed time
-                frameCount = 0;
-                frameRates.clear();
-                cumulativeSum = 0.0f;
 
                 // Resume simulation if it was paused
                 if (isPaused) {
@@ -638,6 +713,7 @@ void Simulation::resetSimulation() {
 
     // Reset other simulation elements
     clock.restart();
+    frameRate = 0.0f;
     frameRates.clear();
     cumulativeSum = 0.0f;
     totalElapsedTime = sf::seconds(0.0f);
@@ -659,28 +735,26 @@ void Simulation::update(float deltaTime) {
     // Update sensors
     for (auto& sensor : sensors) {
         sensor->update(agents, timeStep.asSeconds());
-        sensor->saveData();
-
-        // Print sensor data from grid-based sensors
-        // if (auto gridBasedSensor = dynamic_cast<GridBasedSensor*>(sensor.get())) {
-        //     gridBasedSensor->printData();
-        // }
-
-        // Print sensor data from grid-based sensors
-        // if (auto agentBasedSensor = dynamic_cast<AgentBasedSensor*>(sensor.get())) {
-        //     agentBasedSensor->printData();
-        // }
+        // sensor->printData();
+        sensor->postData();
     }
 
+    // Update agents
     for (auto agent = agents.begin(); agent != agents.end(); ) {
+
+        // Update agent position and velocity with perlin noise
         agent->updatePosition(deltaTime);
         agent->updateVelocity(deltaTime, totalElapsedTime);
-        agent->resetCollisionState(); // Reset collision state at the start of each frame for each agent
+
+        // Reset collision state at the start of each frame for each agent
+        agent->resetCollisionState(); 
 
         // Check if agent is out of bounds TODO: make separate function
         if (agent->position.x > simulationWidth + agent->radius || agent->position.x < -agent->radius ||
             agent->position.y > simulationHeight + agent->radius || agent->position.y < -agent->radius) {
-            agent = agents.erase(agent); // Remove the agent from the vector and update the iterator
+            
+            // Remove the agent from the vector and update the iterator
+            agent = agents.erase(agent); // TODO: Check if this is correct
             continue; // Skip to the next agent (the iterator is already updated)
         }
 
@@ -689,13 +763,15 @@ void Simulation::update(float deltaTime) {
 
         // Resume agents if they are stopped
         if (agent->stopped) {
+
             ++(agent->stoppedFrameCounter);
             agent->resume(agents); 
         }
         // Check for agent-obstacle collisions
         agentObstaclesCollision(*agent, obstacles);
 
-        ++agent; // Move to the next agent
+        // Move to the next agent
+        ++agent; 
     }
     
     // Collision detection using grid
@@ -730,12 +806,18 @@ void Simulation::loadObstacles() {
 
 // Store agent data in MongoDB
 void Simulation::storeAgentData(const std::vector<Agent>& agents) {
-    try {
+
+    // Check if there are agents to store
+    if (!agents.empty()) {
+    
+        // Prepare a vector of documents to insert in bulk
         std::vector<bsoncxx::document::value> documents;
         documents.reserve(agents.size());
 
+        // Iterate over each agent and prepare a document for MongoDB
         for (const auto& agent : agents) {
-            // Prepare data for MongoDB
+
+            // Construct a BSON document for each agent
             bsoncxx::builder::stream::document document{};
 
             // Get current timestamp in ISO format
@@ -743,24 +825,30 @@ void Simulation::storeAgentData(const std::vector<Agent>& agents) {
             std::stringstream ss;
             ss << std::put_time(std::localtime(&now), "%FT%TZ");
 
+            // Append the agent data to the document
             document << "timestamp" << ss.str()
-                     << "sensor_id" << agent.sensor_id
-                     << "agent_id" << agent.uuid
-                     << "type" << agent.type
-                     << "position" << bsoncxx::builder::stream::open_array
-                         << agent.position.x << agent.position.y
-                         << bsoncxx::builder::stream::close_array
-                     << "velocity" << bsoncxx::builder::stream::open_array
-                         << agent.velocity.x << agent.velocity.y
-                         << bsoncxx::builder::stream::close_array;
+                        << "sensor_id" << agent.sensor_id
+                        << "agent_id" << agent.uuid
+                        << "type" << agent.type
+                        << "position" 
+                        << bsoncxx::builder::stream::open_array
+                        << agent.position.x 
+                        << agent.position.y
+                        << bsoncxx::builder::stream::close_array
+                        << "velocity" 
+                        << bsoncxx::builder::stream::open_array
+                        << agent.velocity.x 
+                        << agent.velocity.y
+                        << bsoncxx::builder::stream::close_array;
 
             documents.push_back(document << bsoncxx::builder::stream::finalize);
         }
-
-        // Insert documents into MongoDB in bulk
-        collection.insert_many(documents);
-    } catch (const mongocxx::exception& e) {
-        std::cerr << "An error occurred while inserting documents: " << e.what() << std::endl;
+        try {
+            // Insert documents into MongoDB in bulk
+            collection.insert_many(documents);
+        } catch (const mongocxx::exception& e) {
+            std::cerr << "An error occurred while inserting documents: " << e.what() << std::endl;
+        }
     }
 }
 

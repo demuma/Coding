@@ -13,7 +13,7 @@ collision:
 
 agents:
   show_trajectories: true
-  num_agents: 100
+  num_agents: 3
   grouping:
     families:
       allow: false
@@ -123,7 +123,7 @@ agents:
    
 simulation:
   speed_factor: 1.0
-  duration_seconds: 10000
+  duration_seconds: 5
   maximum_frames: 10000
   time_step: 0.03333
   scenario: random # not used
@@ -163,33 +163,33 @@ corridors:
     alpha: 0.1
 
 sensors:
-  - type: agent-based
-    frame_rate: 10.0
+  # - type: agent-based
+  #   frame_rate: 1.0
+  #   detection_area:
+  #     left: 0.0
+  #     top: 0.0
+  #     width: 85.0
+  #     height: 72.0
+  #     color: blue
+  #     alpha: 0.1
+  #   database:
+  #     db_name: Simulation
+  #     collection_name: AB_Sensor_Data
+  - type: grid-based
+    frame_rate: 1.0
     detection_area:
-      left: 0.0
+      left: 87.0
       top: 0.0
-      width: 85.0
-      height: 72.0
-      color: blue
+      width: 85.0 # default: 85.0
+      height: 72.0 # default: 72.0
+      color: green
       alpha: 0.1
+    grid:
+      cell_size: 10 # in meters
+      show_grid: true
     database:
       db_name: Simulation
-      collection_name: AB_Sensor_Data
-#   - type: grid-based
-#     frame_rate: 10.0
-#     detection_area:
-#       left: 87.0
-#       top: 0.0
-#       width: 85.0 # default: 85.0
-#       height: 72.0 # default: 72.0
-#       color: green
-#       alpha: 0.1
-#     grid:
-#       cell_size: 10 # in meters
-#       show_grid: true
-#     database:
-#       db_name: Simulation
-#       collection_name: GB_Sensor_Data
+      collection_name: GB_Sensor_Data
 
 location:
   latitude: 53.55703

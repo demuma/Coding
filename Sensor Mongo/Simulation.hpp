@@ -6,21 +6,26 @@
 #include <string>
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
+#include <yaml-cpp/yaml.h>
 #include "Sensor.hpp"
 #include "AgentBasedSensor.hpp"
 
 class Simulation {
 public:
-    Simulation(const std::string& dbUri, const std::string& databaseName);
+    Simulation();
+    void run();
+private:
+    void loadConfiguration();
     void initializeMongoDB();
     void initializeSensors();
     void updateSensors();
-private:
+
     std::string dbUri;
     std::string databaseName;
+    YAML::Node config;
+    mongocxx::instance instance; // Ensure instance is kept alive for the duration of Simulation
     std::shared_ptr<mongocxx::client> client;
     std::vector<std::unique_ptr<Sensor>> sensors;
-    mongocxx::instance instance;
 };
 
 #endif // SIMULATION_HPP

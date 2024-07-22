@@ -2,13 +2,12 @@
 #include "Simulation.hpp"
 
 int main() {
-    std::string dbUri = "mongodb://localhost:27017";
-    std::string database = "Simulation";
-
-    Simulation simulation(dbUri, database);
-    simulation.initializeMongoDB();
-    simulation.initializeSensors();
-    simulation.updateSensors();
-
-    return 0;
+    try {
+        Simulation simulation;
+        simulation.run();
+    } catch (const std::exception& e) {
+        std::cerr << "An error occurred: " << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }

@@ -130,7 +130,7 @@ void Simulation::initializeAgents() {
 
             // Random initial position within the window bounds
             agent.position = sf::Vector2f(disX(gen), disY(gen)); // Random position in meters
-            
+
             // Ensure agents are not too close to each other
             while (agentAgentsCollision(agent, agents) || agentObstaclesCollision(agent, obstacles)) {
 
@@ -138,6 +138,7 @@ void Simulation::initializeAgents() {
                 agent.position = sf::Vector2f(disX(gen), disY(gen)); // Random position in meters
             }
             
+            // Store the initial position for future reference
             agent.initialPosition = agent.position;
 
             // Set velocity from individual truncated normal distribution
@@ -367,8 +368,6 @@ void Simulation::run() {
         
         // Check if the simulation is not paused
         if(!isPaused) {
-        
-            timeSinceLastUpdate += elapsedTime * speedFactor; 
 
             // Update the simulation based on the time step
             while (timeSinceLastUpdate >= timeStep) { 
@@ -379,9 +378,6 @@ void Simulation::run() {
                     // Clear the grid
                     grid.clear();
                     update(timeStep.asSeconds());  // Use timeStep for consistent updates
-
-                    // Store agent data in MongoDB
-                    storeAgentData(agents);
 
                     // Frame rate calculation
                     calculateFrameRate();
@@ -403,6 +399,9 @@ void Simulation::run() {
 
             // Update totalElapsedTime with the remaining timeSinceLastUpdate
             totalElapsedTime += elapsedTime * speedFactor; // Update total elapsed time
+
+            // Update the remaining time since the last update
+            timeSinceLastUpdate += elapsedTime * speedFactor;
         }
 
         // Render the simulation
@@ -766,11 +765,11 @@ void Simulation::resetSimulation() {
 // Update the simulation state on each frame based on the time step
 void Simulation::update(float deltaTime) {
 
-    // Update sensors
-    for (auto& sensor : sensors) {
-        sensor->update(agents, timeStep.asSeconds(), frameCount, totalElapsedTime, datetime);
-        // sensor->printData();
-        sensor->postData();
+    // Update the agent velocity
+    for (auto& agent : agents) {
+
+        // Update the agent velocity using Perlin noise
+        agent.updateVelocity(deltaTime, totalElapsedTime);
     }
 
     // Update agents
@@ -778,7 +777,6 @@ void Simulation::update(float deltaTime) {
 
         // Update agent position and velocity with perlin noise
         agent->updatePosition(deltaTime);
-        agent->updateVelocity(deltaTime, totalElapsedTime);
 
         // Reset collision state at the start of each frame for each agent
         agent->resetCollisionState(); 
@@ -807,7 +805,18 @@ void Simulation::update(float deltaTime) {
         // Move to the next agent
         ++agent; 
     }
-    
+
+    // Update sensors and store sensor data
+    for (auto& sensor : sensors) {
+
+        sensor->update(agents, timeStep.asSeconds(), frameCount, totalElapsedTime, datetime);
+        // sensor->printData();
+        sensor->postData();
+    }
+
+    // Store ground truth data in MongoDB
+    postData(agents);
+
     // Collision detection using grid
     grid.checkCollisions();
 }
@@ -839,7 +848,7 @@ void Simulation::loadObstacles() {
 }
 
 // Store agent data in MongoDB
-void Simulation::storeAgentData(const std::vector<Agent>& agents) {
+void Simulation::postData(const std::vector<Agent>& agents) {
 
     // Check if there are agents to store
     if (!agents.empty()) {
@@ -854,14 +863,8 @@ void Simulation::storeAgentData(const std::vector<Agent>& agents) {
             // Construct a BSON document for each agent
             bsoncxx::builder::stream::document document{};
 
-            // // Get current timestamp in ISO format
-            // std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-            // std::stringstream ss;
-            // ss << std::put_time(std::localtime(&now), "%FT%TZ");
-
             // Append the agent data to the document
             document << "timestamp" << generateISOTimestamp(totalElapsedTime, datetime)
-                        << "sensor_id" << agent.sensor_id
                         << "agent_id" << agent.uuid
                         << "type" << agent.type
                         << "position" 

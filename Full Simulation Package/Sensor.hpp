@@ -35,7 +35,7 @@ public:
 protected:
     std::shared_ptr<mongocxx::client> client;
     std::string sensor_id;
-    float timeSinceLastUpdate;
+    float timeSinceLastUpdate = 0.0f;
 
     void estimateVelocities(std::unordered_map<std::string, sf::Vector2f>& estimatedVelocities);
 };

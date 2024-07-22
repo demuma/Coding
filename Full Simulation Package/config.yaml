@@ -13,7 +13,7 @@ collision:
 
 agents:
   show_trajectories: true
-  num_agents: 100
+  num_agents: 20
   grouping:
     families:
       allow: false
@@ -122,10 +122,10 @@ agents:
       look_ahead_time: 2.0 # Part of behavior profile (foresightfulness)
    
 simulation:
-  speed_factor: 5.0
-  duration_seconds: 10
+  speed_factor: 1.0
+  duration_seconds: 60
   maximum_frames: 10000
-  time_step: 0.03333
+  time_step: 0.0333333 # 0.33333
   scenario: random # not used
   width: 172
   height: 72
@@ -165,11 +165,11 @@ corridors:
 
 sensors:
   - type: agent-based
-    frame_rate: 1.0
+    frame_rate: 10.0
     detection_area:
       left: 0.0
       top: 0.0
-      width: 85.0
+      width: 85.0 # default: 85.0
       height: 72.0
       color: blue
       alpha: 0.1
@@ -177,7 +177,7 @@ sensors:
       db_name: Simulation
       collection_name: AB_Sensor_Data
   - type: grid-based
-    frame_rate: 1.0
+    frame_rate: 10.0
     detection_area:
       left: 87.0
       top: 0.0

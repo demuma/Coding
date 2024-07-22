@@ -26,16 +26,20 @@ AgentBasedSensor::AgentBasedSensor(
 AgentBasedSensor::~AgentBasedSensor() {}
 
 // Update method for agent-based sensor, taking snapshot of agents in detection area
-void AgentBasedSensor::update(const std::vector<Agent>& agents, float deltaTime, int frameCount, sf::Time totalElapsedTime, std::string date) {
+void AgentBasedSensor::update(const std::vector<Agent>& agents, float deltaTime, int frameCount, sf::Time totalElapsedTime, std::string datetime) {
     
+    // Clear the data storage
+    dataStorage.clear();
+
     // Update the time since the last update
     timeSinceLastUpdate += deltaTime;
 
     // Update the estimated velocities at the specified frame rate
-    if (timeSinceLastUpdate >= 1.0f / frameRate || frameCount == 0) {
+    // if (timeSinceLastUpdate >= 1.0f / frameRate || frameCount != 0) {
+    if (timeSinceLastUpdate >= 1.0f / frameRate) {
 
         // Capture agent data (Modified)
-        captureAgentData(agents, totalElapsedTime, date);
+        captureAgentData(agents, totalElapsedTime, datetime);
 
         // Estimate the velocities of the agents
         estimateVelocities(estimatedVelocities);
@@ -49,9 +53,6 @@ void AgentBasedSensor::update(const std::vector<Agent>& agents, float deltaTime,
 
 // Make a snapshot of the agents in the detection area
 void AgentBasedSensor::captureAgentData(const std::vector<Agent>& agents, sf::Time totalElapsedTime, std::string date) {
-
-    // Clear the data storage
-    dataStorage.clear();
 
     // Capture the current positions of the agents
     for (const Agent& agent : agents) {

@@ -26,7 +26,7 @@ GridBasedSensor::GridBasedSensor(
 GridBasedSensor::~GridBasedSensor() {}
 
 // Update grid-based agent detection and output one gridData entry per frame
-void GridBasedSensor::update(const std::vector<Agent>& agents, float deltaTime, int frameCount, sf::Time totalElapsedTime, std::string date) {
+void GridBasedSensor::update(const std::vector<Agent>& agents, float deltaTime, int frameCount, sf::Time totalElapsedTime, std::string datetime) {
 
     // Clear data storage
     dataStorage.clear();
@@ -37,13 +37,14 @@ void GridBasedSensor::update(const std::vector<Agent>& agents, float deltaTime, 
     // std::stringstream ss;
     // ss << std::put_time(std::localtime(&now), "%FT%TZ");
 
-    std::string currentTime = generateISOTimestamp(totalElapsedTime, date);
+    std::string currentTime = generateISOTimestamp(totalElapsedTime, datetime);
 
     // Update the time since the last update
     timeSinceLastUpdate += deltaTime;
 
     // Update the estimated velocities at the specified frame rate
-    if (timeSinceLastUpdate >= 1.0f / frameRate || frameCount == 0) {
+    // if (timeSinceLastUpdate >= 1.0f / frameRate || frameCount != 0) {
+    if (timeSinceLastUpdate >= 1.0f / frameRate) {
 
         // Clear the grid data
         gridData.clear();

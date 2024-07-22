@@ -127,7 +127,7 @@ private:
     void updateAgentCountText();
     void updateTimeText();
     void loadObstacles();
-    void storeAgentData(const std::vector<Agent>& agents);
+    void postData(const std::vector<Agent>& agents);
     sf::Color stringToColor(std::string colorStr);
 };
 

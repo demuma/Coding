@@ -26,16 +26,16 @@ AgentBasedSensor::AgentBasedSensor(
 AgentBasedSensor::~AgentBasedSensor() {}
 
 // Update method for agent-based sensor, taking snapshot of agents in detection area
-void AgentBasedSensor::update(const std::vector<Agent>& agents, float deltaTime) {
+void AgentBasedSensor::update(const std::vector<Agent>& agents, float deltaTime, int frameCount, sf::Time totalElapsedTime, std::string date) {
     
     // Update the time since the last update
     timeSinceLastUpdate += deltaTime;
 
     // Update the estimated velocities at the specified frame rate
-    if (timeSinceLastUpdate >= 1.0f / frameRate) {
+    if (timeSinceLastUpdate >= 1.0f / frameRate || frameCount == 0) {
 
         // Capture agent data (Modified)
-        captureAgentData(agents);
+        captureAgentData(agents, totalElapsedTime, date);
 
         // Estimate the velocities of the agents
         estimateVelocities(estimatedVelocities);
@@ -48,7 +48,7 @@ void AgentBasedSensor::update(const std::vector<Agent>& agents, float deltaTime)
 }
 
 // Make a snapshot of the agents in the detection area
-void AgentBasedSensor::captureAgentData(const std::vector<Agent>& agents) {
+void AgentBasedSensor::captureAgentData(const std::vector<Agent>& agents, sf::Time totalElapsedTime, std::string date) {
 
     // Clear the data storage
     dataStorage.clear();
@@ -63,7 +63,7 @@ void AgentBasedSensor::captureAgentData(const std::vector<Agent>& agents) {
             AgentBasedSensorData agentData;
             agentData.sensor_id = sensor_id;
             agentData.agent_id = agent.uuid;
-            agentData.timestamp = generateISOTimestamp();
+            agentData.timestamp = generateISOTimestamp(totalElapsedTime, date);
             agentData.type = agent.type;
             agentData.position = agent.position;
 

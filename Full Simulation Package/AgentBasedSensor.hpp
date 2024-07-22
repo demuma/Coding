@@ -26,8 +26,8 @@ public:
         std::shared_ptr<mongocxx::client> client);
     ~AgentBasedSensor();
 
-    void update(const std::vector<Agent>& agents, float deltaTime) override;
-    void captureAgentData(const std::vector<Agent>& agent);
+    void update(const std::vector<Agent>& agents, float deltaTime, int frameCount, sf::Time totalElapsedTime, std::string date) override;
+    void captureAgentData(const std::vector<Agent>& agent, sf::Time totalElapsedTime, std::string date);
     void postData() override;
     void printData() override;
 

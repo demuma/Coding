@@ -26,22 +26,24 @@ GridBasedSensor::GridBasedSensor(
 GridBasedSensor::~GridBasedSensor() {}
 
 // Update grid-based agent detection and output one gridData entry per frame
-void GridBasedSensor::update(const std::vector<Agent>& agents, float deltaTime) {
+void GridBasedSensor::update(const std::vector<Agent>& agents, float deltaTime, int frameCount, sf::Time totalElapsedTime, std::string date) {
 
     // Clear data storage
     dataStorage.clear();
 
-    // Get the current time
-    auto currentTime = std::chrono::system_clock::now();
-    std::time_t now = std::chrono::system_clock::to_time_t(currentTime);
-    std::stringstream ss;
-    ss << std::put_time(std::localtime(&now), "%FT%TZ");
+    // // Get the current time
+    // auto currentTime = std::chrono::system_clock::now();
+    // std::time_t now = std::chrono::system_clock::to_time_t(currentTime);
+    // std::stringstream ss;
+    // ss << std::put_time(std::localtime(&now), "%FT%TZ");
+
+    std::string currentTime = generateISOTimestamp(totalElapsedTime, date);
 
     // Update the time since the last update
     timeSinceLastUpdate += deltaTime;
 
     // Update the estimated velocities at the specified frame rate
-    if (timeSinceLastUpdate >= 1.0f / frameRate) {
+    if (timeSinceLastUpdate >= 1.0f / frameRate || frameCount == 0) {
 
         // Clear the grid data
         gridData.clear();
@@ -92,7 +94,7 @@ void GridBasedSensor::postData() {
                 for (const auto& [cellIndex, cellData] : gridData) {
 
                     bsoncxx::builder::stream::document document{}; // Document for the grid cell
-                    document << "timestamp" << generateISOTimestamp();
+                    document << "timestamp" << timestamp;
                     document << "sensor_id" << sensor_id;
                     document << "cell_index" << bsoncxx::builder::stream::open_array 
                         << cellIndex.x << cellIndex.y
@@ -132,7 +134,7 @@ void GridBasedSensor::postData() {
 
             // Construct the BSON document directly from the gridSnapshot
             bsoncxx::builder::stream::document document{};
-            document << "timestamp" << generateISOTimestamp();
+            document << "timestamp" << timestamp;
             document << "sensor_id" << sensor_id;
 
             bsoncxx::builder::stream::document agentCountsBuilder{};

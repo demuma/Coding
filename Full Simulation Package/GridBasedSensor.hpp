@@ -26,7 +26,7 @@ public:
     float cellSize;
     bool showGrid = false;
 
-    void update(const std::vector<Agent>& agents, float deltaTime) override;
+    void update(const std::vector<Agent>& agents, float deltaTime, int frameCount, sf::Time totalElapsedTime, std::string date) override;
     void postData() override;
     void printData() override;
 
@@ -35,7 +35,8 @@ private:
     mongocxx::collection collection;
     std::string data = "Data from GridBasedSensor";
     std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash> gridData;
-    std::vector<std::pair<std::chrono::system_clock::time_point, std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash>>> dataStorage;
+    // std::vector<std::pair<std::chrono::system_clock::time_point, std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash>>> dataStorage;
+    std::vector<std::pair<std::string, std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash>>> dataStorage;
 
     sf::Vector2i getCellIndex(const sf::Vector2f& position) const;
 };

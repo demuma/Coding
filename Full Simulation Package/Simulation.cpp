@@ -44,6 +44,17 @@ void Simulation::loadConfiguration() {
     int dbPort = config["database"]["port"].as<int>();
     databaseName = config["database"]["db_name"].as<std::string>();
     dbUri = "mongodb://" + dbHost + ":" + std::to_string(dbPort);
+
+    // If datetime is provided in the configuration, use it, otherwise use the current time
+    if(config["simulation"]["datetime"]) {
+
+        // Set time from configuration
+        datetime = config["simulation"]["datetime"].as<std::string>();
+    } else {
+
+        // Set current time
+        datetime = generateISOTimestamp();
+    }
     
 
     // Scale window dimensions
@@ -238,6 +249,7 @@ void Simulation::initializeSensors() {
         sf::Color colorAlpha = sf::Color(color.r, color.g, color.b, alpha);
         std::string databaseName = sensorNode["database"]["db_name"].as<std::string>();
         std::string collectionName = sensorNode["database"]["collection_name"].as<std::string>();
+
         // Define the detection area for the sensor
         sf::FloatRect detectionArea(
 
@@ -247,15 +259,38 @@ void Simulation::initializeSensors() {
             sensorNode["detection_area"]["height"].as<float>()
         );
 
-        // Create the sensor based on the type
+        // Create the agent-based sensor
         if (type == "agent-based") {
-
+            
+            // Create the agent-based sensor and add to sensors vector
             sensors.push_back(std::make_unique<AgentBasedSensor>(frameRate, detectionArea, colorAlpha, databaseName, collectionName, client));
+
+            // Set initial positions for agents in the detection area
+            for(const auto& agent : agents) {
+
+                // Check if the agent is within the detection area
+                if(sensors.back()->detectionArea.contains(agent.position)) {
+
+                    // Get raw pointer from unique_ptr
+                    Sensor* sensor = sensors.back().get();
+
+                    // Try to cast to AgentBasedSensor*
+                    auto agentBasedSensor = dynamic_cast<AgentBasedSensor*>(sensor); 
+
+                    // Check if cast succeeded
+                    if (agentBasedSensor != nullptr) { 
+                        agentBasedSensor->previousPositions[agent.uuid] = agent.position;
+                    }
+                }
+            }
+
+        // Create the grid-based sensor
         } else if (type == "grid-based") {
 
             float cellSize = sensorNode["grid"]["cell_size"].as<float>();
             bool showGrid = sensorNode["grid"]["show_grid"].as<bool>();
 
+            // Create the grid-based sensor and add to sensors vector
             sensors.push_back(std::make_unique<GridBasedSensor>(frameRate, detectionArea, colorAlpha, cellSize, showGrid, databaseName, collectionName, client));
         }
     }
@@ -316,7 +351,6 @@ void Simulation::run() {
     frameCount = 0;
     cumulativeSum = 0.0f;
     frameRates.clear();
-    float speedFactor = 1.0f;
 
     // Main simulation loop
     while (window.isOpen() && (totalElapsedTime < sf::seconds(durationSeconds) || maxFrames == 0) && 
@@ -734,7 +768,7 @@ void Simulation::update(float deltaTime) {
 
     // Update sensors
     for (auto& sensor : sensors) {
-        sensor->update(agents, timeStep.asSeconds());
+        sensor->update(agents, timeStep.asSeconds(), frameCount, totalElapsedTime, datetime);
         // sensor->printData();
         sensor->postData();
     }
@@ -820,13 +854,13 @@ void Simulation::storeAgentData(const std::vector<Agent>& agents) {
             // Construct a BSON document for each agent
             bsoncxx::builder::stream::document document{};
 
-            // Get current timestamp in ISO format
-            std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-            std::stringstream ss;
-            ss << std::put_time(std::localtime(&now), "%FT%TZ");
+            // // Get current timestamp in ISO format
+            // std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+            // std::stringstream ss;
+            // ss << std::put_time(std::localtime(&now), "%FT%TZ");
 
             // Append the agent data to the document
-            document << "timestamp" << ss.str()
+            document << "timestamp" << generateISOTimestamp(totalElapsedTime, datetime)
                         << "sensor_id" << agent.sensor_id
                         << "agent_id" << agent.uuid
                         << "type" << agent.type

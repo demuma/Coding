@@ -33,6 +33,9 @@ public:
     void initializeDatabase();
     void initializeSensors();
 
+protected:
+    int frameCount;
+
 private:
 
     // Database
@@ -72,6 +75,7 @@ private:
     float simulationHeight;
     float simulationWidthOffsetScaled = 0.0f;
     float simulationHeightOffsetScaled = 0.0f;
+    std::string datetime;
 
     // Window
     sf::RenderWindow& window;
@@ -100,7 +104,6 @@ private:
     const size_t frameRateBufferSize = 50;
     static const int warmupFrames = 10;
     float frameRate;
-    int frameCount;
     float movingAverageFrameRate;
 
     // Simulation State

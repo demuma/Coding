@@ -11357,6 +11357,7 @@ CMakeFiles/RoadUserSimulation.dir/Utilities.cpp.o
  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/AvailabilityInternal.h
  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/AvailabilityInternalLegacy.h
  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/AvailabilityVersions.h
+ /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/TargetConditionals.h
  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/__wctype.h
  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/_ctermid.h
  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/_ctype.h
@@ -12117,6 +12118,7 @@ CMakeFiles/RoadUserSimulation.dir/Utilities.cpp.o
  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/iomanip
  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/ios
  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/iosfwd
+ /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/iostream
  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/istream
  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/iterator
  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/limits
@@ -12295,6 +12297,9 @@ CMakeFiles/RoadUserSimulation.dir/Utilities.cpp.o
  /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stddef.h
  /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stdint.h
  /Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package/Utilities.hpp
+ /usr/local/include/SFML/Config.hpp
+ /usr/local/include/SFML/System/Export.hpp
+ /usr/local/include/SFML/System/Time.hpp
  /usr/local/include/SFML/System/Vector2.hpp
  /usr/local/include/SFML/System/Vector2.inl
 

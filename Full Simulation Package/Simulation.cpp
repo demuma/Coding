@@ -8,10 +8,7 @@
 #include "CollisionAvoidance.hpp"
 
 // Constructor with example sensor initialization
-Simulation::Simulation(
-    sf::RenderWindow& window, 
-    const sf::Font& font, 
-    const YAML::Node& config) 
+Simulation::Simulation(sf::RenderWindow& window, const sf::Font& font, const YAML::Node& config) 
     : window(window), font(font), config(config), grid(0, 0, 0), instance {} { // Initialize grid with dummy values
     
     loadConfiguration();
@@ -296,7 +293,6 @@ void Simulation::initializeSensors() {
         }
     }
 }
-
 
 // Calculate the current frame rate
 void Simulation::calculateFrameRate() {
@@ -618,7 +614,6 @@ void Simulation::render() {
     window.display();
 }
 
-
 // Function to update the text that displays the current frame count
 void Simulation::updateFrameCountText(int frameCount) {
 
@@ -769,7 +764,11 @@ void Simulation::update(float deltaTime) {
     for (auto& agent : agents) {
 
         // Update the agent velocity using Perlin noise
-        agent.updateVelocity(deltaTime, totalElapsedTime);
+        if(!agent.stopped) {
+
+            // Update the agent velocity using Perlin noise
+            agent.updateVelocity(deltaTime, totalElapsedTime);
+        }
     }
 
     // Update agents
@@ -888,10 +887,6 @@ void Simulation::postData(const std::vector<Agent>& agents) {
         }
     }
 }
-
-//==========
-// Auxiliary
-// =========
 
 // Function to convert a string to sf::Color (case-insensitive)
 sf::Color Simulation::stringToColor(std::string colorStr) {

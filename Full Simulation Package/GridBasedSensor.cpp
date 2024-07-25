@@ -101,22 +101,28 @@ void GridBasedSensor::postData() {
                     << bsoncxx::builder::stream::close_array;
             
                 // Embed agent counts as a subdocument
-                bsoncxx::builder::stream::document agentCountsBuilder{};
+                int totalAgents = 0;
+                std::vector<int> numbers = {1, 2, 3, 4, 5};
+
+                // Open an array for the agent type count
+                auto agentTypeBuilder = document << "agent_type_count" << bsoncxx::builder::stream::open_array;
+
+                // Loop through the vector and add each element to the array
                 for (const auto& [agentType, count] : cellData) {
-                    agentCountsBuilder << agentType << count;
+
+                    totalAgents += count;
+                    // Open a document for each agent type and count
+                    agentTypeBuilder << bsoncxx::builder::stream::open_document
+                                << "type" << agentType
+                                << "count" << count
+                                << bsoncxx::builder::stream::close_document;  // Close the document
                 }
 
-                // Count the total agents in the cell
-                int totalAgents = 0;
-                for (const auto& [agentType, count] : cellData) {
-                    totalAgents += count;
-                }
+                // Close the array
+                agentTypeBuilder << bsoncxx::builder::stream::close_array;
 
                 // Add total agent count for the cell
                 document << "total_agents" << totalAgents;
-
-                // Add the agent counts subdocument
-                document << "agent_type_counts" << agentCountsBuilder;
                 
                 // Add the document to the vector for bulk insert
                 documents.push_back(document << bsoncxx::builder::stream::finalize);

@@ -34,10 +34,10 @@ private:
     mongocxx::database db;
     mongocxx::collection collection;
     std::string data = "Data from GridBasedSensor";
-    std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash> gridData;
+    std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash> gridData; // Grid Data: map(cell index, map(agent type, count) + hash function for sf::Vector2i)
     // std::vector<std::pair<std::chrono::system_clock::time_point, std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash>>> dataStorage;
-    std::vector<std::pair<std::string, std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash>>> dataStorage;
-
+    std::vector<std::pair<std::string, std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash>>> dataStorage; // Data Storage: timestamp, map(cell index, map(agent type, count) + hash function for sf::Vector2i)
+    
     sf::Vector2i getCellIndex(const sf::Vector2f& position) const;
 };
 

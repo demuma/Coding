@@ -5,6 +5,72 @@
 #include <mutex>
 #include <yaml-cpp/yaml.h>
 #include <iostream>
+#include <queue>
+#include <functional>
+#include <condition_variable>
+#include <future>
+#include <type_traits>
+
+class ThreadPool {
+public:
+    ThreadPool(size_t numThreads);
+    ~ThreadPool();
+    template <class F, class... Args>
+    auto enqueue(F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, Args...>::type>;
+    
+private:
+    std::vector<std::thread> workers;
+    std::queue<std::function<void()>> tasks;
+    std::mutex queueMutex;
+    std::condition_variable condition;
+    bool stop;
+};
+
+// The constructor just launches some amount of workers
+ThreadPool::ThreadPool(size_t numThreads) : stop(false) {
+    for (size_t i = 0; i < numThreads; ++i)
+        workers.emplace_back([this] {
+            for(;;) {
+                std::function<void()> task;
+                {
+                    std::unique_lock<std::mutex> lock(this->queueMutex);
+                    this->condition.wait(lock, [this] { return this->stop || !this->tasks.empty(); });
+                    if (this->stop && this->tasks.empty())
+                        return;
+                    task = std::move(this->tasks.front());
+                    this->tasks.pop();
+                }
+                task();
+            }
+        });
+}
+
+// Add new work item to the pool
+template <class F, class... Args>
+auto ThreadPool::enqueue(F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, Args...>::type> {
+    using returnType = typename std::invoke_result<F, Args...>::type;
+    auto task = std::make_shared<std::packaged_task<returnType()>>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+    std::future<returnType> res = task->get_future();
+    {
+        std::unique_lock<std::mutex> lock(queueMutex);
+        if (stop)
+            throw std::runtime_error("enqueue on stopped ThreadPool");
+        tasks.emplace([task]() { (*task)(); });
+    }
+    condition.notify_one();
+    return res;
+}
+
+// The destructor joins all threads
+ThreadPool::~ThreadPool() {
+    {
+        std::unique_lock<std::mutex> lock(queueMutex);
+        stop = true;
+    }
+    condition.notify_all();
+    for (std::thread& worker : workers)
+        worker.join();
+}
 
 // Agent class
 class Agent {
@@ -58,7 +124,7 @@ private:
 // Simulation class
 class Simulation {
 public:
-    Simulation(SharedBuffer& buffer, float timeStep);
+    Simulation(SharedBuffer& buffer, float timeStep, size_t numThreads);
     void run(int maxFrames);
     void update();
 
@@ -68,12 +134,19 @@ private:
     SharedBuffer& buffer;
     float timeStep;
     int frameIndex;
+    int numAgents;
+    ThreadPool threadPool;
 };
 
-Simulation::Simulation(SharedBuffer& buffer, float timeStep) : buffer(buffer), timeStep(timeStep), frameIndex(0) {
+Simulation::Simulation(SharedBuffer& buffer, float timeStep, size_t numThreads) : buffer(buffer), timeStep(timeStep), frameIndex(0), threadPool(numThreads) {
     // Initialize two agents 
-    agents.push_back(Agent({0.f, 350.f}, {10.f, 0.f}, {100.f, 100.f})); 
-    agents.push_back(Agent({0.f, 470.f}, {8.f, 0.f}, {80.f, 80.f}));  
+    agents.push_back(Agent({0.f, 350.f}, {10.f, 0.f}, {10.f, 10.f})); 
+    agents.push_back(Agent({0.f, 470.f}, {8.f, 0.f}, {8.f, 8.f}));
+    agents.push_back(Agent({0.f, 270.f}, {9.f, 0.f}, {4.f, 4.f}));
+    agents.push_back(Agent({0.f, 170.f}, {12.f, 0.f}, {4.f, 4.f}));
+    agents.push_back(Agent({0.f, 210.f}, {11.f, 0.f}, {4.f, 4.f}));
+    agents.push_back(Agent({0.f, 420.f}, {5.f, 0.f}, {7.f, 7.f}));
+    agents.push_back(Agent({0.f, 550.f}, {7.f, 0.f}, {8.f, 8.f}));
 }
 
 void Simulation::run(int maxFrames) {
@@ -94,9 +167,15 @@ void Simulation::run(int maxFrames) {
 }
 
 void Simulation::update() {
-    // Update all agents
+    std::vector<std::future<void>> futures;
     for (auto& agent : agents) {
-        agent.rect.left += agent.velocity.x * timeStep; 
+        futures.emplace_back(threadPool.enqueue([this, &agent] {
+            agent.rect.left += agent.velocity.x * timeStep;
+            agent.rect.top += agent.velocity.y * timeStep;
+        }));
+    }
+    for (auto& future : futures) {
+        future.get();
     }
 }
 
@@ -171,11 +250,12 @@ int main() {
     float timeStep = config["time_step"].as<float>();
     int maxFrames = config["max_frames"].as<int>();
     float playbackSpeed = config["playback_speed"].as<float>();
+    size_t numThreads = std::thread::hardware_concurrency();
 
     // Set the buffer size appropriately 
     sharedBuffer.setBufferSize(maxFrames); // Set buffer size at the beginning
     
-    Simulation simulation(sharedBuffer, timeStep); 
+    Simulation simulation(sharedBuffer, timeStep, numThreads); 
     Renderer renderer(sharedBuffer, sf::VideoMode(800, 600));
 
     std::thread simulationThread(&Simulation::run, &simulation, maxFrames); 

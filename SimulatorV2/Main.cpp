@@ -224,7 +224,7 @@ Simulation::Simulation(SharedBuffer& buffer, float timeStep, size_t numThreads, 
 void Simulation::initializeAgents() {
 
     std::vector<std::future<void>> futures;
-    int numAgents = 1000;
+    int numAgents = 100;
     float waypointDistance = 10.f;
 
     std::random_device rd;
@@ -404,36 +404,36 @@ void Renderer::render() {
 
     const std::vector<Agent>& frame = buffer.readFrame(currentFrame);
 
-    if(!frame.empty()) {
-
+    if (!frame.empty()) {
         for (const auto& agent : frame) {
+
+            // Draw the agent
             agentShape.setPosition(agent.position.x - agent.radius, agent.position.y - agent.radius);
             agentShape.setRadius(agent.radius);
             agentShape.setFillColor(sf::Color::Red);
             window.draw(agentShape);
 
-            // Draw the trajectory waypoints
-            // float waypointRadius = 1.0f;
-            // for(auto& waypoint : agent.trajectory) {
-            //     agentShape.setPosition(waypoint.x - waypointRadius, waypoint.y - waypointRadius);
-            //     agentShape.setRadius(waypointRadius);
-            //     agentShape.setFillColor(sf::Color::Green);
-            //     window.draw(agentShape);
-            // }
-            sf::VertexArray waypoints(sf::Points, agent.trajectory.size());
-            for(int i = 0; i < agent.trajectory.size(); ++i) {
-                waypoints[i].position = agent.trajectory[i];
-                waypoints[i].color = sf::Color::Green;
+            // Determine the next waypoint index that is ahead of the agent
+            int nextWaypointIndex = -1;
+            for (int i = 0; i < agent.trajectory.size(); ++i) {
+                sf::Vector2f directionToWaypoint = agent.trajectory[i] - agent.position;
+                float dotProduct = directionToWaypoint.x * agent.velocity.x + directionToWaypoint.y * agent.velocity.y;
+                if (dotProduct > 0) {
+                    nextWaypointIndex = i;
+                    break;
+                }
+            }
+
+            // Draw the trajectory waypoints ahead of the agent
+            sf::VertexArray waypoints(sf::Points);
+            if (nextWaypointIndex != -1) {
+                for (size_t i = nextWaypointIndex; i < agent.trajectory.size(); ++i) {
+                    waypoints.append(sf::Vertex(agent.trajectory[i], sf::Color::Green));
+                }
             }
             window.draw(waypoints);
-            // for(auto& waypoint : agent.trajectory) {
-            //     agentShape.setPosition(waypoint.x - agent.radius, waypoint.y - agent.radius);
-            //     agentShape.setRadius(agent.radius);
-            //     agentShape.setFillColor(sf::Color::Green);
-            //     window.draw(agentShape);
-            // }
 
-            // Draw the trajectory line
+            // Draw the trajectory line from initial position to current position
             sf::Vertex trajectory[] = {sf::Vertex(agent.initialPosition, sf::Color::Blue), sf::Vertex(agent.position, sf::Color::Blue)};
             window.draw(trajectory, 2, sf::Lines);
         }

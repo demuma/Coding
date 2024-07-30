@@ -139,7 +139,8 @@
     "valarray": "cpp",
     "filesystem": "cpp",
     "stop_token": "cpp",
-    "future": "cpp"
+    "future": "cpp",
+    "thread": "cpp"
   },
   "C_Cpp.default.compilerPath": "",
   "C_Cpp.default.includePath": [

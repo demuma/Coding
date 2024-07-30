@@ -13,6 +13,10 @@
 #include <random>
 #include <atomic>
 
+/***************************************/
+/********** THREAD POOL CLASS **********/
+/***************************************/
+
 class ThreadPool {
 public:
     ThreadPool(size_t numThreads);
@@ -74,18 +78,81 @@ ThreadPool::~ThreadPool() {
         worker.join();
 }
 
+/*********************************/
+/********** AGENT CLASS **********/
+/*********************************/
+
 // Agent class
 class Agent {
 public:
-    Agent(const sf::Vector2f& position, const sf::Vector2f& velocity, const sf::Vector2f& size) 
-        : rect({position, size}), velocity(velocity) {}
+    Agent();
 
-    sf::FloatRect getRect() const {
-        return rect;
-    }
+    void calculateTrajectory(float waypointDistance);
+    void calculateVelocity(sf::Vector2f waypoint);
+    void updatePosition(float deltaTime);
+
     sf::FloatRect rect;
     sf::Vector2f velocity;
+    float velocityMagnitude;
+    sf::Vector2f position;
+    sf::Vector2f initialPosition;
+    sf::Vector2f targetPosition;
+    sf::Vector2f heading;
+    float radius;
+    std::vector<sf::Vector2f>(trajectory);
 };
+
+Agent::Agent(){};
+
+void Agent::calculateVelocity(sf::Vector2f waypoint) {
+    // Calculate velocity based on heading
+
+    float angle = std::atan2(waypoint.y - position.y, waypoint.x - position.x);
+    sf::Vector2f heading;
+    heading.x = std::cos(angle);
+    heading.y = std::sin(angle);
+
+    velocity = heading * velocityMagnitude;
+}
+
+void Agent::updatePosition(float timeStep) {
+    position.x += velocity.x * timeStep;
+    position.y += velocity.y * timeStep;
+}
+
+
+void Agent::calculateTrajectory(float waypointDistance) {
+
+    trajectory.clear();
+    trajectory.push_back(initialPosition);
+
+    sf::Vector2f currentPosition = initialPosition;
+
+    double totalDistance = sqrt(pow((targetPosition.x - initialPosition.x), 2) + pow((targetPosition.y - initialPosition.y), 2));
+    int numWaypoints = floor(totalDistance / waypointDistance);
+    
+    if (numWaypoints < 1) {
+        trajectory.push_back(targetPosition);
+        return;
+    }
+    
+    double angle = atan2(targetPosition.y - initialPosition.y, targetPosition.x - initialPosition.x); // in radians
+    
+    double deltaX = waypointDistance * cos(angle);
+    double deltaY = waypointDistance * sin(angle);
+
+    for (int i = 0; i < numWaypoints; ++i) {
+        currentPosition.x += deltaX;
+        currentPosition.y += deltaY;
+        trajectory.push_back(currentPosition);
+    }
+
+    trajectory.push_back(targetPosition);
+}
+
+/*****************************************/
+/********** SHARED BUFFER CLASS **********/
+/*****************************************/
 
 // SharedBuffer class
 class SharedBuffer {
@@ -102,12 +169,12 @@ public:
         currentBuffer = 1 - currentBuffer; 
     }
 
-    void writeData(int frameIndex, const std::vector<sf::FloatRect>& frame) {
+    void writeData(int frameIndex, const std::vector<Agent>& frame) {
         std::lock_guard<std::mutex> lock(mutex);
         buffers[currentBuffer][frameIndex] = frame;
     }
 
-    const std::vector<sf::FloatRect>& readFrame(int frameIndex) const {
+    const std::vector<Agent>& readFrame(int frameIndex) const {
         std::lock_guard<std::mutex> lock(mutex);
         return buffers[1 - currentBuffer][frameIndex]; 
     }
@@ -118,10 +185,14 @@ public:
     }
 
 private:
-    std::vector<std::vector<sf::FloatRect>> buffers[2];  // Store frames (vectors of FloatRects)
+    std::vector<std::vector<Agent>> buffers[2];  // Store frames (vectors of Agents)
     int currentBuffer;
     mutable std::mutex mutex;
 };
+
+/**************************************/
+/********** SIMULATION CLASS **********/
+/**************************************/
 
 // Simulation class
 class Simulation {
@@ -130,6 +201,7 @@ public:
     void run(int maxFrames);
     void update();
     float getCurrentFrameRate();
+    void initializeAgents();
 
 private:
     YAML::Node config;
@@ -143,16 +215,46 @@ private:
     std::atomic<bool>& stop;
 };
 
-Simulation::Simulation(SharedBuffer& buffer, float timeStep, size_t numThreads, std::atomic<float>& timeStepSim, std::atomic<bool>& stop) : buffer(buffer), timeStep(timeStep), frameIndex(0), threadPool(numThreads), timeStepSim(timeStepSim), stop(stop) {
+Simulation::Simulation(SharedBuffer& buffer, float timeStep, size_t numThreads, std::atomic<float>& timeStepSim, std::atomic<bool>& stop) 
+: buffer(buffer), timeStep(timeStep), frameIndex(0), threadPool(numThreads), timeStepSim(timeStepSim), stop(stop) {
+   
+   initializeAgents();
+}
+
+void Simulation::initializeAgents() {
+
+    std::vector<std::future<void>> futures;
+    int numAgents = 1000;
+    float waypointDistance = 10.f;
+
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, 600);
-    long number;
+    std::uniform_int_distribution<> disPos(0, 600); // Position
+    std::uniform_real_distribution<> disVel(10, 50); // Velocity
+    float agentRadius = 5.f;
+    
+    // Initialize agent vector with random velocity, start and target positions
+    for (int i = 0; i < numAgents; ++i) {
 
-    // Initialize two agents 
-    for (int i = 0; i < 1000; ++i) {
-        number = dis(gen);
-        agents.push_back(Agent({0.f, static_cast<float>(number)}, {3.f, 0.f}, {5.f, 5.f}));
+        Agent agent;
+
+        agent.velocityMagnitude = static_cast<float>(disVel(gen));
+        agent.initialPosition = sf::Vector2f(0.f, static_cast<float>(disPos(gen)));
+        agent.targetPosition = sf::Vector2f(800.f, static_cast<float>(disPos(gen)));
+        agent.position = agent.initialPosition;
+        agent.radius = agentRadius;
+        agents.push_back(agent);
+    }
+
+    // Calculate the trajectory for each agent in parallel
+    for (auto& agent: agents) {
+        futures.emplace_back(threadPool.enqueue([this, &agent, waypointDistance] {
+            agent.calculateTrajectory(waypointDistance);
+            agent.calculateVelocity(agent.trajectory[1]);
+        }));
+    }
+    for (auto& future : futures) {
+        future.get();
     }
 }
 
@@ -160,7 +262,6 @@ void Simulation::run(int maxFrames) {
 
     sf::Clock clock;
     float totalSimTime = 0.0f;
-    // sf::Time timeStepSim;
     timeStepSim = timeStep;
     sf::Clock timeStepSimClock;
 
@@ -170,25 +271,19 @@ void Simulation::run(int maxFrames) {
         
         update();
         
-        // Write the current frame to the buffer
-        std::vector<sf::FloatRect> agentRects;
-        for(const auto& agent : agents) {
-            agentRects.push_back(agent.getRect());
-        }
-        buffer.writeData(frameIndex, agentRects);
+        buffer.writeData(frameIndex, agents);
 
         buffer.swapBuffers(); 
         
         ++frameIndex;
 
         timeStepSim = timeStepSimClock.getElapsedTime().asSeconds();
-        // std::cout << '\r' << "Current simulation time step: " << timeStepSim << std::flush;
 
         totalSimTime += timeStepSim;
 
     }
     std::cout << std::endl;
-    std::cout << "Total simulation time: " << totalSimTime << " seconds for " << frameIndex + 1 << " frames" << std::endl;
+    std::cout << "Total simulation time: " << totalSimTime << " seconds for " << frameIndex << " frames" << std::endl;
     std::cout << "Frame rate: " << 1/(totalSimTime / (frameIndex + 1)) << std::endl;
     std::cout << "Average simulation time step: " << totalSimTime/ (frameIndex + 1) << std::endl;
 }
@@ -197,14 +292,17 @@ void Simulation::update() {
     std::vector<std::future<void>> futures;
     for (auto& agent : agents) {
         futures.emplace_back(threadPool.enqueue([this, &agent] {
-            agent.rect.left += agent.velocity.x * timeStep;
-            agent.rect.top += agent.velocity.y * timeStep;
+            agent.updatePosition(timeStep);
         }));
     }
     for (auto& future : futures) {
         future.get();
     }
 }
+
+/************************************/
+/********** RENDERER CLASS **********/
+/************************************/
 
 // Renderer class
 class Renderer {
@@ -217,7 +315,7 @@ private:
     void render();
     const SharedBuffer& buffer;
     sf::RenderWindow window;
-    sf::RectangleShape agentShape;
+    sf::CircleShape agentShape;
     size_t currentFrame = 0;
     std::atomic<float>& timeStepSim;
     std::atomic<bool>& stop;
@@ -240,66 +338,113 @@ void Renderer::run(float timeStep, float playbackSpeed) {
     float frameRateSim;
     duration<float> frameTimeSim; // Adjusted frame time
     duration<float> targetFrameTime = duration<float>(1.0f / (targetframeRate * playbackSpeed)); // Adjusted frame time
+    bool paused = false;
+    float oldPlaybackSpeed = playbackSpeed;
 
     while (window.isOpen() && currentFrame < buffer.bufferSize() - 1) {
 
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                window.close();
-                stop = true;
-            } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Up) {
-                playbackSpeed += 1.0f;
-                playbackSpeed = std::ceil(playbackSpeed);
-            } else if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Down) {
-                if(playbackSpeed > 1.0f) {
-                    playbackSpeed -= 1.0f;
+            sf::Event event;
+            while (window.pollEvent(event)) {
+                if (event.type == sf::Event::Closed) {
+                    window.close();
+                    stop = true;
+                } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Up) {
+                    playbackSpeed += 1.0f;
                     playbackSpeed = std::ceil(playbackSpeed);
-                } else if (playbackSpeed <= 1.0f && playbackSpeed > 0.1f) {
-                    playbackSpeed -= 0.1f;
-                } else {
-                    playbackSpeed = 0.1f;
+                } else if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Down) {
+                    if(playbackSpeed > 1.0f) {
+                        playbackSpeed -= 1.0f;
+                        playbackSpeed = std::ceil(playbackSpeed);
+                    } else if (playbackSpeed <= 1.0f && playbackSpeed > 0.1f) {
+                        playbackSpeed -= 0.1f;
+                    } else {
+                        playbackSpeed = 0.1f;
+                    }
+                } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::R) {
+                    currentFrame = 0;
+                    paused = false;
+                } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+                    window.close();
+                } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
+                    if(!paused) {
+                        paused = true;
+                        oldPlaybackSpeed = playbackSpeed;
+                    } else {
+                        playbackSpeed = oldPlaybackSpeed;
+                        paused = false;
+                    }
                 }
             }
+
+        if(!paused) {
+            
+            render();
+
+            // Get the frame time and frame rate from the simulation
+            frameTimeSim = duration<float>(timeStepSim);
+            frameRateSim = 1.0f / timeStepSim;
+
+            // Calculate the target frame time
+            targetFrameTime = duration<float>(timeStep / playbackSpeed);
+
+            // Check if the target frame time is doable
+            if(targetFrameTime.count() >= frameTimeSim.count()) {
+                std::this_thread::sleep_for(duration<float>(targetFrameTime));
+            } else {
+                std::this_thread::sleep_for(duration<float>(frameTimeSim));
+                playbackSpeed = timeStep / timeStepSim;
+            }
+            currentFrame = (currentFrame + 1) % buffer.bufferSize();
         }
-        
-        render();
-
-        // Get the frame time and frame rate from the simulation
-        frameTimeSim = duration<float>(timeStepSim);
-        frameRateSim = 1.0f / timeStepSim;
-
-        // Calculate the target frame time
-        targetFrameTime = duration<float>(timeStep / playbackSpeed);
-
-        // Check if the target frame time is doable
-        if(targetFrameTime.count() >= frameTimeSim.count()) {
-            std::this_thread::sleep_for(duration<float>(targetFrameTime));
-        } else {
-            std::this_thread::sleep_for(duration<float>(frameTimeSim));
-            playbackSpeed = timeStep / timeStepSim;
-            std::cout << "Playback speed: " << playbackSpeed << std::endl;
-        }
-        currentFrame = (currentFrame + 1) % buffer.bufferSize();
     }
 }
 
 void Renderer::render() {
     window.clear(sf::Color::Black);
 
-    const std::vector<sf::FloatRect>& frame = buffer.readFrame(currentFrame);
+    const std::vector<Agent>& frame = buffer.readFrame(currentFrame);
 
     if(!frame.empty()) {
 
-        for (const auto& agentRect : frame) {
-            agentShape.setPosition(agentRect.left, agentRect.top);
-            agentShape.setSize({agentRect.width, agentRect.height});
+        for (const auto& agent : frame) {
+            agentShape.setPosition(agent.position.x - agent.radius, agent.position.y - agent.radius);
+            agentShape.setRadius(agent.radius);
+            agentShape.setFillColor(sf::Color::Red);
             window.draw(agentShape);
+
+            // Draw the trajectory waypoints
+            // float waypointRadius = 1.0f;
+            // for(auto& waypoint : agent.trajectory) {
+            //     agentShape.setPosition(waypoint.x - waypointRadius, waypoint.y - waypointRadius);
+            //     agentShape.setRadius(waypointRadius);
+            //     agentShape.setFillColor(sf::Color::Green);
+            //     window.draw(agentShape);
+            // }
+            sf::VertexArray waypoints(sf::Points, agent.trajectory.size());
+            for(int i = 0; i < agent.trajectory.size(); ++i) {
+                waypoints[i].position = agent.trajectory[i];
+                waypoints[i].color = sf::Color::Green;
+            }
+            window.draw(waypoints);
+            // for(auto& waypoint : agent.trajectory) {
+            //     agentShape.setPosition(waypoint.x - agent.radius, waypoint.y - agent.radius);
+            //     agentShape.setRadius(agent.radius);
+            //     agentShape.setFillColor(sf::Color::Green);
+            //     window.draw(agentShape);
+            // }
+
+            // Draw the trajectory line
+            sf::Vertex trajectory[] = {sf::Vertex(agent.initialPosition, sf::Color::Blue), sf::Vertex(agent.position, sf::Color::Blue)};
+            window.draw(trajectory, 2, sf::Lines);
         }
 
         window.display();
     }
 }
+
+/**************************/
+/********** MAIN **********/
+/**************************/
 
 // Main function 
 int main() {

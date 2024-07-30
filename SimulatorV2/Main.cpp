@@ -319,6 +319,8 @@ private:
     size_t currentFrame = 0;
     std::atomic<float>& timeStepSim;
     std::atomic<bool>& stop;
+    bool showTrajectories = true;
+    bool showWaypoints = true;
 };
 
 // Renderer member functions 
@@ -344,15 +346,22 @@ void Renderer::run(float timeStep, float playbackSpeed) {
     while (window.isOpen() && currentFrame < buffer.bufferSize() - 1) {
 
             sf::Event event;
-            while (window.pollEvent(event)) {
-                if (event.type == sf::Event::Closed) {
-                    window.close();
-                    stop = true;
-                } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Up) {
+while (window.pollEvent(event)) {
+    switch (event.type) {
+        case sf::Event::Closed:
+            window.close();
+            stop = true;
+            break;
+
+        case sf::Event::KeyPressed:
+            switch (event.key.code) {
+                case sf::Keyboard::Up:
                     playbackSpeed += 1.0f;
                     playbackSpeed = std::ceil(playbackSpeed);
-                } else if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Down) {
-                    if(playbackSpeed > 1.0f) {
+                    break;
+
+                case sf::Keyboard::Down:
+                    if (playbackSpeed > 1.0f) {
                         playbackSpeed -= 1.0f;
                         playbackSpeed = std::ceil(playbackSpeed);
                     } else if (playbackSpeed <= 1.0f && playbackSpeed > 0.1f) {
@@ -360,21 +369,44 @@ void Renderer::run(float timeStep, float playbackSpeed) {
                     } else {
                         playbackSpeed = 0.1f;
                     }
-                } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::R) {
+                    break;
+
+                case sf::Keyboard::R:
                     currentFrame = 0;
                     paused = false;
-                } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+                    break;
+
+                case sf::Keyboard::Escape:
                     window.close();
-                } else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
-                    if(!paused) {
+                    break;
+
+                case sf::Keyboard::Space:
+                    if (!paused) {
                         paused = true;
                         oldPlaybackSpeed = playbackSpeed;
                     } else {
                         playbackSpeed = oldPlaybackSpeed;
                         paused = false;
                     }
-                }
+                    break;
+
+                case sf::Keyboard::T:
+                    showTrajectories = !showTrajectories; // Toggle trajectories display
+                    break;
+
+                case sf::Keyboard::W:
+                    showWaypoints = !showWaypoints; // Toggle waypoints display
+                    break;
+
+                default:
+                    break;
             }
+            break;
+
+        default:
+            break;
+    }
+}
 
         if(!paused) {
             
@@ -414,28 +446,32 @@ void Renderer::render() {
             window.draw(agentShape);
 
             // Determine the next waypoint index that is ahead of the agent
-            int nextWaypointIndex = -1;
-            for (int i = 0; i < agent.trajectory.size(); ++i) {
-                sf::Vector2f directionToWaypoint = agent.trajectory[i] - agent.position;
-                float dotProduct = directionToWaypoint.x * agent.velocity.x + directionToWaypoint.y * agent.velocity.y;
-                if (dotProduct > 0) {
-                    nextWaypointIndex = i;
-                    break;
+            if(showWaypoints) {
+                int nextWaypointIndex = -1;
+                for (int i = 0; i < agent.trajectory.size(); ++i) {
+                    sf::Vector2f directionToWaypoint = agent.trajectory[i] - agent.position;
+                    float dotProduct = directionToWaypoint.x * agent.velocity.x + directionToWaypoint.y * agent.velocity.y;
+                    if (dotProduct > 0) {
+                        nextWaypointIndex = i;
+                        break;
+                    }
                 }
-            }
 
-            // Draw the trajectory waypoints ahead of the agent
-            sf::VertexArray waypoints(sf::Points);
-            if (nextWaypointIndex != -1) {
-                for (size_t i = nextWaypointIndex; i < agent.trajectory.size(); ++i) {
-                    waypoints.append(sf::Vertex(agent.trajectory[i], sf::Color::Green));
+                // Draw the trajectory waypoints ahead of the agent
+                sf::VertexArray waypoints(sf::Points);
+                if (nextWaypointIndex != -1) {
+                    for (size_t i = nextWaypointIndex; i < agent.trajectory.size(); ++i) {
+                        waypoints.append(sf::Vertex(agent.trajectory[i], sf::Color::Green));
+                    }
                 }
-            }
-            window.draw(waypoints);
+                window.draw(waypoints);
+            }   
 
             // Draw the trajectory line from initial position to current position
-            sf::Vertex trajectory[] = {sf::Vertex(agent.initialPosition, sf::Color::Blue), sf::Vertex(agent.position, sf::Color::Blue)};
-            window.draw(trajectory, 2, sf::Lines);
+            if(showTrajectories) {
+                sf::Vertex trajectory[] = {sf::Vertex(agent.initialPosition, sf::Color::Blue), sf::Vertex(agent.position, sf::Color::Blue)};
+                window.draw(trajectory, 2, sf::Lines);
+            }
         }
 
         window.display();

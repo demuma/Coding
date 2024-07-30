@@ -1,6 +1,11 @@
-window:
-  width: 800
-  height: 600
-time_step: 0.02   # Simulation update time step
-playback_speed: 1.0
-max_frames: 10000  # Maximum number of simulation frames
+display:
+  width: 3440
+  height: 1440
+  pixels_per_meter: 20
+
+simulation:
+  duration_seconds: 100
+  maximum_frames: 10000
+  time_step: 0.02
+  playback_speed: 1.0
+  num_threads: 8

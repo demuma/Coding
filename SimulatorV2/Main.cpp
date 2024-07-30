@@ -197,28 +197,58 @@ private:
 // Simulation class
 class Simulation {
 public:
-    Simulation(SharedBuffer& buffer, float timeStep, size_t numThreads, std::atomic<float>& timeStepSim, std::atomic<bool>& stop);
-    void run(int maxFrames);
+    Simulation(SharedBuffer& buffer, std::atomic<float>& timeStepSim, std::atomic<bool>& stop, const YAML::Node& config);
+    void run();
     void update();
     float getCurrentFrameRate();
     void initializeAgents();
+    void loadConfiguration();
 
 private:
-    YAML::Node config;
     std::vector<Agent> agents;
     SharedBuffer& buffer;
-    float timeStep;
     int frameIndex;
     int numAgents;
     ThreadPool threadPool;
     std::atomic<float>& timeStepSim;
     std::atomic<bool>& stop;
+    const YAML::Node& config;
+
+    // Simulation parameters
+    float timeStep;
+    int maxFrames;  // TODO: Change to size_t
+    int numThreads;
+
+    // Window parameters
+    int windowWidth;
+    int windowHeight;
 };
 
-Simulation::Simulation(SharedBuffer& buffer, float timeStep, size_t numThreads, std::atomic<float>& timeStepSim, std::atomic<bool>& stop) 
-: buffer(buffer), timeStep(timeStep), frameIndex(0), threadPool(numThreads), timeStepSim(timeStepSim), stop(stop) {
+Simulation::Simulation(SharedBuffer& buffer, std::atomic<float>& timeStepSim, std::atomic<bool>& stop, const YAML::Node& config) 
+: buffer(buffer), frameIndex(0), threadPool(std::thread::hardware_concurrency()), timeStepSim(timeStepSim), stop(stop), config(config) {
    
+   loadConfiguration();
+   // TODO: set number of threads for thread pool (no lazy initialization) -> initializeThreadPool();
    initializeAgents();
+}
+
+void Simulation::loadConfiguration() {
+
+    // Load simulation parameters
+    timeStep = config["simulation"]["time_step"].as<float>();
+    maxFrames = config["simulation"]["maximum_frames"].as<int>();
+
+    // Load display parameters
+    windowHeight = config["display"]["height"].as<int>();
+    windowWidth = config["display"]["width"].as<int>();
+
+    // Load number of threads
+    if(config["simulation"]["num_threads"].as<int>()) {
+        numThreads = config["simulation"]["num_threads"].as<int>();
+    } else {
+        numThreads = std::thread::hardware_concurrency();
+    }
+
 }
 
 void Simulation::initializeAgents() {
@@ -229,7 +259,7 @@ void Simulation::initializeAgents() {
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> disPos(0, 600); // Position
+    std::uniform_int_distribution<> disPos(0, windowHeight); // Position
     std::uniform_real_distribution<> disVel(10, 50); // Velocity
     float agentRadius = 5.f;
     
@@ -240,7 +270,7 @@ void Simulation::initializeAgents() {
 
         agent.velocityMagnitude = static_cast<float>(disVel(gen));
         agent.initialPosition = sf::Vector2f(0.f, static_cast<float>(disPos(gen)));
-        agent.targetPosition = sf::Vector2f(800.f, static_cast<float>(disPos(gen)));
+        agent.targetPosition = sf::Vector2f(windowWidth, static_cast<float>(disPos(gen)));
         agent.position = agent.initialPosition;
         agent.radius = agentRadius;
         agents.push_back(agent);
@@ -258,7 +288,7 @@ void Simulation::initializeAgents() {
     }
 }
 
-void Simulation::run(int maxFrames) {
+void Simulation::run() {
 
     sf::Clock clock;
     float totalSimTime = 0.0f;
@@ -307,9 +337,10 @@ void Simulation::update() {
 // Renderer class
 class Renderer {
 public:
-    Renderer(const SharedBuffer& buffer, const sf::VideoMode& mode, std::atomic<float>& timeStepSim, std::atomic<bool>& stop);
-    void run(float timeStep, float playbackSpeed); 
-    void setWindowSize(int width, int height);
+    Renderer(const SharedBuffer& buffer, const sf::VideoMode& mode, std::atomic<float>& timeStepSim, std::atomic<bool>& stop, const YAML::Node& config);
+    void run(); 
+    void loadConfiguration();
+    void initializeWindow();
 
 private:
     void render();
@@ -321,19 +352,40 @@ private:
     std::atomic<bool>& stop;
     bool showTrajectories = true;
     bool showWaypoints = true;
+    const YAML::Node& config;
+
+    // Window parameters
+    int windowWidth;
+    int windowHeight;
+    int scale;
+
+    // Renderer parameters
+    float timeStep;
+    float playbackSpeed;
 };
 
 // Renderer member functions 
-Renderer::Renderer(const SharedBuffer& buffer, const sf::VideoMode& mode, std::atomic<float>& timeStepSim, std::atomic<bool>& stop) 
-    : buffer(buffer), window(mode, "Agent Simulation"), timeStepSim(timeStepSim), stop(stop) {
-    agentShape.setFillColor(sf::Color::Red);
+Renderer::Renderer(const SharedBuffer& buffer, const sf::VideoMode& mode, std::atomic<float>& timeStepSim, std::atomic<bool>& stop, const YAML::Node& config) 
+    : buffer(buffer), timeStepSim(timeStepSim), stop(stop), config(config) {
+    
+    loadConfiguration();
+    initializeWindow();
 }
 
-void Renderer::setWindowSize(int width, int height){
-    window.create(sf::VideoMode(width, height), "Urban Mobility Simulator");
+void Renderer::loadConfiguration() {
+    // Load configuration data
+    windowWidth = config["display"]["width"].as<int>();
+    windowHeight = config["display"]["height"].as<int>();
+    scale = config["display"]["pixels_per_meter"].as<int>();
+    timeStep = config["simulation"]["time_step"].as<float>();
+    playbackSpeed = config["simulation"]["playback_speed"].as<float>();
 }
 
-void Renderer::run(float timeStep, float playbackSpeed) {
+void Renderer::initializeWindow() {
+    window.create(sf::VideoMode(windowWidth, windowHeight), "Agent Simulation");
+}
+
+void Renderer::run() {
 
     using namespace std::chrono;
     const float targetframeRate = 1.0f / timeStep;  // Calculate original frame rate
@@ -345,68 +397,70 @@ void Renderer::run(float timeStep, float playbackSpeed) {
 
     while (window.isOpen() && currentFrame < buffer.bufferSize() - 1) {
 
-            sf::Event event;
-while (window.pollEvent(event)) {
-    switch (event.type) {
-        case sf::Event::Closed:
-            window.close();
-            stop = true;
-            break;
-
-        case sf::Event::KeyPressed:
-            switch (event.key.code) {
-                case sf::Keyboard::Up:
-                    playbackSpeed += 1.0f;
-                    playbackSpeed = std::ceil(playbackSpeed);
-                    break;
-
-                case sf::Keyboard::Down:
-                    if (playbackSpeed > 1.0f) {
-                        playbackSpeed -= 1.0f;
-                        playbackSpeed = std::ceil(playbackSpeed);
-                    } else if (playbackSpeed <= 1.0f && playbackSpeed > 0.1f) {
-                        playbackSpeed -= 0.1f;
-                    } else {
-                        playbackSpeed = 0.1f;
-                    }
-                    break;
-
-                case sf::Keyboard::R:
-                    currentFrame = 0;
-                    paused = false;
-                    break;
-
-                case sf::Keyboard::Escape:
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            switch (event.type) {
+                // Check for window close event
+                case sf::Event::Closed:
                     window.close();
+                    stop = true;
                     break;
 
-                case sf::Keyboard::Space:
-                    if (!paused) {
-                        paused = true;
-                        oldPlaybackSpeed = playbackSpeed;
-                    } else {
-                        playbackSpeed = oldPlaybackSpeed;
-                        paused = false;
+                // Check for key press events
+                case sf::Event::KeyPressed:
+                    switch (event.key.code) {
+                        case sf::Keyboard::Up:
+                            playbackSpeed += 1.0f;
+                            playbackSpeed = std::ceil(playbackSpeed);
+                            break;
+
+                        case sf::Keyboard::Down:
+                            if (playbackSpeed > 1.0f) {
+                                playbackSpeed -= 1.0f;
+                                playbackSpeed = std::ceil(playbackSpeed);
+                            } else if (playbackSpeed <= 1.0f && playbackSpeed > 0.1f) {
+                                playbackSpeed -= 0.1f;
+                            } else {
+                                playbackSpeed = 0.1f;
+                            }
+                            break;
+
+                        case sf::Keyboard::R:
+                            currentFrame = 0;
+                            paused = false;
+                            break;
+
+                        case sf::Keyboard::Escape:
+                            window.close();
+                            break;
+
+                        case sf::Keyboard::Space:
+                            if (!paused) {
+                                paused = true;
+                                oldPlaybackSpeed = playbackSpeed;
+                            } else {
+                                playbackSpeed = oldPlaybackSpeed;
+                                paused = false;
+                            }
+                            break;
+
+                        case sf::Keyboard::T:
+                            showTrajectories = !showTrajectories; // Toggle trajectories display
+                            break;
+
+                        case sf::Keyboard::W:
+                            showWaypoints = !showWaypoints; // Toggle waypoints display
+                            break;
+
+                        default:
+                            break;
                     }
-                    break;
-
-                case sf::Keyboard::T:
-                    showTrajectories = !showTrajectories; // Toggle trajectories display
-                    break;
-
-                case sf::Keyboard::W:
-                    showWaypoints = !showWaypoints; // Toggle waypoints display
                     break;
 
                 default:
                     break;
             }
-            break;
-
-        default:
-            break;
-    }
-}
+        }
 
         if(!paused) {
             
@@ -432,18 +486,12 @@ while (window.pollEvent(event)) {
 }
 
 void Renderer::render() {
-    window.clear(sf::Color::Black);
+    window.clear(sf::Color::White);
 
     const std::vector<Agent>& frame = buffer.readFrame(currentFrame);
 
     if (!frame.empty()) {
         for (const auto& agent : frame) {
-
-            // Draw the agent
-            agentShape.setPosition(agent.position.x - agent.radius, agent.position.y - agent.radius);
-            agentShape.setRadius(agent.radius);
-            agentShape.setFillColor(sf::Color::Red);
-            window.draw(agentShape);
 
             // Determine the next waypoint index that is ahead of the agent
             if(showWaypoints) {
@@ -461,7 +509,7 @@ void Renderer::render() {
                 sf::VertexArray waypoints(sf::Points);
                 if (nextWaypointIndex != -1) {
                     for (size_t i = nextWaypointIndex; i < agent.trajectory.size(); ++i) {
-                        waypoints.append(sf::Vertex(agent.trajectory[i], sf::Color::Green));
+                        waypoints.append(sf::Vertex(agent.trajectory[i], sf::Color::Black));
                     }
                 }
                 window.draw(waypoints);
@@ -472,6 +520,12 @@ void Renderer::render() {
                 sf::Vertex trajectory[] = {sf::Vertex(agent.initialPosition, sf::Color::Blue), sf::Vertex(agent.position, sf::Color::Blue)};
                 window.draw(trajectory, 2, sf::Lines);
             }
+
+            // Draw the agent
+            agentShape.setPosition(agent.position.x - agent.radius, agent.position.y - agent.radius);
+            agentShape.setRadius(agent.radius);
+            agentShape.setFillColor(sf::Color::Red);
+            window.draw(agentShape);
         }
 
         window.display();
@@ -484,25 +538,35 @@ void Renderer::render() {
 
 // Main function 
 int main() {
+
+    // Configuration Loading  -> TODO: Move to loadConfiguration function
+    YAML::Node config;
+    try {
+        config = YAML::LoadFile("config.yaml"); 
+    } catch (const YAML::Exception& e) {
+        std::cerr << "Error loading config file: " << e.what() << std::endl;
+        return 1;
+    }
+
     SharedBuffer sharedBuffer;
-    
-    YAML::Node config = YAML::LoadFile("config.yaml");
-    float timeStep = config["time_step"].as<float>();
-    int maxFrames = config["max_frames"].as<int>();
-    float playbackSpeed = config["playback_speed"].as<float>();
-    size_t numThreads = std::thread::hardware_concurrency();
+
+    // Load global configuration data
+    float timeStep = config["simulation"]["time_step"].as<float>();
+    int maxFrames = config["simulation"]["maximum_frames"].as<int>();
+
+    // Shared variabes
     std::atomic<float> timeStepSim{timeStep};
     std::atomic<bool> stop{false};
 
     // Set the buffer size appropriately 
-    sharedBuffer.setBufferSize(maxFrames); // Set buffer size at the beginning
+    sharedBuffer.setBufferSize(maxFrames);
     
-    Simulation simulation(sharedBuffer, timeStep, numThreads, timeStepSim, stop); 
-    Renderer renderer(sharedBuffer, sf::VideoMode(800, 600), timeStepSim, stop);
+    Simulation simulation(sharedBuffer, timeStepSim, stop, config); 
+    Renderer renderer(sharedBuffer, sf::VideoMode(800, 600), timeStepSim, stop, config);
 
-    std::thread simulationThread(&Simulation::run, &simulation, maxFrames); 
+    std::thread simulationThread(&Simulation::run, &simulation); 
 
-    renderer.run(timeStep, playbackSpeed);
+    renderer.run();
 
     simulationThread.join();
     return 0;

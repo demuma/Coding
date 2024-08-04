@@ -21,9 +21,3 @@ target_link_libraries(Simulator sfml-graphics sfml-window sfml-system yaml-cpp::
 
 # Additional CMake options for the executable
 target_compile_features(Simulator PRIVATE cxx_std_17)
-
-# Define DEBUG macro when building in debug mode
-# target_compile_definitions(Simulator PRIVATE DEBUG)
-target_compile_definitions(Simulator PRIVATE STATS)
-# target_compile_definitions(Simulator PRIVATE ERROR)
-# target_compile_definitions(Simulator PRIVATE TIMING)

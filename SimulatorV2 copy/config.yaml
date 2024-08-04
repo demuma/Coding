@@ -1,0 +1,16 @@
+display:
+  width: 3440
+  height: 1440
+  pixels_per_meter: 20
+  title: 'Agent-Based Urban Mobility Simulator'
+  show_info: true
+
+simulation:
+  duration_seconds: 100
+  maximum_frames: 1000
+  time_step: 1.0
+  playback_speed: 1.0
+  num_threads: 8
+
+agents:
+  num_agents: 100

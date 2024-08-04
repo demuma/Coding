@@ -146,5 +146,6 @@
   "C_Cpp.default.includePath": [
     "/usr/local/include/bsoncxx/v_noabi/bsoncxx/",
     "/usr/local/include/mongocxx/v_noabi/mongocxx/"
-  ]
+  ],
+  "cmake.sourceDirectory": "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package"
 }

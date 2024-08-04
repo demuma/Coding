@@ -14,6 +14,7 @@ find_package(bsoncxx REQUIRED)
 # Add source files to build executable
 add_executable(Simulator
     Main.cpp
+    PerlinNoise.cpp
 )
 
 # Link libraries to the executable

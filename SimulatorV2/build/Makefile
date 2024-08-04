@@ -153,6 +153,30 @@ Main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/Main.cpp.s
 .PHONY : Main.cpp.s
 
+PerlinNoise.o: PerlinNoise.cpp.o
+.PHONY : PerlinNoise.o
+
+# target to build an object file
+PerlinNoise.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/PerlinNoise.cpp.o
+.PHONY : PerlinNoise.cpp.o
+
+PerlinNoise.i: PerlinNoise.cpp.i
+.PHONY : PerlinNoise.i
+
+# target to preprocess a source file
+PerlinNoise.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/PerlinNoise.cpp.i
+.PHONY : PerlinNoise.cpp.i
+
+PerlinNoise.s: PerlinNoise.cpp.s
+.PHONY : PerlinNoise.s
+
+# target to generate assembly for a file
+PerlinNoise.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/PerlinNoise.cpp.s
+.PHONY : PerlinNoise.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -165,6 +189,9 @@ help:
 	@echo "... Main.o"
 	@echo "... Main.i"
 	@echo "... Main.s"
+	@echo "... PerlinNoise.o"
+	@echo "... PerlinNoise.i"
+	@echo "... PerlinNoise.s"
 .PHONY : help
 
 

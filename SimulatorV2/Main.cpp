@@ -17,6 +17,17 @@
 #include <iomanip>
 #include <sstream>
 
+// Utilities header
+#include <uuid/uuid.h>
+// #include <random>
+#include <cmath>
+// #include <chrono>
+// #include <iomanip>
+// #include <sstream>
+// #include <iostream>
+
+#include "PerlinNoise.hpp"
+
 // #define DEBUG
 // #define STATS
 // #define ERROR
@@ -148,6 +159,218 @@ ThreadPool::~ThreadPool() {
         worker.join();
 }
 
+/*******************************/
+/********** UTILITIES **********/
+/*******************************/
+
+// Generate a unique identifier for the agent
+std::string generateUUID() {
+
+    uuid_t uuid;
+    uuid_generate(uuid);
+    char uuidStr[37];
+    uuid_unparse(uuid, uuidStr);
+
+    return std::string(uuidStr);
+}
+
+// Generate a unique identifier for the agent
+std::string generateISOTimestamp() {
+
+    auto now = std::chrono::system_clock::now();
+    std::time_t time_t_now = std::chrono::system_clock::to_time_t(now);
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&time_t_now), "%FT%TZ");
+
+    return ss.str();
+}
+
+// Generate velocity from truncated normal distribution
+float generateRandomNumberFromTND(float mean, float stddev, float min, float max) {
+
+    // Generate normal distribution
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::normal_distribution<float> generateNormal(mean, stddev);
+
+    // Generate random number until it falls within the specified range
+    float value;
+    do {
+
+        value = generateNormal(gen);
+
+    } while (value < min || value > max);
+
+    return value;
+}
+
+// Generate a random velocity vector from a truncated normal distribution
+sf::Vector2f generateRandomVelocityVector(float mu, float sigma, float min, float max) {
+    
+    // Generate distribution for angle
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> disAngle(0.0, 2 * M_PI);
+    sf::Vector2f velocity;
+
+    // Generate random velocity magnitude
+    float velocityMagnitude = generateRandomNumberFromTND(mu, sigma, min, max);
+    float angle = disAngle(gen);
+    velocity = sf::Vector2f(velocityMagnitude * std::cos(angle), velocityMagnitude * std::sin(angle));
+    
+    return velocity;
+}
+
+// Generate an ISO 8601 timestamp from total elapsed time
+std::string generateISOTimestamp(sf::Time totalElapsedTime) {
+
+    // Convert totalElapsedTime to seconds
+    auto totalSeconds = totalElapsedTime.asSeconds();
+    
+    // Convert seconds to a time_point since epoch
+    auto tp = std::chrono::system_clock::from_time_t(static_cast<std::time_t>(totalSeconds));
+
+    // Get time_t from time_point
+    std::time_t tt = std::chrono::system_clock::to_time_t(tp);
+
+    // Format into ISO 8601 string
+    std::stringstream ss;
+    ss << std::put_time(std::gmtime(&tt), "%FT%TZ"); // Use gmtime for UTC timezone
+
+    return ss.str();
+}
+
+// Generate an ISO 8601 timestamp from a start date string and total elapsed time
+std::string generateISOTimestamp(sf::Time totalElapsedTime, const std::string& dateTimeString = "") {
+    std::tm startTime{}; // Initialize to all zeros
+    std::time_t start_time_t = 0;
+    bool useCurrentTime = false;
+
+    // Parse the start date string
+    if (!dateTimeString.empty()) {
+        std::istringstream ss(dateTimeString);
+        ss >> std::get_time(&startTime, "%Y-%m-%dT%H:%M:%SZ"); // Parse with Z for UTC
+
+        if (ss.fail()) {
+            std::cerr << "Error parsing datetime string from config.yaml: '" << dateTimeString << "'. Using current time instead!" << std::endl;
+            useCurrentTime = true;
+        } else {
+            start_time_t = timegm(&startTime); // Convert to time_t as UTC time
+        }
+    } else {
+        useCurrentTime = true;
+    }
+
+    // Get current time if parsing failed or no date string provided
+    if (useCurrentTime) {
+        auto now = std::chrono::system_clock::now();
+        start_time_t = std::chrono::system_clock::to_time_t(now);
+    }
+
+    // Convert totalElapsedTime to duration since epoch
+    auto duration = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::microseconds(totalElapsedTime.asMicroseconds()));
+
+    // Convert start time to time_point
+    auto startTimePoint = std::chrono::system_clock::from_time_t(start_time_t);
+
+    // Add the duration to the start time_point
+    auto timestampTp = startTimePoint + duration;
+
+    // Convert the new time_point back to time_t
+    std::time_t tt = std::chrono::system_clock::to_time_t(timestampTp);
+
+    // Format into ISO 8601 string
+    std::stringstream outputSS;
+    std::tm localTime; // Local time structure
+
+    // Get local time with DST information
+    localtime_r(&tt, &localTime);
+
+    if (!dateTimeString.empty() && dateTimeString.back() == 'Z') { // Check if original timestamp was in UTC
+        outputSS << std::put_time(std::gmtime(&tt), "%FT%TZ"); // UTC timezone
+    } else {
+        outputSS << std::put_time(&localTime, "%FT%T%z"); // Local timezone with offset (using localTime)
+    }
+
+    return outputSS.str();
+}
+
+// Structure to hash a 2D vector for use in unordered_map
+struct Vector2iHash {
+    std::size_t operator()(const sf::Vector2i& v) const {
+        std::hash<int> hasher;
+        return hasher(v.x) ^ (hasher(v.y) << 1); // Combine hash values of x and y
+    }
+};
+
+// Convert a string to an sf::Color object
+sf::Color stringToColor(std::string colorStr) {
+
+    // Mapping of color names to sf::Color objects
+    static const std::unordered_map<std::string, sf::Color> colorMap = {
+
+        {"red", sf::Color::Red},
+        {"green", sf::Color::Green},
+        {"blue", sf::Color::Blue},
+        {"black", sf::Color::Black},
+        {"white", sf::Color::White},
+        {"yellow", sf::Color::Yellow},
+        {"magenta", sf::Color::Magenta},
+        {"cyan", sf::Color::Cyan},
+        {"pink", sf::Color(255, 192, 203)},
+        {"brown", sf::Color(165, 42, 42)},
+        {"turquoise", sf::Color(64, 224, 208)},
+        {"gray", sf::Color(128, 128, 128)},
+        {"purple", sf::Color(128, 0, 128)},
+        {"violet", sf::Color(238, 130, 238)},
+        {"orange", sf::Color(198, 81, 2)},
+        {"indigo", sf::Color(75, 0, 130)},
+        {"grey", sf::Color(128, 128, 128)}
+    };
+
+    // Convert to lowercase directly for faster comparison
+    std::transform(colorStr.begin(), colorStr.end(), colorStr.begin(),
+                [](unsigned char c){ return std::tolower(c); }); 
+
+    // Fast lookup using a hash map
+    auto it = colorMap.find(colorStr);
+    if (it != colorMap.end()) {
+        return it->second;
+    }
+
+    // Handle hex codes (same as your original implementation)
+    if (colorStr.length() == 7 && colorStr[0] == '#') {
+        int r, g, b;
+        if (sscanf(colorStr.c_str(), "#%02x%02x%02x", &r, &g, &b) == 3) {
+            return sf::Color(r, g, b);
+        }
+    }
+
+    std::cerr << "Warning: Unrecognized color string '" << colorStr << "'. Using black instead." << std::endl;
+    return sf::Color::Black;
+}
+
+/*************************************/
+/********** OBSTACLES CLASS **********/
+/*************************************/
+
+// Obstacle class
+class Obstacle {
+public:
+    Obstacle(sf::FloatRect bounds, sf::Color color = sf::Color::Black);
+
+    sf::FloatRect getBounds() const { return bounds; }
+    sf::Color getColor() const { return color; }
+
+private:
+    sf::FloatRect bounds;
+    sf::Color color;
+};
+
+// Constructor for the Obstacle class
+Obstacle::Obstacle(sf::FloatRect bounds, sf::Color color)
+    : bounds(bounds), color(color) {}
+
 /*********************************/
 /********** AGENT CLASS **********/
 /*********************************/
@@ -158,24 +381,95 @@ public:
     Agent();
 
     void calculateTrajectory(float waypointDistance);
-    void calculateVelocity(sf::Vector2f waypoint);
-    void updatePosition(float deltaTime);
+    void getNextWaypoint();
 
-    sf::FloatRect rect;
-    sf::Vector2f velocity;
-    float velocityMagnitude;
+    void updatePosition(float deltaTime);
+    sf::Vector2f getFuturePositionAtTime(float time) const;
+
+    void calculateVelocity(sf::Vector2f waypoint);
+    void updateVelocity(float deltaTime, sf::Time totalElapsedTime);
+
+    void stop();
+    bool canResume(const std::vector<Agent>& agents);
+    void resume(const std::vector<Agent>& agents);
+    void resetCollisionState();
+    void setBufferZoneSize();
+
+    // Agent features
+    std::string uuid;
+    std::string sensor_id;
+    std::string type;
+    sf::Color color;
+    sf::Color initialColor;
+    int priority;
+    float bodyRadius;
+
+    // Positions
     sf::Vector2f position;
     sf::Vector2f initialPosition;
     sf::Vector2f targetPosition;
     sf::Vector2f heading;
-    float waypointDistance;
-    float radius;
-    sf::Color color;
+
+    // Velocity
+    sf::Vector2f velocity;
+    sf::Vector2f initialVelocity;
+    float velocityMagnitude;
+    float minVelocity;
+    float maxVelocity;
+    float velocityMu;
+    float velocitySigma;
+    float velocityNoiseFactor;
+    float velocityNoiseScale;
+
+    // Acceleration
+    sf::Vector2f acceleration;
+    sf::Vector2f initialAcceleration;
+    float accelerationMagnitude;
+    float minAcceleration;
+    float maxAcceleration;
+
+    // Trajectory
     std::vector<sf::Vector2f>(trajectory);
+    float waypointDistance;
+    sf::Color waypointColor;
+    int nextWaypointIndex = -1;
+
+    // Visuals
+    float bufferZoneRadius;
+    float minBufferZoneRadius;
+    sf::Color bufferZoneColor;
+
+    // States
+    bool collisionPredicted;
+    bool stopped;
+    bool isActive;
+    int stoppedFrameCounter;
+
+    // Perlin noise
+    unsigned int noiseSeed;
+    PerlinNoise perlinNoise;
 };
 
-Agent::Agent(){};
+// Default constructor for the Agent class
+Agent::Agent(){
 
+    collisionPredicted = false;
+    stopped = false;
+    isActive = true;
+    stoppedFrameCounter = 0;
+    minBufferZoneRadius = 0.5f;
+    bufferZoneRadius = minBufferZoneRadius;
+    bufferZoneColor = sf::Color::Green;
+};
+
+// Initialize the agent with default values and calculate buffer radius
+void Agent::setBufferZoneSize() {
+
+    float velocityMagnitude = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+    bufferZoneRadius = minBufferZoneRadius + bodyRadius + (velocityMagnitude / maxVelocity); 
+}
+
+// Calculate the velocity based on the next waypoint
 void Agent::calculateVelocity(sf::Vector2f waypoint) {
     
     // Calculate velocity based on heading to the next waypoint
@@ -190,13 +484,32 @@ void Agent::calculateVelocity(sf::Vector2f waypoint) {
     velocity = heading * velocityMagnitude;
 }
 
+// Update the agent's velocity based on Perlin noise
+void Agent::updateVelocity(float deltaTime, sf::Time totalElapsedTime) {
+    
+    // Use the agent's own Perlin noise generator to fluctuate velocity
+    float noiseX = perlinNoise.noise(position.x * velocityNoiseScale, position.y * velocityNoiseScale, totalElapsedTime.asSeconds()) * 2.0f - 1.0f;
+    float noiseY = perlinNoise.noise(position.x * velocityNoiseScale, position.y * velocityNoiseScale, totalElapsedTime.asSeconds() + 1000.0f) * 2.0f - 1.0f;
+
+    // Apply noise to velocity
+    velocity.x = initialVelocity.x + noiseX / 3.6 * velocityNoiseFactor;
+    velocity.y = initialVelocity.y + noiseY / 3.6 * velocityNoiseFactor;
+}
+
+// Update the agent's position based on velocity
 void Agent::updatePosition(float timeStep) {
 
     // Update the position based on the velocity
-    position.x += velocity.x * timeStep;
-    position.y += velocity.y * timeStep;
+    position += velocity * timeStep;
 }
 
+// Get the future position of the agent at a given time
+sf::Vector2f Agent::getFuturePositionAtTime(float time) const {
+
+    return position + velocity * time;
+}
+
+// Calculate the trajectory based on the target position and waypoint distance
 void Agent::calculateTrajectory(float waypointDistance) {
     
     // Clear existing trajectory data
@@ -236,6 +549,69 @@ void Agent::calculateTrajectory(float waypointDistance) {
 
     // Add the final target position as the last waypoint
     trajectory.push_back(targetPosition);
+}
+
+// Get the next waypoint based on the agent's trajectory
+void Agent::getNextWaypoint() {
+
+    // Get the next waypoint based on trajectory, position, and velocity
+    for (int i = 0; i < trajectory.size(); ++i) {
+        sf::Vector2f directionToWaypoint = trajectory[i] - position;
+        float dotProduct = directionToWaypoint.x * velocity.x + directionToWaypoint.y * velocity.y;
+        if (dotProduct > 0) {
+            nextWaypointIndex = i;
+            break;
+        }
+    }
+}
+
+// Reset the collision state of the agent
+void Agent::resetCollisionState() {
+
+    bufferZoneColor = sf::Color::Green;
+    collisionPredicted = false;
+}
+
+// Stop the agent
+void Agent::stop() {
+
+    // Stop the agent if it is not already stopped
+    if (!stopped) {
+        initialVelocity = velocity;
+        velocity = sf::Vector2f(0.0f, 0.0f);
+        stopped = true;
+        stoppedFrameCounter = 0;
+    }
+}
+
+// Check if the agent can resume movement without colliding with other agents
+bool Agent::canResume(const std::vector<Agent>& agents) {
+
+    for (const auto& other : agents) {
+        if (&other == this) continue;
+
+        float dx = position.x - other.position.x;
+        float dy = position.y - other.position.y;
+        float distance = std::sqrt(dx * dx + dy * dy);
+        
+        if (distance < bodyRadius + other.bodyRadius) {
+            
+            return false;
+        }
+    }
+    return true;
+}
+
+// Resume the agent's movement if there are no collisions
+void Agent::resume(const std::vector<Agent>& agents) {
+
+    // Resume the agent if it is stopped and has been stopped for at least 20 frames
+    if (stopped) {
+        if (canResume(agents)) {
+            velocity = initialVelocity;
+            stopped = false;
+        }
+    }
 }
 
 /*****************************************/
@@ -367,6 +743,7 @@ public:
     float getCurrentFrameRate();
     void initializeAgents();
     void loadConfiguration();
+    void loadObstacles();
 
 private:
     
@@ -383,8 +760,8 @@ private:
     int targetSimulationTime;
 
     // Window parameters
-    int windowWidth;
-    int windowHeight;
+    float simulationWindowWidth; // Meters
+    float simulationWindowHeight; // Meters
 
     // Agent parameters
     int numAgents;
@@ -395,6 +772,9 @@ private:
     // Shared buffer reference
     SharedBuffer& buffer;
     size_t currentFrameIndex = 0;
+
+    // Obstacles
+    std::vector<Obstacle> obstacles;
 };
 
 // Simulation::Simulation(std::queue<std::vector<Agent>> (&buffers)[2], std::mutex &queueMutex, std::condition_variable &queueCond, std::atomic<float>& currentSimulationTimeStep, std::atomic<bool>& stop, std::atomic<int>& currentNumAgents, const YAML::Node& config, std::atomic<std::queue<std::vector<Agent>>*>& currentReadBuffer)
@@ -426,8 +806,8 @@ void Simulation::loadConfiguration() {
     }
 
     // Load display parameters
-    windowHeight = config["display"]["height"].as<int>();
-    windowWidth = config["display"]["width"].as<int>();
+    simulationWindowWidth = config["display"]["width"].as<int>() / config["display"]["pixels_per_meter"].as<float>(); // Meters
+    simulationWindowHeight = config["display"]["height"].as<int>() / config["display"]["pixels_per_meter"].as<float>(); // Meters
 
     // Agent parameters
     waypointDistance = config["agents"]["waypoint_distance"].as<float>();
@@ -439,8 +819,32 @@ void Simulation::loadConfiguration() {
     } else {
         numThreads = std::thread::hardware_concurrency();
     }
+}
 
+// Function to load obstacles from the YAML configuration file
+void Simulation::loadObstacles() {
 
+    // Check if the 'obstacles' key exists and is a sequence
+    if (config["obstacles"] && config["obstacles"].IsSequence()) {
+        for (const auto& obstacleNode : config["obstacles"]) {
+            std::string type = obstacleNode["type"] && obstacleNode["type"].IsScalar()
+                ? obstacleNode["type"].as<std::string>()
+                : "unknown";
+
+            if (type == "rectangle") { // Only handle rectangles
+                std::vector<float> position = obstacleNode["position"].as<std::vector<float>>();
+                std::vector<float> size = obstacleNode["size"].as<std::vector<float>>();
+                obstacles.push_back(Obstacle(
+                    sf::FloatRect(position[0], position[1], size[0], size[1]), 
+                    stringToColor(obstacleNode["color"].as<std::string>())
+                ));
+            } else {
+                std::cerr << "Error: Unknown obstacle type '" << type << "' in config file." << std::endl;
+            }
+        }
+    } else {
+        std::cerr << "Error: Could not find 'obstacles' key in config file or it is not a sequence." << std::endl;
+    }
 }
 
 void Simulation::initializeAgents() {
@@ -449,20 +853,20 @@ void Simulation::initializeAgents() {
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> disPos(0, windowHeight); // Position
-    std::uniform_real_distribution<> disVel(10, 50); // Velocity
-    float agentRadius = 5.f;
+    std::uniform_int_distribution<> disPos(0, simulationWindowHeight); // Position
+    std::uniform_real_distribution<> disVel(2, 5); // Velocity
     
     // Initialize agent vector with random velocity, start and target positions
     for (int i = 0; i < numAgents; ++i) {
         Agent agent;
         agent.velocityMagnitude = static_cast<float>(disVel(gen));
         agent.initialPosition = sf::Vector2f(0.f, static_cast<float>(disPos(gen)));
-        agent.targetPosition = sf::Vector2f(windowWidth, static_cast<float>(disPos(gen)));
+        agent.targetPosition = sf::Vector2f(simulationWindowWidth, static_cast<float>(disPos(gen)));
         agent.position = agent.initialPosition;
-        agent.radius = agentRadius;
+        agent.bodyRadius = 0.5f;
         agent.color = sf::Color::Red;
         agent.waypointDistance = waypointDistance; // -> TODO: Use taxonomy for waypoint distance
+        agent.waypointColor = sf::Color::Red;
         agents.push_back(agent);
     }
 
@@ -531,9 +935,9 @@ void Simulation::run() {
     DEBUG_MSG("Simulation: finished");
 
     // Print simulation statistics
-    STATS_MSG("Total simulation wall time: " << simulationTime.asSeconds() << " seconds for " << currentFrameIndex << " frames");
-    STATS_MSG("Frame rate: " << 1/(simulationTime.asSeconds() / (currentFrameIndex + 1)));
-    STATS_MSG("Average simulation time step: " << simulationTime.asSeconds() / (currentFrameIndex + 1));
+    STATS_MSG("Total simulation wall time: " << simulationTime.asSeconds() << " seconds for " << buffer.currentWriteFrameIndex << " frames");
+    STATS_MSG("Frame rate: " << 1/(simulationTime.asSeconds() / (buffer.currentWriteFrameIndex + 1)));
+    STATS_MSG("Average simulation time step: " << simulationTime.asSeconds() / (buffer.currentWriteFrameIndex + 1));
 }
 
 void Simulation::update() {
@@ -586,8 +990,8 @@ private:
     const YAML::Node& config;
 
     // Display parameters
-    int windowWidth;
-    int windowHeight;
+    int windowWidth;  // Pixels
+    int windowHeight; // Pixels
     sf::Font font;
     std::string title;
     bool showInfo = true;
@@ -598,6 +1002,7 @@ private:
     float windowHeightScaled;
     float windowWidthOffsetScaled;
     float windowHeightOffsetScaled;
+
 
     // Renderer parameters
     float timeStep;
@@ -668,8 +1073,7 @@ void Renderer::loadConfiguration() {
     title = config["display"]["title"].as<std::string>();
     timeStep = config["simulation"]["time_step"].as<float>();
     playbackSpeed = config["simulation"]["playback_speed"].as<float>();
-    scale = config["display"]["pixels_per_meter"].as<float>();
-
+    
     // Set the maximum number of frames if the duration is specified
     if(config["simulation"]["duration_seconds"]) {
         maxFrames = config["simulation"]["duration_seconds"].as<int>() / timeStep;
@@ -693,6 +1097,7 @@ void Renderer::loadConfiguration() {
     frameRateBufferSize = 1.0f / timeStep;
 
     // Scale the window size
+    scale = config["display"]["pixels_per_meter"].as<float>();
     windowWidthScaled = windowWidth * scale;
     windowHeightScaled = windowHeight * scale;
 
@@ -1057,29 +1462,39 @@ sf::Time Renderer::calculateSleepTime() {
     return std::max(remainingTime, sf::Time::Zero);
 }
 
-void Renderer::render() {
+void Renderer::render() {  // Input: meters, Output: pixels
     window.clear(sf::Color::White);
 
     if (currentFrame.size() != 0) {
-        for (const auto& agent : currentFrame) {
+        for (auto& agent : currentFrame) {
+
+            // Scale agent data (window offset missing!)
+            agent.position *= scale;
+            agent.initialPosition *= scale;
+            agent.targetPosition *= scale;
+            agent.bodyRadius *= scale;
+            agent.velocity *= scale;
+
+            // Scale the trajectory waypoints
+            for(auto& waypoint : agent.trajectory) {
+                waypoint *= scale;
+            }
 
             // Determine the next waypoint index that is ahead of the agent
             if(showWaypoints) {
-                int nextWaypointIndex = -1;
-                for (int i = 0; i < agent.trajectory.size(); ++i) {
-                    sf::Vector2f directionToWaypoint = agent.trajectory[i] - agent.position;
-                    float dotProduct = directionToWaypoint.x * agent.velocity.x + directionToWaypoint.y * agent.velocity.y;
-                    if (dotProduct > 0) {
-                        nextWaypointIndex = i;
-                        break;
-                    }
-                }
-
+  
                 // Draw the trajectory waypoints ahead of the agent
                 sf::VertexArray waypoints(sf::Points);
-                if (nextWaypointIndex != -1) {
-                    for (size_t i = nextWaypointIndex; i < agent.trajectory.size(); ++i) {
-                        waypoints.append(sf::Vertex(agent.trajectory[i], sf::Color::Black));
+
+                // Calculate the next waypoint
+                agent.getNextWaypoint();
+
+                // Draw the waypoints
+                if (agent.nextWaypointIndex != -1) {
+                    for (size_t i = agent.nextWaypointIndex; i < agent.trajectory.size(); ++i) {
+                        
+                        // Append the scaled waypoint to the vertex array
+                        waypoints.append(sf::Vertex(agent.trajectory[i], agent.waypointColor));
                     }
                 }
                 window.draw(waypoints);
@@ -1093,8 +1508,8 @@ void Renderer::render() {
 
             // Draw the agent
             sf::CircleShape agentShape;
-            agentShape.setPosition(agent.position.x - agent.radius, agent.position.y - agent.radius);
-            agentShape.setRadius(agent.radius);
+            agentShape.setPosition(agent.position.x - agent.bodyRadius, agent.position.y - agent.bodyRadius);
+            agentShape.setRadius(agent.bodyRadius);
             agentShape.setFillColor(agent.color);
             window.draw(agentShape);
         }

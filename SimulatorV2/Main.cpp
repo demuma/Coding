@@ -628,7 +628,7 @@ private:
 
     // Timing
     float targetFrameRate;
-    int targetRenderTime;
+    float targetRenderTime;
     sf::Clock rendererClock;
     sf::Time rendererRealTime;
     sf::Time renderSimulationTime;
@@ -802,18 +802,21 @@ void Renderer::updateTimeText() {
     int elapsedHours = static_cast<int>(totalElapsedTime.asSeconds()) / 3600;
     int elapsedMinutes = (static_cast<int>(totalElapsedTime.asSeconds()) % 3600) / 60;
     int elapsedSeconds = static_cast<int>(totalElapsedTime.asSeconds()) % 60;
+    int elapsedMilliseconds = (totalElapsedTime.asSeconds() - static_cast<int>(totalElapsedTime.asSeconds())) * 1000;
 
     std::string targetRenderTimeString = "∞";  // Default to infinity symbol
     if(targetRenderTime > 0) {
-        int targetHours = targetRenderTime / 3600;
-        int targetMinutes = (targetRenderTime) % 3600 / 60;
-        int targetSeconds = targetRenderTime % 60;
+        int targetHours = static_cast<int>(targetRenderTime) / 3600;
+        int targetMinutes = (static_cast<int>(targetRenderTime)) % 3600 / 60;
+        int targetSeconds = static_cast<int>(targetRenderTime) % 60;
+        int targetMilliseconds = (targetRenderTime - static_cast<int>(targetRenderTime)) * 1000;
 
         // Format the duration string using stringstream
         std::ostringstream targetRenderTimeStream;
         targetRenderTimeStream << std::setfill('0') << std::setw(2) << targetHours << ":"
                        << std::setw(2) << targetMinutes << ":"
-                       << std::setw(2) << targetSeconds;
+                       << std::setw(2) << targetSeconds << ":"
+                       << std::setw(3) << targetMilliseconds;
         targetRenderTimeString = targetRenderTimeStream.str();
     }
 
@@ -821,7 +824,8 @@ void Renderer::updateTimeText() {
     std::ostringstream timeStream;
     timeStream << "Time: " << std::setfill('0') << std::setw(2) << elapsedHours << ":"
                << std::setw(2) << elapsedMinutes << ":"
-               << std::setw(2) << elapsedSeconds << " / " << targetRenderTimeString;
+               << std::setw(2) << elapsedSeconds << ":"
+               << std::setw(3) << elapsedMilliseconds << " / " << targetRenderTimeString;
     timeText.setString(timeStream.str()); 
 
     // Right-align and position the text

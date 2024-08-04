@@ -7,7 +7,7 @@ display:
 
 simulation:
   # duration_seconds: 10
-  maximum_frames: 100
+  maximum_frames: 10
   time_step: 0.05
   playback_speed: 1.0
   num_threads: 8

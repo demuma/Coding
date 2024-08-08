@@ -1,4 +1,4 @@
-# Install script for directory: /Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2
+# Install script for directory: /Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2 copy
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -52,6 +52,6 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-  file(WRITE "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2 copy/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

@@ -33,10 +33,11 @@ db = client["Simulation"]
 #print(db)
 
 # Define data collection within database
-collection = db["AB_Sensor_Data"]
+collection = db["test"]
 
 # Get data (called documents) from database
-results = collection.find({"type":"Adult Cyclist"})
+# results = collection.find({"count":1})
+results = collection.distinct("count")
 
 for result in results:
     print(result)

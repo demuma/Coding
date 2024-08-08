@@ -16,6 +16,7 @@ public:
     sf::Vector2f position;
     sf::Vector2f initialPosition;
     sf::Vector2f velocity;
+    std::string timestamp;
     int priority;
     float lookAheadTime;
     sf::Vector2f acceleration;

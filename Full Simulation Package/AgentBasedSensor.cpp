@@ -64,7 +64,7 @@ void AgentBasedSensor::captureAgentData(const std::vector<Agent>& agents, sf::Ti
             AgentBasedSensorData agentData;
             agentData.sensor_id = sensor_id;
             agentData.agent_id = agent.uuid;
-            agentData.timestamp = generateISOTimestamp(totalElapsedTime, date);
+            agentData.timestamp = agent.timestamp;
             agentData.type = agent.type;
             agentData.position = agent.position;
 

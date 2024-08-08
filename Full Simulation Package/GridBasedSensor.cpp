@@ -23,7 +23,12 @@ GridBasedSensor::GridBasedSensor(
     }
 
 // Destructor
-GridBasedSensor::~GridBasedSensor() {}
+GridBasedSensor::~GridBasedSensor() {
+    
+    // Empty
+    gridData.clear();
+    dataStorage.clear();
+}
 
 // Update grid-based agent detection and output one gridData entry per frame
 void GridBasedSensor::update(const std::vector<Agent>& agents, float deltaTime, int frameCount, sf::Time totalElapsedTime, std::string datetime) {

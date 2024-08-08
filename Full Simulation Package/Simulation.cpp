@@ -339,10 +339,7 @@ void Simulation::run() {
     collection = db[mongoCollectionName];
 
     // Frame timing variables
-    sf::Clock clock;
-    sf::Time timeSinceLastUpdate = sf::seconds(0.0f);
-    totalElapsedTime = sf::seconds(0.0f);
-    sf::Time elapsedTime = sf::seconds(0.0f);
+    totalElapsedTime = sf::Time::Zero;
 
     // Simulation duration control and FPS variables
     frameCount = 0;
@@ -359,45 +356,28 @@ void Simulation::run() {
             handleEvents(event); 
         }
 
-        // Timestep-based update
-        elapsedTime = clock.restart();
-        
-        // Check if the simulation is not paused
-        if(!isPaused) {
+        // Check if the simulation is paused
+        if (!isPaused) {
 
-            // Update the simulation based on the time step
-            while (timeSinceLastUpdate >= timeStep) { 
-                
-                // Check if the simulation is paused
-                if (!isPaused) {
+            // Clear the grid
+            grid.clear();
+            update(timeStep.asSeconds());  // Use timeStep for consistent updates
 
-                    // Clear the grid
-                    grid.clear();
-                    update(timeStep.asSeconds());  // Use timeStep for consistent updates
+            // Frame rate calculation
+            calculateFrameRate();
 
-                    // Frame rate calculation
-                    calculateFrameRate();
+            // Update frame count and agent count text
+            updateFrameCountText(frameCount);
+            updateAgentCountText();
 
-                    // Update frame count and agent count text
-                    updateFrameCountText(frameCount);
-                    updateAgentCountText();
+            // Update the sensors
+            updateTimeText();
 
-                    // Update the sensors
-                    updateTimeText();
-
-                    // Increment frame count and total elapsed time
-                    frameCount++;
-                
-                    // Subtract the consumed time step to avoid accumulating too much leftover time
-                    timeSinceLastUpdate -= timeStep;  // Decrement accumulator
-                }
-            }
-
-            // Update totalElapsedTime with the remaining timeSinceLastUpdate
-            totalElapsedTime += elapsedTime * speedFactor; // Update total elapsed time
-
-            // Update the remaining time since the last update
-            timeSinceLastUpdate += elapsedTime * speedFactor;
+            // Increment frame count and total elapsed time
+            frameCount++;
+            
+            // Update the total simulation time
+            totalElapsedTime += timeStep;
         }
 
         // Render the simulation
@@ -617,7 +597,7 @@ void Simulation::render() {
 // Function to update the text that displays the current frame count
 void Simulation::updateFrameCountText(int frameCount) {
 
-    frameText.setString("Frame " + std::to_string(frameCount) + "/" + (maxFrames > 0 ? std::to_string(maxFrames) : "∞")); // ∞ for unlimited frames
+    frameText.setString("Frame: " + std::to_string(frameCount) + " / " + (maxFrames > 0 ? std::to_string(maxFrames) : "∞")); // ∞ for unlimited frames
     sf::FloatRect textRect = frameText.getLocalBounds();
     frameText.setOrigin(textRect.width, 0); // Right-align the text
     frameText.setPosition(window.getSize().x - 10, 40); // Position with padding
@@ -648,6 +628,7 @@ void Simulation::updateTimeText() {
     int elapsedHours = static_cast<int>(totalElapsedTime.asSeconds()) / 3600;
     int elapsedMinutes = (static_cast<int>(totalElapsedTime.asSeconds()) % 3600) / 60;
     int elapsedSeconds = static_cast<int>(totalElapsedTime.asSeconds()) % 60;
+    int elapsedMilliseconds = static_cast<int>((totalElapsedTime.asSeconds() - static_cast<int>(totalElapsedTime.asSeconds())) * 1000);
 
     // Convert seconds to HH:MM:SS for durationSeconds (if not infinite)
     std::string durationString = "∞";  // Default to infinity symbol
@@ -655,12 +636,14 @@ void Simulation::updateTimeText() {
         int durationToHours = static_cast<int>(durationSeconds) / 3600;
         int durationToMinutes = (static_cast<int>(durationSeconds) % 3600) / 60;
         int durationToSeconds = static_cast<int>(durationSeconds) % 60;
+        int durationToMilliseconds = static_cast<int>((durationSeconds - static_cast<int>(durationSeconds)) * 1000);
 
         // Format the duration string using stringstream
         std::ostringstream durationStream;
         durationStream << std::setfill('0') << std::setw(2) << durationToHours << ":"
                        << std::setw(2) << durationToMinutes << ":"
-                       << std::setw(2) << durationToSeconds;
+                       << std::setw(2) << durationToSeconds << ":"
+                       << std::setw(3) << durationToMilliseconds;
         durationString = durationStream.str();
     }
 
@@ -668,7 +651,8 @@ void Simulation::updateTimeText() {
     std::ostringstream timeStream;
     timeStream << "Time: " << std::setfill('0') << std::setw(2) << elapsedHours << ":"
                << std::setw(2) << elapsedMinutes << ":"
-               << std::setw(2) << elapsedSeconds << " / " << durationString;
+               << std::setw(2) << elapsedSeconds << ":"
+               << std::setw(3) << elapsedMilliseconds << " / " << durationString;
     timeText.setString(timeStream.str()); 
 
     // Right-align and position the text
@@ -774,35 +758,39 @@ void Simulation::update(float deltaTime) {
     // Update agents
     for (auto agent = agents.begin(); agent != agents.end(); ) {
 
-        // Update agent position and velocity with perlin noise
-        agent->updatePosition(deltaTime);
-
-        // Reset collision state at the start of each frame for each agent
-        agent->resetCollisionState(); 
-
         // Check if agent is out of bounds TODO: make separate function
         if (agent->position.x > simulationWidth + agent->radius || agent->position.x < -agent->radius ||
             agent->position.y > simulationHeight + agent->radius || agent->position.y < -agent->radius) {
             
             // Remove the agent from the vector and update the iterator
-            agent = agents.erase(agent); // TODO: Check if this is correct
-            continue; // Skip to the next agent (the iterator is already updated)
+            agent = agents.erase(agent); // Increases agent iterator if erased
+        } 
+        else {
+
+            // Update agent position and velocity with perlin noise
+            agent->updatePosition(deltaTime);
+
+            // Reset collision state at the start of each frame for each agent
+            agent->resetCollisionState(); 
+
+            // Update timestamp for each agent
+            agent->timestamp = generateISOTimestamp(totalElapsedTime, datetime);
+
+            // Assign the agent to the correct grid cell
+            grid.addAgent(&(*agent)); // Add agent to the grid
+
+            // Resume agents if they are stopped
+            if (agent->stopped) {
+
+                ++(agent->stoppedFrameCounter);
+                agent->resume(agents); 
+            }
+            // Check for agent-obstacle collisions
+            agentObstaclesCollision(*agent, obstacles);
+
+            // Move to the next agent
+            ++agent; 
         }
-
-        // Assign the agent to the correct grid cell
-        grid.addAgent(&(*agent)); // Add agent to the grid
-
-        // Resume agents if they are stopped
-        if (agent->stopped) {
-
-            ++(agent->stoppedFrameCounter);
-            agent->resume(agents); 
-        }
-        // Check for agent-obstacle collisions
-        agentObstaclesCollision(*agent, obstacles);
-
-        // Move to the next agent
-        ++agent; 
     }
 
     // Update sensors and store sensor data
@@ -863,7 +851,7 @@ void Simulation::postData(const std::vector<Agent>& agents) {
             bsoncxx::builder::stream::document document{};
 
             // Append the agent data to the document
-            document << "timestamp" << generateISOTimestamp(totalElapsedTime, datetime)
+            document << "timestamp" << agent.timestamp
                         << "agent_id" << agent.uuid
                         << "type" << agent.type
                         << "position" 

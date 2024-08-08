@@ -1,16 +1,49 @@
 display:
   width: 3440
-  height: 1440
-  pixels_per_meter: 20
+  height: 1300
+  pixels_per_meter: 10
   title: 'Agent-Based Urban Mobility Simulator'
   show_info: true
 
 simulation:
-  duration_seconds: 100
-  maximum_frames: 1000
-  time_step: 1.0
+  width: 200
+  height: 100
+  # duration_seconds: 10
+  maximum_frames: 100000
+  time_step: 0.05
   playback_speed: 1.0
   num_threads: 8
+  live_mode: true
+
+collision:
+  grid:
+    cell_size: 10 # Default: 100
+    show_grid: false
 
 agents:
-  num_agents: 100
+  num_agents: 1000
+  waypoint_distance: 100
+  waypoint_radius: 2
+  show_trajectories: false
+  show_waypoints: false
+  show_arrow: false
+
+# obstacles:
+# - type: rectangle
+#   position: [0.0, 0.0]  # Position in meters
+#   size: [10, 5.0]      # Size in meters
+#   color: grey
+
+# corridors:
+#   - type: start
+#     position: [0.0, 0.0]
+#     width: 2.0
+#     height: 72.0
+#     color: grey
+#     alpha: 0.1
+#   - type: end
+#     position: [170.0, 0.0]
+#     width: 2.0
+#     height: 72.0
+#     color: red
+#     alpha: 0.1

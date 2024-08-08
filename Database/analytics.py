@@ -68,6 +68,11 @@ aggregated_agents_data = agents_data.groupby('agent_id').agg(aggregation_gt_func
 aggregated_abs_data = ab_sensor_data.groupby('agent_id').agg(aggregation_abs_functions).reset_index()
 aggregated_gbs_data = gb_sensor_data.groupby('cell_index').agg(aggregation_gbs_functions).reset_index()
 
+# Convert cell_index from list to tuple
+aggregated_gbs_data['total_agents'] = aggregated_gbs_data['total_agents'].apply(tuple)
+aggregated_gbs_data['timestamp'] = aggregated_gbs_data['timestamp'].apply(tuple)
+aggregated_gbs_data['agent_type_count'] = aggregated_gbs_data['agent_type_count'].apply(tuple)
+
 # Print the aggregated data
 # print(aggregated_agents_data.head())
 # print(aggregated_abs_data.head())
@@ -84,7 +89,7 @@ ab_sensor_data = ab_sensor_data.drop(columns=['position', 'estimated_velocity'])
 quasi_identifiers = ['agent_id']
 
 # Define quasi-identifiers for grid-based sensor data
-grid_quasi_identifiers = ['cell_index'] 
+grid_quasi_identifiers = ['total_agents'] 
 
 # Function to calculate k-anonymity
 def calculate_k_anonymity(df, quasi_identifiers):
@@ -148,10 +153,10 @@ print(f"Aggregated Agent-Based Data k-Anonymity with agent_id: {k_anonymity_abs_
 print(f"Aggregated Agent-Based Data l-diversity with agent_id: {l_diversity_abs_aggregated}")
 
 # Calculate k-anonymity with agent_id as the quasi-identifier for the aggregated ground truth data
-k_anonymity_gbs_aggregated = calculate_k_anonymity(aggregated_gbs_data, ['total_agents'])
-l_diversity_gbs_aggregated = calculate_l_diversity(aggregated_gbs_data, ['total_agents'], 'agent_type_count')
-print(f"Aggregated Grid-Based Data k-Anonymity with agent_type_count: {k_anonymity_gbs_aggregated}")
-print(f"Aggregated Grid-Based Data l-diversity: {l_diversity_gbs_aggregated}")
+# k_anonymity_gbs_aggregated = calculate_k_anonymity(aggregated_gbs_data, ['total_agents'])
+# l_diversity_gbs_aggregated = calculate_l_diversity(aggregated_gbs_data, ['total_agents'], 'agent_type_count')
+# print(f"Aggregated Grid-Based Data k-Anonymity with agent_type_count: {k_anonymity_gbs_aggregated}")
+# print(f"Aggregated Grid-Based Data l-diversity: {l_diversity_gbs_aggregated}")
 
 # Function to calculate k-anonymity for grid-based sensor data
 def calculate_k_anonymity_grid(df, quasi_identifiers):
@@ -226,6 +231,17 @@ def calculate_l_diversity_grid(df, quasi_identifiers, sensitive_attribute, inclu
         grouped = df.groupby(quasi_identifiers)[sensitive_attribute].apply(count_unique_values)
     
     return grouped.min()
+
+
+k_anonymity_agents_data = calculate_k_anonymity(agents_data, quasi_identifiers)
+l_diversity_agents_data = calculate_l_diversity_grid(agents_data, quasi_identifiers, 'type')
+print(f"Agent-Based Sensor Data k-Anonymity: {k_anonymity_agents_data}")
+print(f"Agent-Based Sensor Data l-Diversity: {l_diversity_agents_data}")
+
+k_anonymity_ab_sensor = calculate_k_anonymity(ab_sensor_data, quasi_identifiers)
+l_diversity_ab_sensor = calculate_l_diversity_grid(ab_sensor_data, quasi_identifiers, 'type')
+print(f"Agent-Based Sensor Data k-Anonymity: {k_anonymity_ab_sensor}")
+print(f"Agent-Based Sensor Data l-Diversity: {l_diversity_ab_sensor}")
 
 # Example usage
 k_anonymity_gb_sensor = calculate_k_anonymity_grid(gb_sensor_data, grid_quasi_identifiers)

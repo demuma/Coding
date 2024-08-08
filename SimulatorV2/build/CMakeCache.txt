@@ -234,15 +234,6 @@ Simulator_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 Simulator_SOURCE_DIR:STATIC=/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2
 
-//Value Computed by CMake
-Visualizer_BINARY_DIR:STATIC=/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build
-
-//Value Computed by CMake
-Visualizer_IS_TOP_LEVEL:STATIC=ON
-
-//Value Computed by CMake
-Visualizer_SOURCE_DIR:STATIC=/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2
-
 //The directory containing a CMake configuration file for bson-1.0.
 bson-1.0_DIR:PATH=/usr/local/lib/cmake/bson-1.0
 

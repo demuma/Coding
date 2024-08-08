@@ -109,6 +109,7 @@ private:
     // Simulation State
     bool isPaused = false;
     sf::Time totalElapsedTime;
+    // float simulationTime = 0.0f;
 
     // Database
 

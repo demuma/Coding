@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Agent.hpp"
+#include "Utilities.hpp"
 
 // Constructor
 Agent::Agent() {

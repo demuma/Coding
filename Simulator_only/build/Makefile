@@ -129,29 +129,77 @@ Simulator/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/build
 .PHONY : Simulator/fast
 
-Main.o: Main.cpp.o
-.PHONY : Main.o
+src/Main.o: src/Main.cpp.o
+.PHONY : src/Main.o
 
 # target to build an object file
-Main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/Main.cpp.o
-.PHONY : Main.cpp.o
+src/Main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Main.cpp.o
+.PHONY : src/Main.cpp.o
 
-Main.i: Main.cpp.i
-.PHONY : Main.i
+src/Main.i: src/Main.cpp.i
+.PHONY : src/Main.i
 
 # target to preprocess a source file
-Main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/Main.cpp.i
-.PHONY : Main.cpp.i
+src/Main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Main.cpp.i
+.PHONY : src/Main.cpp.i
 
-Main.s: Main.cpp.s
-.PHONY : Main.s
+src/Main.s: src/Main.cpp.s
+.PHONY : src/Main.s
 
 # target to generate assembly for a file
-Main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/Main.cpp.s
-.PHONY : Main.cpp.s
+src/Main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Main.cpp.s
+.PHONY : src/Main.cpp.s
+
+src/PerlinNoise.o: src/PerlinNoise.cpp.o
+.PHONY : src/PerlinNoise.o
+
+# target to build an object file
+src/PerlinNoise.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o
+.PHONY : src/PerlinNoise.cpp.o
+
+src/PerlinNoise.i: src/PerlinNoise.cpp.i
+.PHONY : src/PerlinNoise.i
+
+# target to preprocess a source file
+src/PerlinNoise.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.i
+.PHONY : src/PerlinNoise.cpp.i
+
+src/PerlinNoise.s: src/PerlinNoise.cpp.s
+.PHONY : src/PerlinNoise.s
+
+# target to generate assembly for a file
+src/PerlinNoise.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.s
+.PHONY : src/PerlinNoise.cpp.s
+
+src/Utilities.o: src/Utilities.cpp.o
+.PHONY : src/Utilities.o
+
+# target to build an object file
+src/Utilities.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Utilities.cpp.o
+.PHONY : src/Utilities.cpp.o
+
+src/Utilities.i: src/Utilities.cpp.i
+.PHONY : src/Utilities.i
+
+# target to preprocess a source file
+src/Utilities.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Utilities.cpp.i
+.PHONY : src/Utilities.cpp.i
+
+src/Utilities.s: src/Utilities.cpp.s
+.PHONY : src/Utilities.s
+
+# target to generate assembly for a file
+src/Utilities.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Utilities.cpp.s
+.PHONY : src/Utilities.cpp.s
 
 # Help Target
 help:
@@ -162,9 +210,15 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... Simulator"
-	@echo "... Main.o"
-	@echo "... Main.i"
-	@echo "... Main.s"
+	@echo "... src/Main.o"
+	@echo "... src/Main.i"
+	@echo "... src/Main.s"
+	@echo "... src/PerlinNoise.o"
+	@echo "... src/PerlinNoise.i"
+	@echo "... src/PerlinNoise.s"
+	@echo "... src/Utilities.o"
+	@echo "... src/Utilities.i"
+	@echo "... src/Utilities.s"
 .PHONY : help
 
 

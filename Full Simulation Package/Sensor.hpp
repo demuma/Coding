@@ -29,6 +29,7 @@ public:
     sf::Color detectionAreaColor;
     sf::FloatRect detectionArea;
     float frameRate;
+    int scale;
     std::unordered_map<std::string, sf::Vector2f> previousPositions;
     std::unordered_map<std::string, sf::Vector2f> currentPositions;
 

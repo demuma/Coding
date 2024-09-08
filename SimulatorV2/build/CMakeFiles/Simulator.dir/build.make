@@ -83,10 +83,66 @@ CMakeFiles/Simulator.dir/src/Agent.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Simulator.dir/src/Agent.cpp.s"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Agent.cpp" -o CMakeFiles/Simulator.dir/src/Agent.cpp.s
 
+CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.o: CMakeFiles/Simulator.dir/flags.make
+CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV2/src/AgentBasedSensor.cpp
+CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.o -MF CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.o.d -o CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/AgentBasedSensor.cpp"
+
+CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/AgentBasedSensor.cpp" > CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.i
+
+CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/AgentBasedSensor.cpp" -o CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.s
+
+CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.o: CMakeFiles/Simulator.dir/flags.make
+CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV2/src/CollisionAvoidance.cpp
+CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.o -MF CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.o.d -o CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/CollisionAvoidance.cpp"
+
+CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/CollisionAvoidance.cpp" > CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.i
+
+CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/CollisionAvoidance.cpp" -o CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.s
+
+CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.o: CMakeFiles/Simulator.dir/flags.make
+CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV2/src/CollisionGrid.cpp
+CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.o -MF CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.o.d -o CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/CollisionGrid.cpp"
+
+CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/CollisionGrid.cpp" > CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.i
+
+CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/CollisionGrid.cpp" -o CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.s
+
+CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.o: CMakeFiles/Simulator.dir/flags.make
+CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV2/src/GridBasedSensor.cpp
+CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.o -MF CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.o.d -o CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/GridBasedSensor.cpp"
+
+CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/GridBasedSensor.cpp" > CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.i
+
+CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/GridBasedSensor.cpp" -o CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.s
+
 CMakeFiles/Simulator.dir/src/Main.cpp.o: CMakeFiles/Simulator.dir/flags.make
 CMakeFiles/Simulator.dir/src/Main.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV2/src/Main.cpp
 CMakeFiles/Simulator.dir/src/Main.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/Simulator.dir/src/Main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/Simulator.dir/src/Main.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/Main.cpp.o -MF CMakeFiles/Simulator.dir/src/Main.cpp.o.d -o CMakeFiles/Simulator.dir/src/Main.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Main.cpp"
 
 CMakeFiles/Simulator.dir/src/Main.cpp.i: cmake_force
@@ -100,7 +156,7 @@ CMakeFiles/Simulator.dir/src/Main.cpp.s: cmake_force
 CMakeFiles/Simulator.dir/src/Obstacle.cpp.o: CMakeFiles/Simulator.dir/flags.make
 CMakeFiles/Simulator.dir/src/Obstacle.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV2/src/Obstacle.cpp
 CMakeFiles/Simulator.dir/src/Obstacle.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/Simulator.dir/src/Obstacle.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/Simulator.dir/src/Obstacle.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/Obstacle.cpp.o -MF CMakeFiles/Simulator.dir/src/Obstacle.cpp.o.d -o CMakeFiles/Simulator.dir/src/Obstacle.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Obstacle.cpp"
 
 CMakeFiles/Simulator.dir/src/Obstacle.cpp.i: cmake_force
@@ -114,7 +170,7 @@ CMakeFiles/Simulator.dir/src/Obstacle.cpp.s: cmake_force
 CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o: CMakeFiles/Simulator.dir/flags.make
 CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV2/src/PerlinNoise.cpp
 CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o -MF CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o.d -o CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/PerlinNoise.cpp"
 
 CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.i: cmake_force
@@ -128,7 +184,7 @@ CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.s: cmake_force
 CMakeFiles/Simulator.dir/src/Renderer.cpp.o: CMakeFiles/Simulator.dir/flags.make
 CMakeFiles/Simulator.dir/src/Renderer.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV2/src/Renderer.cpp
 CMakeFiles/Simulator.dir/src/Renderer.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/Simulator.dir/src/Renderer.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/Simulator.dir/src/Renderer.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/Renderer.cpp.o -MF CMakeFiles/Simulator.dir/src/Renderer.cpp.o.d -o CMakeFiles/Simulator.dir/src/Renderer.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Renderer.cpp"
 
 CMakeFiles/Simulator.dir/src/Renderer.cpp.i: cmake_force
@@ -139,10 +195,24 @@ CMakeFiles/Simulator.dir/src/Renderer.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Simulator.dir/src/Renderer.cpp.s"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Renderer.cpp" -o CMakeFiles/Simulator.dir/src/Renderer.cpp.s
 
+CMakeFiles/Simulator.dir/src/Sensor.cpp.o: CMakeFiles/Simulator.dir/flags.make
+CMakeFiles/Simulator.dir/src/Sensor.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV2/src/Sensor.cpp
+CMakeFiles/Simulator.dir/src/Sensor.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/Simulator.dir/src/Sensor.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/Sensor.cpp.o -MF CMakeFiles/Simulator.dir/src/Sensor.cpp.o.d -o CMakeFiles/Simulator.dir/src/Sensor.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Sensor.cpp"
+
+CMakeFiles/Simulator.dir/src/Sensor.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Simulator.dir/src/Sensor.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Sensor.cpp" > CMakeFiles/Simulator.dir/src/Sensor.cpp.i
+
+CMakeFiles/Simulator.dir/src/Sensor.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Simulator.dir/src/Sensor.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Sensor.cpp" -o CMakeFiles/Simulator.dir/src/Sensor.cpp.s
+
 CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o: CMakeFiles/Simulator.dir/flags.make
 CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV2/src/SharedBuffer.cpp
 CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o -MF CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o.d -o CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/SharedBuffer.cpp"
 
 CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.i: cmake_force
@@ -156,7 +226,7 @@ CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.s: cmake_force
 CMakeFiles/Simulator.dir/src/Simulation.cpp.o: CMakeFiles/Simulator.dir/flags.make
 CMakeFiles/Simulator.dir/src/Simulation.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV2/src/Simulation.cpp
 CMakeFiles/Simulator.dir/src/Simulation.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/Simulator.dir/src/Simulation.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/Simulator.dir/src/Simulation.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/Simulation.cpp.o -MF CMakeFiles/Simulator.dir/src/Simulation.cpp.o.d -o CMakeFiles/Simulator.dir/src/Simulation.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Simulation.cpp"
 
 CMakeFiles/Simulator.dir/src/Simulation.cpp.i: cmake_force
@@ -170,7 +240,7 @@ CMakeFiles/Simulator.dir/src/Simulation.cpp.s: cmake_force
 CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o: CMakeFiles/Simulator.dir/flags.make
 CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV2/src/ThreadPool.cpp
 CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o -MF CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o.d -o CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/ThreadPool.cpp"
 
 CMakeFiles/Simulator.dir/src/ThreadPool.cpp.i: cmake_force
@@ -184,7 +254,7 @@ CMakeFiles/Simulator.dir/src/ThreadPool.cpp.s: cmake_force
 CMakeFiles/Simulator.dir/src/Utilities.cpp.o: CMakeFiles/Simulator.dir/flags.make
 CMakeFiles/Simulator.dir/src/Utilities.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV2/src/Utilities.cpp
 CMakeFiles/Simulator.dir/src/Utilities.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/Simulator.dir/src/Utilities.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/Simulator.dir/src/Utilities.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/Utilities.cpp.o -MF CMakeFiles/Simulator.dir/src/Utilities.cpp.o.d -o CMakeFiles/Simulator.dir/src/Utilities.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Utilities.cpp"
 
 CMakeFiles/Simulator.dir/src/Utilities.cpp.i: cmake_force
@@ -198,10 +268,15 @@ CMakeFiles/Simulator.dir/src/Utilities.cpp.s: cmake_force
 # Object files for target Simulator
 Simulator_OBJECTS = \
 "CMakeFiles/Simulator.dir/src/Agent.cpp.o" \
+"CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.o" \
+"CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.o" \
+"CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.o" \
+"CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.o" \
 "CMakeFiles/Simulator.dir/src/Main.cpp.o" \
 "CMakeFiles/Simulator.dir/src/Obstacle.cpp.o" \
 "CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o" \
 "CMakeFiles/Simulator.dir/src/Renderer.cpp.o" \
+"CMakeFiles/Simulator.dir/src/Sensor.cpp.o" \
 "CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o" \
 "CMakeFiles/Simulator.dir/src/Simulation.cpp.o" \
 "CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o" \
@@ -211,10 +286,15 @@ Simulator_OBJECTS = \
 Simulator_EXTERNAL_OBJECTS =
 
 Simulator: CMakeFiles/Simulator.dir/src/Agent.cpp.o
+Simulator: CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.o
+Simulator: CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.o
+Simulator: CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.o
+Simulator: CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.o
 Simulator: CMakeFiles/Simulator.dir/src/Main.cpp.o
 Simulator: CMakeFiles/Simulator.dir/src/Obstacle.cpp.o
 Simulator: CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o
 Simulator: CMakeFiles/Simulator.dir/src/Renderer.cpp.o
+Simulator: CMakeFiles/Simulator.dir/src/Sensor.cpp.o
 Simulator: CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o
 Simulator: CMakeFiles/Simulator.dir/src/Simulation.cpp.o
 Simulator: CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o
@@ -227,7 +307,7 @@ Simulator: /usr/local/lib/libyaml-cpp.0.8.0.dylib
 Simulator: /usr/local/lib/libmongocxx.3.10.1.dylib
 Simulator: /usr/local/lib/libbsoncxx.3.10.1.dylib
 Simulator: CMakeFiles/Simulator.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX executable Simulator"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_15) "Linking CXX executable Simulator"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/Simulator.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

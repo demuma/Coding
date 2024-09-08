@@ -5,7 +5,7 @@ SharedBuffer::SharedBuffer() :  writeBufferIndex(0), readBufferIndex(1), current
         // Initialize the current read and write buffers
         currentReadBuffer.store(&buffers[readBufferIndex]);
         currentWriteBuffer.store(&buffers[writeBufferIndex]);
-        stopped.store(false);
+        finished.store(false);
 
         DEBUG_MSG("Shared buffer: write buffer: " << writeBufferIndex);
         DEBUG_MSG("Shared buffer: read buffer: " << readBufferIndex);
@@ -31,7 +31,7 @@ std::vector<Agent> SharedBuffer::read() {
     // If read buffer empty, wait for a buffer swap to get the next frame
     std::unique_lock<std::mutex> lock(queueMutex);
     if(currentReadBuffer.load()->empty()) {
-        if(!stopped.load()){
+        if(!finished.load()){
 
             DEBUG_MSG("Renderer: waiting for frame: " << currentReadFrameIndex << " on buffer " << readBufferIndex);
             queueCond.wait(lock, [this] { return !currentReadBuffer.load()->empty(); });
@@ -86,5 +86,5 @@ void SharedBuffer::swap() {
 
 // Signalize the simulation has finished so that the renderer can swap buffers if needed
 void SharedBuffer::end() {
-        stopped.store(true);
+        finished.store(true);
 }

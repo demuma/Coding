@@ -21,8 +21,8 @@ std::string generateUUID();
 std::string generateISOTimestamp();
 float generateRandomNumberFromTND(float mean, float stddev, float min, float max);
 sf::Vector2f generateRandomVelocityVector(float mu, float sigma, float min, float max);
-std::string generateISOTimestamp(sf::Time totalElapsedTime);
-std::string generateISOTimestamp(sf::Time totalElapsedTime, const std::string& dateTimeString);
+std::string generateISOTimestamp(sf::Time simulationWallTime);
+std::string generateISOTimestamp(sf::Time simulationWallTime, const std::string& dateTimeString);
 // Structure to hash a 2D vector for use in unordered_map
 struct Vector2iHash {
     std::size_t operator()(const sf::Vector2i& v) const {

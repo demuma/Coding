@@ -11,9 +11,15 @@ find_package(yaml-cpp REQUIRED)
 find_package(mongocxx REQUIRED)
 find_package(bsoncxx REQUIRED)
 
+# Add the include directories for the libraries
+include_directories(include)
+
+# Add the source files to the executable
+file(GLOB_RECURSE SOURCES "src/*.cpp")
+
 # Add source files to build executable
 add_executable(Simulator
-    Main.cpp
+    ${SOURCES}
 )
 
 # Link libraries to the executable
@@ -22,8 +28,11 @@ target_link_libraries(Simulator sfml-graphics sfml-window sfml-system yaml-cpp::
 # Additional CMake options for the executable
 target_compile_features(Simulator PRIVATE cxx_std_17)
 
+# Set the optimization level
+target_compile_options(Simulator PRIVATE -O3)
+
 # Define DEBUG macro when building in debug mode
 # target_compile_definitions(Simulator PRIVATE DEBUG)
 target_compile_definitions(Simulator PRIVATE STATS)
-target_compile_definitions(Simulator PRIVATE ERROR)
+# target_compile_definitions(Simulator PRIVATE ERROR)
 # target_compile_definitions(Simulator PRIVATE TIMING)

@@ -1,7 +1,7 @@
 #include "../include/Agent.hpp"
 
 // Default constructor for the Agent class
-Agent::Agent(){
+Agent::Agent(const AgentTypeAttributes& attributes) : attributes(attributes) {
 
     collisionPredicted = false;
     stopped = false;
@@ -12,11 +12,15 @@ Agent::Agent(){
     bufferZoneColor = sf::Color::Green;
 };
 
-// Initialize the agent with default values and calculate buffer radius
+Agent::~Agent() {
+    trajectory.clear();
+}
+
+// Initialize the agent with default values and calculate buffer zone radius
 void Agent::setBufferZoneSize() {
 
     float velocityMagnitude = std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-    bufferZoneRadius = minBufferZoneRadius + bodyRadius + (velocityMagnitude / maxVelocity); 
+    bufferZoneRadius = minBufferZoneRadius + bodyRadius + (velocityMagnitude / attributes.velocity.max) * bodyRadius; 
 }
 
 // Calculate the velocity based on the next waypoint
@@ -26,7 +30,7 @@ void Agent::calculateVelocity(sf::Vector2f waypoint) {
     float angle = std::atan2(waypoint.y - position.y, waypoint.x - position.x);
     
     // Calculate the heading vector
-    sf::Vector2f heading;
+    // sf::Vector2f heading;
     heading.x = std::cos(angle);
     heading.y = std::sin(angle);
 
@@ -35,22 +39,23 @@ void Agent::calculateVelocity(sf::Vector2f waypoint) {
 }
 
 // Update the agent's velocity based on Perlin noise
-void Agent::updateVelocity(float deltaTime, sf::Time totalElapsedTime) {
+void Agent::updateVelocity(float deltaTime, sf::Time simulationTime) {
     
     // Use the agent's own Perlin noise generator to fluctuate velocity
-    float noiseX = perlinNoise.noise(position.x * velocityNoiseScale, position.y * velocityNoiseScale, totalElapsedTime.asSeconds()) * 2.0f - 1.0f;
-    float noiseY = perlinNoise.noise(position.x * velocityNoiseScale, position.y * velocityNoiseScale, totalElapsedTime.asSeconds() + 1000.0f) * 2.0f - 1.0f;
+    float noiseX = perlinNoise.noise(position.x * attributes.velocity.noiseScale, position.y * attributes.velocity.noiseScale, simulationTime.asSeconds()) * 2.0f - 1.0f;
+    float noiseY = perlinNoise.noise(position.x * attributes.velocity.noiseScale, position.y * attributes.velocity.noiseScale, simulationTime.asSeconds() + 1000.0f) * 2.0f - 1.0f;
 
     // Apply noise to velocity
-    velocity.x = initialVelocity.x + noiseX / 3.6 * velocityNoiseFactor;
-    velocity.y = initialVelocity.y + noiseY / 3.6 * velocityNoiseFactor;
+    velocity.x = initialVelocity.x + noiseX / 3.6 * attributes.velocity.noiseFactor;
+    velocity.y = initialVelocity.y + noiseY / 3.6 * attributes.velocity.noiseFactor;
 }
 
 // Update the agent's position based on velocity
 void Agent::updatePosition(float timeStep) {
 
     // Update the position based on the velocity
-    position += velocity * timeStep;
+    position.x += velocity.x * timeStep;
+    position.y += velocity.y * timeStep;
 }
 
 // Get the future position of the agent at a given time
@@ -127,7 +132,6 @@ void Agent::stop() {
 
     // Stop the agent if it is not already stopped
     if (!stopped) {
-        initialVelocity = velocity;
         velocity = sf::Vector2f(0.0f, 0.0f);
         stopped = true;
         stoppedFrameCounter = 0;
@@ -157,9 +161,7 @@ void Agent::resume(const std::vector<Agent>& agents) {
 
     // Resume the agent if it is stopped and has been stopped for at least 20 frames
     if (stopped) {
-        if (canResume(agents)) {
-            velocity = initialVelocity;
-            stopped = false;
-        }
+        velocity = initialVelocity;
+        stopped = false;
     }
 }

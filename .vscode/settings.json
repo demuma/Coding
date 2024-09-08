@@ -140,12 +140,15 @@
     "filesystem": "cpp",
     "stop_token": "cpp",
     "future": "cpp",
-    "thread": "cpp"
+    "thread": "cpp",
+    "__availability": "cpp",
+    "semaphore": "cpp"
   },
   "C_Cpp.default.compilerPath": "",
   "C_Cpp.default.includePath": [
     "/usr/local/include/bsoncxx/v_noabi/bsoncxx/",
     "/usr/local/include/mongocxx/v_noabi/mongocxx/"
   ],
-  "cmake.sourceDirectory": "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package"
+  "cmake.sourceDirectory": "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package",
+  "C_Cpp.default.cppStandard": "c++17"
 }

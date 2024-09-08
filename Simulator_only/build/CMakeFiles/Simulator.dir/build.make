@@ -69,28 +69,60 @@ include CMakeFiles/Simulator.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/Simulator.dir/flags.make
 
-CMakeFiles/Simulator.dir/Main.cpp.o: CMakeFiles/Simulator.dir/flags.make
-CMakeFiles/Simulator.dir/Main.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Simulator_only/Main.cpp
-CMakeFiles/Simulator.dir/Main.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/Simulator.dir/Main.cpp.o"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/Main.cpp.o -MF CMakeFiles/Simulator.dir/Main.cpp.o.d -o CMakeFiles/Simulator.dir/Main.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/Main.cpp"
+CMakeFiles/Simulator.dir/src/Main.cpp.o: CMakeFiles/Simulator.dir/flags.make
+CMakeFiles/Simulator.dir/src/Main.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Simulator_only/src/Main.cpp
+CMakeFiles/Simulator.dir/src/Main.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/Simulator.dir/src/Main.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/Main.cpp.o -MF CMakeFiles/Simulator.dir/src/Main.cpp.o.d -o CMakeFiles/Simulator.dir/src/Main.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/src/Main.cpp"
 
-CMakeFiles/Simulator.dir/Main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Simulator.dir/Main.cpp.i"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/Main.cpp" > CMakeFiles/Simulator.dir/Main.cpp.i
+CMakeFiles/Simulator.dir/src/Main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Simulator.dir/src/Main.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/src/Main.cpp" > CMakeFiles/Simulator.dir/src/Main.cpp.i
 
-CMakeFiles/Simulator.dir/Main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Simulator.dir/Main.cpp.s"
-	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/Main.cpp" -o CMakeFiles/Simulator.dir/Main.cpp.s
+CMakeFiles/Simulator.dir/src/Main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Simulator.dir/src/Main.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/src/Main.cpp" -o CMakeFiles/Simulator.dir/src/Main.cpp.s
+
+CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o: CMakeFiles/Simulator.dir/flags.make
+CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Simulator_only/src/PerlinNoise.cpp
+CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o -MF CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o.d -o CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/src/PerlinNoise.cpp"
+
+CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/src/PerlinNoise.cpp" > CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.i
+
+CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/src/PerlinNoise.cpp" -o CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.s
+
+CMakeFiles/Simulator.dir/src/Utilities.cpp.o: CMakeFiles/Simulator.dir/flags.make
+CMakeFiles/Simulator.dir/src/Utilities.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Simulator_only/src/Utilities.cpp
+CMakeFiles/Simulator.dir/src/Utilities.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/Simulator.dir/src/Utilities.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/Utilities.cpp.o -MF CMakeFiles/Simulator.dir/src/Utilities.cpp.o.d -o CMakeFiles/Simulator.dir/src/Utilities.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/src/Utilities.cpp"
+
+CMakeFiles/Simulator.dir/src/Utilities.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Simulator.dir/src/Utilities.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/src/Utilities.cpp" > CMakeFiles/Simulator.dir/src/Utilities.cpp.i
+
+CMakeFiles/Simulator.dir/src/Utilities.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Simulator.dir/src/Utilities.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/src/Utilities.cpp" -o CMakeFiles/Simulator.dir/src/Utilities.cpp.s
 
 # Object files for target Simulator
 Simulator_OBJECTS = \
-"CMakeFiles/Simulator.dir/Main.cpp.o"
+"CMakeFiles/Simulator.dir/src/Main.cpp.o" \
+"CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o" \
+"CMakeFiles/Simulator.dir/src/Utilities.cpp.o"
 
 # External object files for target Simulator
 Simulator_EXTERNAL_OBJECTS =
 
-Simulator: CMakeFiles/Simulator.dir/Main.cpp.o
+Simulator: CMakeFiles/Simulator.dir/src/Main.cpp.o
+Simulator: CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o
+Simulator: CMakeFiles/Simulator.dir/src/Utilities.cpp.o
 Simulator: CMakeFiles/Simulator.dir/build.make
 Simulator: /usr/local/lib/libsfml-graphics.2.6.1.dylib
 Simulator: /usr/local/lib/libsfml-window.2.6.1.dylib
@@ -99,7 +131,7 @@ Simulator: /usr/local/lib/libyaml-cpp.0.8.0.dylib
 Simulator: /usr/local/lib/libmongocxx.3.10.1.dylib
 Simulator: /usr/local/lib/libbsoncxx.3.10.1.dylib
 Simulator: CMakeFiles/Simulator.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable Simulator"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Simulator_only/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable Simulator"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/Simulator.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

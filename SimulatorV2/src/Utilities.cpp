@@ -1,4 +1,5 @@
 #include "../include/Utilities.hpp"
+#include "../include/Logging.hpp"
 
 // Generate a unique identifier for the agent
 std::string generateUUID() {
@@ -77,59 +78,46 @@ std::string generateISOTimestamp(sf::Time totalElapsedTime) {
     return ss.str();
 }
 
-// Generate an ISO 8601 timestamp from a start date string and total elapsed time
-std::string generateISOTimestamp(sf::Time totalElapsedTime, const std::string& dateTimeString = "") {
-    std::tm startTime{}; // Initialize to all zeros
-    std::time_t start_time_t = 0;
-    bool useCurrentTime = false;
+std::string generateISOTimestamp(sf::Time simulationWallTime, const std::string& dateTimeString = "") {
+    // Get current system time in milliseconds
+    auto now = std::chrono::system_clock::now();
+    auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
+    auto epoch = now_ms.time_since_epoch();
+    auto currentTimeMillis = epoch.count();
 
-    // Parse the start date string
-    if (!dateTimeString.empty()) {
-        std::istringstream ss(dateTimeString);
-        ss >> std::get_time(&startTime, "%Y-%m-%dT%H:%M:%SZ"); // Parse with Z for UTC
+    // Convert simulationWallTime to milliseconds
+    auto simulationTimeMillis = simulationWallTime.asMilliseconds();
 
-        if (ss.fail()) {
-            std::cerr << "Error parsing datetime string from config.yaml: '" << dateTimeString << "'. Using current time instead!" << std::endl;
-            useCurrentTime = true;
-        } else {
-            start_time_t = timegm(&startTime); // Convert to time_t as UTC time
-        }
+    // Calculate reference time_t (either current time or provided dateTimeString)
+    std::time_t referenceTime_t;
+    if (dateTimeString.empty()) {
+        referenceTime_t = std::chrono::system_clock::to_time_t(now);
     } else {
-        useCurrentTime = true;
+        std::tm tm_start = {};
+        std::istringstream ss_start(dateTimeString);
+        ss_start >> std::get_time(&tm_start, "%Y-%m-%dT%H:%M:%S");
+        referenceTime_t = std::mktime(&tm_start);
     }
 
-    // Get current time if parsing failed or no date string provided
-    if (useCurrentTime) {
-        auto now = std::chrono::system_clock::now();
-        start_time_t = std::chrono::system_clock::to_time_t(now);
-    }
+    // Calculate time_t values for current time and simulation time
+    std::time_t currentTime_t = referenceTime_t + (currentTimeMillis / 1000);
+    std::time_t simulationTime_t = referenceTime_t + (simulationTimeMillis / 1000);
 
-    // Convert totalElapsedTime to duration since epoch
-    auto duration = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::microseconds(totalElapsedTime.asMicroseconds()));
+    // Convert to tm structs for formatting
+    std::tm* currentTime_tm = std::localtime(&currentTime_t);
+    std::tm* simulationTime_tm = std::localtime(&simulationTime_t);
 
-    // Convert start time to time_point
-    auto startTimePoint = std::chrono::system_clock::from_time_t(start_time_t);
+    // Format timestamps with milliseconds
+    std::ostringstream oss;
 
-    // Add the duration to the start time_point
-    auto timestampTp = startTimePoint + duration;
+    // Simulation Time (ISO 8601 with milliseconds)
+    oss << std::put_time(simulationTime_tm, "%FT%T");
+    // oss << '.' << std::setfill('0') << std::setw(3) << (simulationTimeMillis % 1000) << std::put_time(simulationTime_tm, "%z");
+    oss << '.' << std::setfill('0') << std::setw(3) << (simulationTimeMillis % 1000);
 
-    // Convert the new time_point back to time_t
-    std::time_t tt = std::chrono::system_clock::to_time_t(timestampTp);
+    // DEBUG_MSG("Timestamp: " << oss.str());
 
-    // Format into ISO 8601 string
-    std::stringstream outputSS;
-    std::tm localTime; // Local time structure
-
-    // Get local time with DST information
-    localtime_r(&tt, &localTime);
-
-    if (!dateTimeString.empty() && dateTimeString.back() == 'Z') { // Check if original timestamp was in UTC
-        outputSS << std::put_time(std::gmtime(&tt), "%FT%TZ"); // UTC timezone
-    } else {
-        outputSS << std::put_time(&localTime, "%FT%T%z"); // Local timezone with offset (using localTime)
-    }
-
-    return outputSS.str();
+    return oss.str();
 }
 
 // Convert a string to an sf::Color object

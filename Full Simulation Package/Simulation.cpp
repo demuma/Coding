@@ -262,6 +262,7 @@ void Simulation::initializeSensors() {
             
             // Create the agent-based sensor and add to sensors vector
             sensors.push_back(std::make_unique<AgentBasedSensor>(frameRate, detectionArea, colorAlpha, databaseName, collectionName, client));
+            sensors.back()->scale = scale;
 
             // Set initial positions for agents in the detection area
             for(const auto& agent : agents) {
@@ -290,6 +291,7 @@ void Simulation::initializeSensors() {
 
             // Create the grid-based sensor and add to sensors vector
             sensors.push_back(std::make_unique<GridBasedSensor>(frameRate, detectionArea, colorAlpha, cellSize, showGrid, databaseName, collectionName, client));
+            sensors.back()->scale = scale;
         }
     }
 }

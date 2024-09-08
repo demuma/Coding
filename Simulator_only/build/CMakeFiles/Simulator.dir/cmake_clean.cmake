@@ -1,6 +1,10 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/Simulator.dir/Main.cpp.o"
-  "CMakeFiles/Simulator.dir/Main.cpp.o.d"
+  "CMakeFiles/Simulator.dir/src/Main.cpp.o"
+  "CMakeFiles/Simulator.dir/src/Main.cpp.o.d"
+  "CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o"
+  "CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o.d"
+  "CMakeFiles/Simulator.dir/src/Utilities.cpp.o"
+  "CMakeFiles/Simulator.dir/src/Utilities.cpp.o.d"
   "Simulator"
   "Simulator.pdb"
 )

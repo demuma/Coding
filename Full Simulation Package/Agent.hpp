@@ -43,7 +43,7 @@ public:
     bool isActive; // Flag indicating if the agent is active
     unsigned int noiseSeed; // Seed for Perlin noise
     PerlinNoise perlinNoise; // Perlin noise generator
-
+    
     Agent();
     void initialize();
     void updatePosition(float deltaTime);

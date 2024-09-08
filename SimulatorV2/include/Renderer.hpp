@@ -12,6 +12,9 @@
 #include "Agent.hpp"
 #include "SharedBuffer.hpp"
 #include "Logging.hpp"
+#include "Obstacle.hpp"
+#include "Utilities.hpp"
+#include "Sensor.hpp"
 
 /************************************/
 /********** RENDERER CLASS **********/
@@ -20,9 +23,12 @@
 // Renderer class
 class Renderer {
 public:
-    Renderer(SharedBuffer& buffer, std::atomic<float>& currentSimulationTimeStep, std::atomic<bool>& stop, std::atomic<int>& currentNumAgents, const YAML::Node& config);
+    Renderer(SharedBuffer& buffer, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config);
     void run();
     void loadConfiguration();
+    void loadAgentsAttributes();
+    void loadObstacles();
+    void initializeSensors();
     void initializeWindow();
     void initializeGUI();
     void updateFrameCountText();
@@ -35,10 +41,11 @@ public:
 
 private:
     void render();
+    void appendBufferZones(sf::VertexArray& vertices, const Agent& agent);
+    void appendAgentBodies(sf::VertexArray& quads, const Agent& agent);
 
     // Renderer parameters
     sf::RenderWindow window;
-    std::atomic<bool>& stop;
     const YAML::Node& config;
 
     // Display parameters
@@ -46,11 +53,18 @@ private:
     std::string title;
     bool showInfo = true;
 
+    // Event handling
+    bool isShiftPressed = false;
+    bool isCtrlPressed = false;
+
     // Window scaling
     int windowWidth;  // Pixels
     int windowHeight; // Pixels
     float simulationWidth;  // Pixels
     float simulationHeight; // Pixels
+    float initialSimulationWidth;  // Pixels
+    float initialSimulationHeight; // Pixels
+    float initialScale;
     float scale;
     sf::Vector2f offset;
 
@@ -61,6 +75,8 @@ private:
     bool paused = false;
     bool live_mode;
     int numAgents;
+    bool showGrids = false;
+    bool showBufferZones = false;
 
     // Visualization elements
     sf::Text frameText;
@@ -72,6 +88,12 @@ private:
     sf::Text pauseButtonText;
     sf::RectangleShape resetButton;
     sf::Text resetButtonText;
+
+    // Vertex arrays
+    sf::VertexArray bufferZonesVertexArray;
+    sf::VertexArray agentBodyVertexArray;
+    sf::VertexArray agentArrowHeadVertexArray;
+    sf::VertexArray agentArrowBodyVertexArray;
 
     // Frame rate calculation
     std::deque<float> frameRates;
@@ -93,19 +115,40 @@ private:
     sf::Time currentSimulationFrameTime;
     std::atomic<float>& currentSimulationTimeStep;
 
+    // Temporary frame
+    std::vector<Agent> pauseFrame;
+    sf::Time pauseSleepTime;
+
     // Helper
     int frameEmptyCount = 0;
 
-    // Shared buffer reference
+    // Shared buffer
     SharedBuffer& buffer;
+
+    // Sensors
+    std::vector<std::unique_ptr<Sensor>> sensors;
+    bool showSensors = false;
+    bool showSensorGrid = true;
+
+    // Obstacles
+    bool showObstacles = false;
+    std::vector<Obstacle> obstacles;
+
+    // Corridors
+    bool showCorridors = false;
 
     // Agents
     std::vector<Agent> currentFrame;
-    std::atomic<int>& currentNumAgents;
+    int currentNumAgents;
     float waypointRadius;
-    bool showTrajectories = true;
-    bool showWaypoints = true;
-    bool showObstacles = false;
-    bool showCollisionGrid = true;
+    bool showTrajectories = false;
+    bool showWaypoints = false;
     bool showArrow = false;
+
+    // Collision
+    bool showCollisionGrid = false;
+    float collisionGridCellSize;
+
+    // Agent attributes
+    std::map<std::string, Agent::AgentTypeAttributes> agentTypeAttributes;
 };

@@ -153,6 +153,102 @@ src/Agent.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Agent.cpp.s
 .PHONY : src/Agent.cpp.s
 
+src/AgentBasedSensor.o: src/AgentBasedSensor.cpp.o
+.PHONY : src/AgentBasedSensor.o
+
+# target to build an object file
+src/AgentBasedSensor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.o
+.PHONY : src/AgentBasedSensor.cpp.o
+
+src/AgentBasedSensor.i: src/AgentBasedSensor.cpp.i
+.PHONY : src/AgentBasedSensor.i
+
+# target to preprocess a source file
+src/AgentBasedSensor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.i
+.PHONY : src/AgentBasedSensor.cpp.i
+
+src/AgentBasedSensor.s: src/AgentBasedSensor.cpp.s
+.PHONY : src/AgentBasedSensor.s
+
+# target to generate assembly for a file
+src/AgentBasedSensor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.s
+.PHONY : src/AgentBasedSensor.cpp.s
+
+src/CollisionAvoidance.o: src/CollisionAvoidance.cpp.o
+.PHONY : src/CollisionAvoidance.o
+
+# target to build an object file
+src/CollisionAvoidance.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.o
+.PHONY : src/CollisionAvoidance.cpp.o
+
+src/CollisionAvoidance.i: src/CollisionAvoidance.cpp.i
+.PHONY : src/CollisionAvoidance.i
+
+# target to preprocess a source file
+src/CollisionAvoidance.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.i
+.PHONY : src/CollisionAvoidance.cpp.i
+
+src/CollisionAvoidance.s: src/CollisionAvoidance.cpp.s
+.PHONY : src/CollisionAvoidance.s
+
+# target to generate assembly for a file
+src/CollisionAvoidance.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.s
+.PHONY : src/CollisionAvoidance.cpp.s
+
+src/CollisionGrid.o: src/CollisionGrid.cpp.o
+.PHONY : src/CollisionGrid.o
+
+# target to build an object file
+src/CollisionGrid.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.o
+.PHONY : src/CollisionGrid.cpp.o
+
+src/CollisionGrid.i: src/CollisionGrid.cpp.i
+.PHONY : src/CollisionGrid.i
+
+# target to preprocess a source file
+src/CollisionGrid.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.i
+.PHONY : src/CollisionGrid.cpp.i
+
+src/CollisionGrid.s: src/CollisionGrid.cpp.s
+.PHONY : src/CollisionGrid.s
+
+# target to generate assembly for a file
+src/CollisionGrid.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.s
+.PHONY : src/CollisionGrid.cpp.s
+
+src/GridBasedSensor.o: src/GridBasedSensor.cpp.o
+.PHONY : src/GridBasedSensor.o
+
+# target to build an object file
+src/GridBasedSensor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.o
+.PHONY : src/GridBasedSensor.cpp.o
+
+src/GridBasedSensor.i: src/GridBasedSensor.cpp.i
+.PHONY : src/GridBasedSensor.i
+
+# target to preprocess a source file
+src/GridBasedSensor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.i
+.PHONY : src/GridBasedSensor.cpp.i
+
+src/GridBasedSensor.s: src/GridBasedSensor.cpp.s
+.PHONY : src/GridBasedSensor.s
+
+# target to generate assembly for a file
+src/GridBasedSensor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.s
+.PHONY : src/GridBasedSensor.cpp.s
+
 src/Main.o: src/Main.cpp.o
 .PHONY : src/Main.o
 
@@ -248,6 +344,30 @@ src/Renderer.s: src/Renderer.cpp.s
 src/Renderer.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Renderer.cpp.s
 .PHONY : src/Renderer.cpp.s
+
+src/Sensor.o: src/Sensor.cpp.o
+.PHONY : src/Sensor.o
+
+# target to build an object file
+src/Sensor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Sensor.cpp.o
+.PHONY : src/Sensor.cpp.o
+
+src/Sensor.i: src/Sensor.cpp.i
+.PHONY : src/Sensor.i
+
+# target to preprocess a source file
+src/Sensor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Sensor.cpp.i
+.PHONY : src/Sensor.cpp.i
+
+src/Sensor.s: src/Sensor.cpp.s
+.PHONY : src/Sensor.s
+
+# target to generate assembly for a file
+src/Sensor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Sensor.cpp.s
+.PHONY : src/Sensor.cpp.s
 
 src/SharedBuffer.o: src/SharedBuffer.cpp.o
 .PHONY : src/SharedBuffer.o
@@ -357,6 +477,18 @@ help:
 	@echo "... src/Agent.o"
 	@echo "... src/Agent.i"
 	@echo "... src/Agent.s"
+	@echo "... src/AgentBasedSensor.o"
+	@echo "... src/AgentBasedSensor.i"
+	@echo "... src/AgentBasedSensor.s"
+	@echo "... src/CollisionAvoidance.o"
+	@echo "... src/CollisionAvoidance.i"
+	@echo "... src/CollisionAvoidance.s"
+	@echo "... src/CollisionGrid.o"
+	@echo "... src/CollisionGrid.i"
+	@echo "... src/CollisionGrid.s"
+	@echo "... src/GridBasedSensor.o"
+	@echo "... src/GridBasedSensor.i"
+	@echo "... src/GridBasedSensor.s"
 	@echo "... src/Main.o"
 	@echo "... src/Main.i"
 	@echo "... src/Main.s"
@@ -369,6 +501,9 @@ help:
 	@echo "... src/Renderer.o"
 	@echo "... src/Renderer.i"
 	@echo "... src/Renderer.s"
+	@echo "... src/Sensor.o"
+	@echo "... src/Sensor.i"
+	@echo "... src/Sensor.s"
 	@echo "... src/SharedBuffer.o"
 	@echo "... src/SharedBuffer.i"
 	@echo "... src/SharedBuffer.s"

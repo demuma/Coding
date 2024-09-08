@@ -82,6 +82,22 @@ std::string generateISOTimestamp(sf::Time totalElapsedTime) {
     return ss.str();
 }
 
+std::string generateTimestamp(sf::Time simulationWallTime) {
+
+    // Convert simulationWallTime (milliseconds) into time_t
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::microseconds(simulationWallTime.asMicroseconds()));
+    auto tp = std::chrono::system_clock::time_point(duration);
+
+    // Convert to string
+    std::time_t tt = std::chrono::system_clock::to_time_t(tp);
+    std::stringstream ss;
+    ss << std::put_time(std::gmtime(&tt), "%FT%T.%3NZ"); // Include milliseconds
+
+    std::cout << "Timestamp: " << ss.str() << std::endl;
+
+    return ss.str();
+}
+
 
 // std::string generateISOTimestamp(sf::Time totalElapsedTime, const std::string& dateTimeString = "") {
 //     std::tm startTime{}; // Initialize to all zeros

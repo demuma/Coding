@@ -9,12 +9,6 @@
 #include "../include/Renderer.hpp"
 #include "../include/Logging.hpp"
 
-// #define DEBUG
-// #define STATS
-// #define ERROR
-
-
-
 /**************************/
 /********** MAIN **********/
 /**************************/
@@ -36,22 +30,21 @@ int main() {
 
     // Load global configuration data
     float timeStep = config["simulation"]["time_step"].as<float>();
-    int maxFrames = config["simulation"]["maximum_frames"].as<int>();
-    int numAgents = config["agents"]["num_agents"].as<int>();
+    bool enableRendering = config["renderer"]["show_renderer"].as<bool>();
 
     // Shared variabes
     std::atomic<float> currentSimulationTimeStep{timeStep};
-    std::atomic<int> numSimulationFrames{maxFrames};
-    std::atomic<bool> stop{false};
-    std::atomic<int> currentNumAgents{numAgents};
 
-    Simulation simulation(buffer, currentSimulationTimeStep, stop, currentNumAgents, config);
-    Renderer renderer(buffer, currentSimulationTimeStep, stop, currentNumAgents, config);
-
+    Simulation simulation(buffer, currentSimulationTimeStep, config);
     std::thread simulationThread(&Simulation::run, &simulation);
 
+    // Run the renderer if not in headless mode
+    if (enableRendering) {
+        Renderer renderer(buffer, currentSimulationTimeStep, config);
+        renderer.run();
+    }
+
     simulationThread.join();
-    renderer.run();
 
     return 0;
 }

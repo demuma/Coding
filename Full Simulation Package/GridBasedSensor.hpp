@@ -39,6 +39,7 @@ private:
     std::vector<std::pair<std::string, std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash>>> dataStorage; // Data Storage: timestamp, map(cell index, map(agent type, count) + hash function for sf::Vector2i)
     
     sf::Vector2i getCellIndex(const sf::Vector2f& position) const;
+    sf::Vector2f getCellPosition(const sf::Vector2i& cellIndex) const;
 };
 
 #endif // GRIDGBASEDSENSOR_HPP

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <random>
 #include <cmath>
+#include <uuid/uuid.h>
 
 #include "PerlinNoise.hpp"
 #include "Logging.hpp"
@@ -17,17 +18,42 @@
 // Agent class
 class Agent {
 public:
-    Agent();
 
+    // From Taxonomy
+    struct AgentTypeAttributes {    
+        float probability;
+        int priority;
+        float bodyRadius;
+        std::string color;
+        struct Velocity {
+            float min;
+            float max;
+            float mu;
+            float sigma;
+            float noiseScale = 0.05f;
+            float noiseFactor = 0.5f;
+        } velocity;
+        struct Acceleration {
+            float min;
+            float max;
+        } acceleration;
+        float lookAheadTime;
+    };
+
+    Agent(const AgentTypeAttributes& attributes);
+    ~Agent();
+
+    // Position
     void calculateTrajectory(float waypointDistance);
     void getNextWaypoint();
-
     void updatePosition(float deltaTime);
     sf::Vector2f getFuturePositionAtTime(float time) const;
 
+    // Velocity
     void calculateVelocity(sf::Vector2f waypoint);
-    void updateVelocity(float deltaTime, sf::Time totalElapsedTime);
+    void updateVelocity(float deltaTime, sf::Time simulationTime);
 
+    // States
     void stop();
     bool canResume(const std::vector<Agent>& agents);
     void resume(const std::vector<Agent>& agents);
@@ -36,36 +62,31 @@ public:
 
     // Agent features
     std::string uuid;
-    std::string sensor_id;
+    std::string sensorID;
     std::string type;
     sf::Color color;
     sf::Color initialColor;
     int priority;
     float bodyRadius;
+    AgentTypeAttributes attributes;
+    std::string timestamp;
 
     // Positions
     sf::Vector2f position;
     sf::Vector2f initialPosition;
     sf::Vector2f targetPosition;
     sf::Vector2f heading;
+    float theta;
 
     // Velocity
     sf::Vector2f velocity;
     sf::Vector2f initialVelocity;
     float velocityMagnitude;
-    float minVelocity;
-    float maxVelocity;
-    float velocityMu;
-    float velocitySigma;
-    float velocityNoiseFactor;
-    float velocityNoiseScale;
 
     // Acceleration
     sf::Vector2f acceleration;
     sf::Vector2f initialAcceleration;
     float accelerationMagnitude;
-    float minAcceleration;
-    float maxAcceleration;
 
     // Trajectory
     std::vector<sf::Vector2f>(trajectory);
@@ -83,8 +104,9 @@ public:
     bool stopped;
     bool isActive;
     int stoppedFrameCounter;
+    float lookAheadTime;
 
     // Perlin noise
     unsigned int noiseSeed;
-    PerlinNoise perlinNoise;
+    PerlinNoise perlinNoise;  // TODO: Change to simplex noise -> Huge savings in performance
 };

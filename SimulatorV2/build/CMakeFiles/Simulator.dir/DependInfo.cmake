@@ -9,10 +9,15 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Agent.cpp" "CMakeFiles/Simulator.dir/src/Agent.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Agent.cpp.o.d"
+  "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/AgentBasedSensor.cpp" "CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/AgentBasedSensor.cpp.o.d"
+  "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/CollisionAvoidance.cpp" "CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/CollisionAvoidance.cpp.o.d"
+  "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/CollisionGrid.cpp" "CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/CollisionGrid.cpp.o.d"
+  "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/GridBasedSensor.cpp" "CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Main.cpp" "CMakeFiles/Simulator.dir/src/Main.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Main.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Obstacle.cpp" "CMakeFiles/Simulator.dir/src/Obstacle.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Obstacle.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/PerlinNoise.cpp" "CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Renderer.cpp" "CMakeFiles/Simulator.dir/src/Renderer.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Renderer.cpp.o.d"
+  "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Sensor.cpp" "CMakeFiles/Simulator.dir/src/Sensor.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Sensor.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/SharedBuffer.cpp" "CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/Simulation.cpp" "CMakeFiles/Simulator.dir/src/Simulation.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Simulation.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV2/src/ThreadPool.cpp" "CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o.d"

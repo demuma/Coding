@@ -104,6 +104,11 @@ void GridBasedSensor::postData() {
                     << cellIndex.x 
                     << cellIndex.y
                     << bsoncxx::builder::stream::close_array;
+                document << "cell_position"
+                    << bsoncxx::builder::stream::open_array
+                    << getCellPosition(cellIndex).x
+                    << getCellPosition(cellIndex).y
+                    << bsoncxx::builder::stream::close_array;
             
                 // Embed agent counts as a subdocument
                 int totalAgents = 0;
@@ -182,4 +187,12 @@ sf::Vector2i GridBasedSensor::getCellIndex(const sf::Vector2f& position) const {
     int y = static_cast<int>((position.y - detectionArea.top)/ cellSize);
 
     return sf::Vector2i(x, y);
+}
+
+sf::Vector2f GridBasedSensor::getCellPosition(const sf::Vector2i& cellIndex) const {
+
+    float x = (cellIndex.x * cellSize + detectionArea.left + cellSize / 2) / scale;
+    float y = (cellIndex.y * cellSize + detectionArea.top + cellSize / 2) / scale;
+
+    return sf::Vector2f(x, y);
 }

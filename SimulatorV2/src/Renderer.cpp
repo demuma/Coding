@@ -4,7 +4,11 @@
 
 // Renderer member functions
 Renderer::Renderer(SharedBuffer& buffer, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config)
-: buffer(buffer), currentSimulationTimeStep(currentSimulationTimeStep), config(config), bufferZonesVertexArray(sf::PrimitiveType::Points), agentBodyVertexArray(sf::PrimitiveType::Quads), agentArrowHeadVertexArray(sf::PrimitiveType::Triangles, 3), agentArrowBodyVertexArray(sf::PrimitiveType::Lines, 2) {
+:   buffer(buffer), currentSimulationTimeStep(currentSimulationTimeStep), config(config), // Reserve VRAM for the vertex arrays depending on the number of agents
+    bufferZonesVertexArray(sf::PrimitiveType::Points), 
+    agentBodyVertexArray(sf::PrimitiveType::Quads, 4), 
+    agentArrowHeadVertexArray(sf::PrimitiveType::Triangles, 3), 
+    agentArrowBodyVertexArray(sf::PrimitiveType::Lines, 2) {
 
     DEBUG_MSG("Renderer: read buffer: " << buffer.currentReadFrameIndex);
     loadConfiguration();
@@ -67,6 +71,12 @@ void Renderer::loadConfiguration() {
 
     // Set the frame rate buffer size
     frameRateBufferSize = 1.0f / timeStep;
+
+    // Resize vertex arrays
+    bufferZonesVertexArray.resize(numAgents * 300);
+    agentBodyVertexArray.resize(numAgents * 4);
+    agentArrowHeadVertexArray.resize(numAgents * 3);
+    agentArrowBodyVertexArray.resize(numAgents * 2);
 }
 
 // Function to load agents attributes from the YAML configuration file
@@ -379,18 +389,17 @@ void Renderer::handleEvents(sf::Event& event) {
         return;
     }
     else if (event.type == sf::Event::KeyReleased) {
-            if(event.key.code == sf::Keyboard::LShift || event.key.code == sf::Keyboard::RShift) {
-                isShiftPressed = false;
-                DEBUG_MSG("Shift released");
-                return;
-            }
-            else if(event.key.code == sf::Keyboard::LControl || event.key.code == sf::Keyboard::RControl) {
-                isCtrlPressed = false;
-                DEBUG_MSG("Ctrl released");
-                return;
-            }
-        } 
-
+        if(event.key.code == sf::Keyboard::LShift || event.key.code == sf::Keyboard::RShift) {
+            isShiftPressed = false;
+            DEBUG_MSG("Shift released");
+            return;
+        }
+        else if(event.key.code == sf::Keyboard::LControl || event.key.code == sf::Keyboard::RControl) {
+            isCtrlPressed = false;
+            DEBUG_MSG("Ctrl released");
+            return;
+        }
+    } 
     else if (event.type == sf::Event::KeyPressed) {
         if (event.key.code == sf::Keyboard::Space) {
             paused = !paused;
@@ -850,6 +859,7 @@ void Renderer::render() {  // Input: meters, Output: pixels
 
             // Draw the trajectory lines from initial position to current position respectively to target position
             if(showTrajectories) {
+                
                 sf::Vertex pastTrajectory[] = {
                     sf::Vertex(agent.initialPosition + offset, sf::Color::Blue), 
                     sf::Vertex(agent.position + offset, sf::Color::Blue)
@@ -869,7 +879,6 @@ void Renderer::render() {  // Input: meters, Output: pixels
                 sf::Vector2f direction = agent.velocity;  // Direction of the arrow from velocity vector
                 float theta = std::atan2(agent.heading.y, agent.heading.x) * 180.0f / M_PI; // Convert to degrees
                 float arrowLength = 5.0;
-                float arrowAngle = std::atan2(direction.y, direction.x);
 
                 // Normalize the direction vector for consistent arrow length
                 sf::Vector2f normalizedDirection = direction / std::sqrt(direction.x * direction.x + direction.y * direction.y);
@@ -895,7 +904,6 @@ void Renderer::render() {  // Input: meters, Output: pixels
                 // Append the arrow lines to the vertex array
                 agentArrowBodyVertexArray.append(line[0]);
                 agentArrowBodyVertexArray.append(line[1]);
-
 
                 // Create a triangle shape for the arrowhead
                 sf::Vertex triangle[] =

@@ -142,7 +142,10 @@
     "future": "cpp",
     "thread": "cpp",
     "__availability": "cpp",
-    "semaphore": "cpp"
+    "semaphore": "cpp",
+    "codecvt": "cpp",
+    "fstream": "cpp",
+    "numbers": "cpp"
   },
   "C_Cpp.default.compilerPath": "",
   "C_Cpp.default.includePath": [

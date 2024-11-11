@@ -151,6 +151,7 @@ void AgentBasedSensor::postMetadata() {
     // Append the metadata fields to the document
     document << "timestamp" << timestamp
              << "sensor_id" << sensor_id
+             << "sensor_type" << "agent-based"
              << "data_type" << "metadata"             
              << "position" << positionDocument
              << "detection_area" << detectionAreaDocument

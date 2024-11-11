@@ -507,7 +507,8 @@ void Simulation::postMetadata() {
     document << "timestamp" << generateISOTimestamp(simulationTime, datetime)
              << "data_type" << "metadata"
              << "simulation_area" << simulationArea
-             << "frame_rate" << 1/timeStep;
+             << "frame_rate" << 1/timeStep
+             << "cell_size" << collisionGridCellSize;
 
     // Insert the metadata document into the collection
     try {

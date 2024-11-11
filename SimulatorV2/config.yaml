@@ -3,8 +3,8 @@ version: 1.0
 display:
   width: 2400 # 2680
   height: 1200 # 1680
-  pixels_per_meter: 40
-  title: 'Agent-Based Urban Mobility Simulator'
+  pixels_per_meter: 20
+  title: 'Urban Mobility Simulator'
 
 renderer:
   show_renderer: true
@@ -19,9 +19,9 @@ renderer:
   show_sensors: false
 
 simulation:
-  width: 60
-  height: 40
-  duration_seconds: 1
+  width: 120
+  height: 60
+  duration_seconds: 10
   maximum_frames: 10
   time_step: 0.05
   playback_speed: 1.0
@@ -35,7 +35,7 @@ collision:
     show_grid: true
 
 agents:
-  num_agents: 20
+  num_agents: 100
   waypoint_distance: 20
   waypoint_radius: 2
   grouping:
@@ -159,28 +159,28 @@ database:
 
 sensors:
   - type: agent-based
-    frame_rate: 20.0
+    frame_rate: 10.0
     detection_area:
       left: 0.0
       top: 0.0
-      width: 28.0 # default: 115.0
-      height: 40.0 # 120
+      width: 58.0 # default: 115.0
+      height: 60.0 # 120
       color: blue
       alpha: 0.1
     database:
       db_name: Simulation
       collection_name: AB_Sensor_Data
   - type: grid-based
-    frame_rate: 20.0
+    frame_rate: 10.0
     detection_area:
-      left: 32.0
+      left: 62.0
       top: 0.0
-      width: 28.0 # default: 85.0
-      height: 40.0 # default: 72.0
+      width: 58.0 # default: 85.0
+      height: 60.0 # default: 72.0
       color: green
       alpha: 0.1
     grid:
-      cell_size: 30 # in meters
+      cell_size: 5 # in meters
       show_grid: true
     database:
       db_name: Simulation

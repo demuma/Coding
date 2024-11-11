@@ -204,6 +204,7 @@ void GridBasedSensor::postMetadata() {
 
     document << "timestamp" << timestamp
              << "sensor_id" << sensor_id
+             << "sensor_type" << "grid-based"
              << "data_type" << "metadata"
              << "position" << positionDocument
              << "detection_area" << detectionAreaDocument

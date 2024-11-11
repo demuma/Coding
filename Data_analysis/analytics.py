@@ -6,9 +6,9 @@ client = MongoClient('localhost', 27017)  # Adjust connection parameters if need
 db = client['Simulation']
 
 # Load data from collections
-ab_sensor_data = pd.DataFrame(list(db['AB_Sensor_Data'].find()))
-gb_sensor_data = pd.DataFrame(list(db['GB_Sensor_Data'].find()))
-agents_data = pd.DataFrame(list(db['Agents'].find()))
+ab_sensor_data = pd.DataFrame(list(db['AB_Sensor_Data'].find({"data_type": "agent_data"})))
+gb_sensor_data = pd.DataFrame(list(db['GB_Sensor_Data'].find({"data_type": "grid_data"})))
+agents_data = pd.DataFrame(list(db['Agents'].find({"data_type": "agent_data"})))
 
 # Close the MongoDB connection
 client.close()
@@ -235,8 +235,8 @@ def calculate_l_diversity_grid(df, quasi_identifiers, sensitive_attribute, inclu
 
 k_anonymity_agents_data = calculate_k_anonymity(agents_data, quasi_identifiers)
 l_diversity_agents_data = calculate_l_diversity_grid(agents_data, quasi_identifiers, 'type')
-print(f"Agent-Based Sensor Data k-Anonymity: {k_anonymity_agents_data}")
-print(f"Agent-Based Sensor Data l-Diversity: {l_diversity_agents_data}")
+print(f"Ground Truth Data k-Anonymity: {k_anonymity_agents_data}")
+print(f"Ground Truth Data l-Diversity: {l_diversity_agents_data}")
 
 k_anonymity_ab_sensor = calculate_k_anonymity(ab_sensor_data, quasi_identifiers)
 l_diversity_ab_sensor = calculate_l_diversity_grid(ab_sensor_data, quasi_identifiers, 'type')

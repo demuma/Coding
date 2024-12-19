@@ -1,4 +1,4 @@
-***Install guide for Linux**
+***Install guide for Linux***
 
 **Install dependencies**
 sudo apt-get install cmake uuid uuid-dev libssl-dev libsfml-dev libyaml-cpp-dev

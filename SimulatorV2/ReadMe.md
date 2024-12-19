@@ -21,6 +21,6 @@ cmake -S . -B build \
 cmake --build build -j4 
 
 ## Start simulator
-./build/Simulator \
+./build/Simulator
 
 **NOTE:** Comment Line 26 and uncomment Line 27 in CMakeLists.txt for Linux.

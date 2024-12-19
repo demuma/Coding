@@ -1,12 +1,12 @@
 # Install guide for Linux
 
 ## Install dependencies
-sudo apt-get install cmake uuid uuid-dev libssl-dev libsfml-dev libyaml-cpp-dev
+- sudo apt-get install cmake uuid uuid-dev libssl-dev libsfml-dev libyaml-cpp-dev
 
 ## Install MongoDB C++-driver
-curl -OL https://github.com/mongodb/mongo-cxx-driver/releases/download/r4.0.0/mongo-cxx-driver-r4.0.0.tar.gz \
-tar -xzf mongo-cxx-driver-r4.0.0.tar.gz \
-cd mongo-cxx-driver-r4.0.0/build 
+- curl -OL https://github.com/mongodb/mongo-cxx-driver/releases/download/r4.0.0/mongo-cxx-driver-r4.0.0.tar.gz \
+- tar -xzf mongo-cxx-driver-r4.0.0.tar.gz \
+- cd mongo-cxx-driver-r4.0.0/build 
 
 ## Configure and build driver (in /usr/local)
 cmake .. \

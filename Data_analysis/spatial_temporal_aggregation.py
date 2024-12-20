@@ -9,10 +9,10 @@ collection = db['AB_Sensor_Data']
 
 # Define bin sizes
 speed_bin_size = 0.5  # Adjust as needed
-position_bin_size = 10  # Adjust as needed
+position_bin_size = 50  # Adjust as needed
 
 # Privacy thresholds
-k_threshold = 5
+k_threshold = 2
 l_threshold = 2
 
 # Function to perform aggregation with a specified temporal window
@@ -141,7 +141,7 @@ def aggregate_data(time_window):
     return data
 
 # Step 1: Initial aggregation with 1-second window
-data = aggregate_data(time_window=1)
+data = aggregate_data(time_window=2)
 
 # Step 2: Identify bins below privacy thresholds
 if 'position_bin' in data.columns:
@@ -156,9 +156,9 @@ else:
     exit()
 
 # Debugging statements
-print("Bins to adjust:", bins_to_adjust)
+# print("Bins to adjust:", bins_to_adjust)
 bins_list = bins_to_adjust.to_dict('records')
-print("Bins list:", bins_list)
+# print("Bins list:", bins_list)
 
 # Step 3: Adjust temporal aggregation for these bins
 if not bins_to_adjust.empty:
@@ -175,7 +175,7 @@ if not bins_to_adjust.empty:
     }
 
     # Print bins_match_condition for debugging
-    print("Bins match condition:", bins_match_condition)
+    # print("Bins match condition:", bins_match_condition)
 
     # Adjusted pipeline for bins needing longer temporal aggregation
     adjusted_pipeline = [
@@ -281,6 +281,15 @@ if not bins_to_adjust.empty:
         }
     ]
 
+    # Get the set of all unique agent_ids in the dataset
+    all_agent_ids = set(
+        entry['agent_id']
+        for sublist in data['entries']
+        if isinstance(sublist, list)
+        for entry in sublist
+        if 'agent_id' in entry
+    )
+
     adjusted_result = list(collection.aggregate(adjusted_pipeline))
     print("Adjusted result count:", len(adjusted_result))  # Debugging statement
     adjusted_data = pd.DataFrame(adjusted_result)
@@ -304,10 +313,20 @@ else:
     # If no bins need adjustment, reset index to ensure consistency
     data = data.reset_index(drop=True)
 
-# Recalculate delta-presence
+# # Recalculate delta-presence
+# def compute_delta_presence(x):
+#     if isinstance(x, list):
+#         return len(set(entry['agent_id'] for entry in x if 'agent_id' in entry))
+#     else:
+#         return 0
+    
+# Compute delta-presence for each group
 def compute_delta_presence(x):
     if isinstance(x, list):
-        return len(set(entry['agent_id'] for entry in x if 'agent_id' in entry))
+        # Get the unique agent_ids in the subset
+        subset_agent_ids = set(entry['agent_id'] for entry in x if 'agent_id' in entry)
+        # Calculate delta-presence as the ratio
+        return len(subset_agent_ids) / len(all_agent_ids) if all_agent_ids else 0
     else:
         return 0
 
@@ -318,3 +337,7 @@ print(data[['timestamp', 'speed_bin', 'position_bin', 'k_anonymity', 'l_diversit
 
 # Optionally, write the DataFrame to a CSV file
 data[['timestamp', 'speed_bin', 'position_bin', 'k_anonymity', 'l_diversity', 'delta_presence']].to_csv('privacy_metrics.csv', index=False)
+
+# Query raw data to inspect the 'position' field
+raw_positions = list(collection.find({}, {'position': [0.0, 0.0]}).limit(10))
+print("Sample positions:", raw_positions)

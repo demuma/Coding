@@ -7,7 +7,7 @@ display:
   title: 'Urban Mobility Simulator'
 
 renderer:
-  show_renderer: true
+  show_renderer: false
   show_obstacles: false
   show_corridors: false
   show_trajectories: false
@@ -23,11 +23,11 @@ simulation:
   height: 60
   duration_seconds: 10
   maximum_frames: 10
-  time_step: 0.05
+  time_step: 0.02
   playback_speed: 1.0
   num_threads: 8
   # scenario: random # not used
-  datetime: '2024-08-22T08:30:00'
+  datetime: '2024-12-20T08:30:00'
 
 collision:
   grid:
@@ -35,7 +35,7 @@ collision:
     show_grid: true
 
 agents:
-  num_agents: 100
+  num_agents: 1000
   waypoint_distance: 20
   waypoint_radius: 2
   grouping:

@@ -17,12 +17,13 @@ include_directories(include)
 # Add the source files to the executable
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 
-# Create the executable
-add_executable(Simulator ${SOURCES})
+# Add source files to build executable
+add_executable(Simulator
+    ${SOURCES}
+)
 
 # Link libraries to the executable
-target_link_libraries(Simulator sfml-graphics sfml-window sfml-system yaml-cpp::yaml-cpp mongo::mongocxx_shared mongo::bsoncxx_shared) # for MacOS
-#target_link_libraries(Simulator sfml-graphics sfml-window sfml-system uuid yaml-cpp mongo::mongocxx_shared mongo::bsoncxx_shared) # for Linux
+target_link_libraries(Simulator sfml-graphics sfml-window sfml-system yaml-cpp::yaml-cpp mongo::mongocxx_shared mongo::bsoncxx_shared)
 
 # Additional CMake options for the executable
 target_compile_features(Simulator PRIVATE cxx_std_17)
@@ -33,5 +34,5 @@ target_compile_options(Simulator PRIVATE -O3)
 # Define DEBUG macro when building in debug mode
 # target_compile_definitions(Simulator PRIVATE DEBUG)
 target_compile_definitions(Simulator PRIVATE STATS)
-target_compile_definitions(Simulator PRIVATE ERROR)
+# target_compile_definitions(Simulator PRIVATE ERROR)
 # target_compile_definitions(Simulator PRIVATE TIMING)

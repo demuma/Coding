@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**",
                 "/usr/local/include/mongocxx/v_noabi",
                 "/usr/local/include/bsoncxx/v_noabi",
-                "/usr/local/include/bsoncxx/v_noabi/bsoncxx/third_party/mnmlstc"
+                "/usr/local/include/bsoncxx/v_noabi/bsoncxx/third_party/mnmlstc",
+                "${workspaceFolder}/UAM_Simulator/**"
             ],
             "defines": [],
             "macFrameworkPath": [

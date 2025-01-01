@@ -3,11 +3,11 @@ version: 1.0
 display:
   width: 2400 # 2680
   height: 1200 # 1680
-  pixels_per_meter: 20
+  pixels_per_meter: 10
   title: 'Urban Mobility Simulator'
 
 renderer:
-  show_renderer: false
+  show_renderer: true
   show_obstacles: false
   show_corridors: false
   show_trajectories: false
@@ -19,11 +19,11 @@ renderer:
   show_sensors: false
 
 simulation:
-  width: 120
-  height: 60
+  width: 1200
+  height: 600
   duration_seconds: 10
   maximum_frames: 10
-  time_step: 0.02
+  time_step: 0.05
   playback_speed: 1.0
   num_threads: 8
   # scenario: random # not used

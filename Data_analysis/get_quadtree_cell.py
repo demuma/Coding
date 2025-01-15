@@ -1,15 +1,15 @@
 import numpy as np
 
-positions = np.array([[72, 35], [13, 12], [72, 35], [100, 100]])
-# positions = np.array([[72, 35]])
-cell_size = 100.0
+# positions = np.array([[72, 35], [13, 12], [72, 35], [100, 100]])
+positions = np.array([[395, 55]])
+cell_size = 600.0
 max_depth = 3  # Changed max_depth to 3
 cell_ids = []
 seen_cell_ids = set()
 
 def get_quadtree_cell(position, cell_size, max_depth):
     center = np.array([cell_size, cell_size]) / 2.0
-    cell_id = 0
+    cell_id = 3
     for i in range(max_depth):
         cell_id <<= 2
         if position[1] >= center[1]:

@@ -93,31 +93,27 @@ private:
         return depth - 1; // Subtract 1 because base cells have depth 1
     }
 
-    // Convert (row,col) to morton code with initial 4 bits
+    // Encode morton code
     int mortonEncode(int row, int col) const {
-        // Start with 11 in the most significant bits for root cells
-        int morton = 0b11;
-        morton <<= 2;
-        for (int i = 0; i < 16; ++i) {
-            morton |= (col & 1) << (2 * i);
-            col >>= 1;
-            morton |= (row & 1) << (2 * i + 1);
-            row >>= 1;
-        }
+        int morton = 0b1100; // Start with 11 shifted left by 2 (12 in decimal)
+
+        // Only interleave 1 bit each from row and col
+        morton |= (col & 1) << 0; // Insert col's least significant bit at position 0
+        morton |= (row & 1) << 1; // Insert row's least significant bit at position 1
+
         return morton;
     }
 
-    // Decode Morton code to (row, col)
-    std::pair<int,int> mortonDecode(int id) const {
+    // Decode morton code morton code
+    std::pair<int, int> mortonDecode(int id) const {
         int row = 0, col = 0;
-        
-        // The two most significant bits are removed since they are only used
-        // for identifying the depth
-        id >>= 2;
-        for (int i = 0; i < 16; i++) {
-            col |= ((id >> (2 * i)) & 1) << i;
-            row |= ((id >> (2 * i + 1)) & 1) << i;
-        }
+
+        id >>= 2; // Remove the initial "11"
+
+        // Only extract 1 bit each for row and col
+        col |= (id & 1) << 0; // Extract bit at position 0
+        row |= ((id >> 1) & 1) << 0; // Extract bit at position 1
+
         return {row, col};
     }
 
@@ -146,8 +142,8 @@ private:
     }
 
 public:
-    Quadtree(float cellSize)
-        : cellSize(cellSize) {
+    Quadtree(float cellSize, int maxDepth)
+        : maxDepth(maxDepth), cellSize(cellSize) {
         // Initialize base cells with 4-bit Morton codes
         for (int i = 0; i < 2; ++i) {
             for (int j = 0; j < 2; ++j) {
@@ -374,6 +370,122 @@ public:
         window.draw(border);
     }
 
+    void drawPositions(sf::RenderWindow &window, const std::vector<sf::Vector2f>& positions) {
+        float circleSize = 3;
+        sf::CircleShape circle(circleSize);
+        circle.setFillColor(sf::Color::Red);
+        int scale = window.getSize().x / cellSize;
+        for (auto pos : positions) {
+            pos = sf::Vector2f((pos.x * scale), (pos.y * scale));
+            pos -= sf::Vector2f(circleSize, circleSize);
+            circle.setPosition(pos);
+            window.draw(circle);
+        }
+    }
+
+    int getNewCellForPosition(sf::Vector2f position) {
+
+        // Set the initial cell size, center and cell ID
+        float currentCellSize = cellSize;
+        sf::Vector2f currentCenter = {currentCellSize / 2, currentCellSize / 2};
+        int cellID = 0b11; // Start with root cell ID 3
+
+        for (int i = 0; i < maxDepth; ++i) {
+            cellID <<= 2; // Shift left by 2 bits for the next depth level
+
+            // Halve the cell size for each depth level
+            currentCellSize /= 2.0f;
+
+            // Determine the quadrant
+            if (position.y >= currentCenter.y) { // Check if south of the center
+                cellID += 2;
+                currentCenter.y += currentCellSize / 2; // Adjust position relative to the new quadrant
+            }
+            else {
+                currentCenter.y -= currentCellSize / 2; // Adjust position relative to the new quadrant
+            }
+            if (position.x >= currentCenter.x) { // Check if east of the center
+                cellID += 1;
+                currentCenter.x += currentCellSize / 2; // Adjust position relative to the new quadrant
+            }
+            else {
+                currentCenter.x -= currentCellSize / 2; // Adjust position relative to the new quadrant
+            }
+        }
+        // Print the cell ID
+        // std::cout << "Cell ID: " << cellID << std::endl;
+
+        return cellID;
+    }
+
+    std::vector<int> getSplitSequence(int cellID) {
+        std::vector<int> splitSequence;
+        for (int i = 0; i < maxDepth - 1; ++i) {
+            
+            splitSequence.push_back((cellID >> (2 * (maxDepth - i - 1))) & 3);
+        }
+
+        // Print the split sequence
+        // std::cout << "Split sequence for cell " << cellID << ": ";
+        // for (int i = 0; i < splitSequence.size(); ++i) {
+        //     std::cout << splitSequence[i] << " ";
+        // }
+        // std::cout << std::endl;
+
+        return splitSequence;
+    }
+
+    std::vector<std::vector<int>> getSplitSequences(std::vector<sf::Vector2f> positions) {
+        std::vector<std::vector<int>> splitSequences;
+        std::unordered_map<sf::Vector2f, int, Vector2fHash> positionToCellID;
+
+        // Calculate and store cell IDs for unique positions
+        for (const auto& pos : positions) {
+            if (positionToCellID.find(pos) == positionToCellID.end()) {
+                int cellID = getNewCellForPosition(pos);
+                positionToCellID[pos] = cellID;
+            }
+        }
+
+        // Calculate split sequences using stored cell IDs
+        for (const auto& pos : positions) {
+            int cellID = positionToCellID[pos];
+            splitSequences.push_back(getSplitSequence(cellID));
+        }
+
+        // Sort the split sequences
+        std::sort(splitSequences.begin(), splitSequences.end());
+
+        // Remove duplicates
+        splitSequences.erase(std::unique(splitSequences.begin(), splitSequences.end()), splitSequences.end());
+
+        return splitSequences;
+    }
+
+    void splitFromPositions(const std::vector<sf::Vector2f>& positions) {
+
+        if(!positions.empty()) {
+            
+            std::vector<std::vector<int>> splitSequences = getSplitSequences(positions);
+
+            for (const auto& seq : splitSequences) {
+                splitCell(seq);
+            }
+        }
+        else {
+            std::cerr << "Error: No positions provided for split.\n";
+        }
+    }
+
+    // Custom hash function for sf::Vector2f
+    struct Vector2fHash {
+        std::size_t operator()(const sf::Vector2f& v) const {
+            std::size_t h1 = std::hash<float>()(v.x);
+            std::size_t h2 = std::hash<float>()(v.y);
+            return h1 ^ (h2 << 1); // Combine hashes
+        }
+    };
+
     void printChildren(int id) {
         Node* targetNode = getNodeById(id);
         if (!targetNode) {
@@ -414,11 +526,9 @@ int main() {
         return -1;
     }
 
-    Quadtree quadtree(600);
-    int cellId = 12;
-    std::vector<int> seq = {0, 0, 0};
-    quadtree.splitCell(seq);
-
+    std::vector<sf::Vector2f> positions = {sf::Vector2f(395, 55), sf::Vector2f(54, 32)};
+    Quadtree quadtree(600, 4);
+    quadtree.splitFromPositions(positions);
 
     try {
 
@@ -448,6 +558,7 @@ int main() {
 
             window.clear(sf::Color::White);
             quadtree.draw(window, font);
+            quadtree.drawPositions(window, positions);
             window.display();
         }
     } catch (const std::exception& e) {

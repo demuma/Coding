@@ -15,9 +15,9 @@ public:
     Node* parent = nullptr;
     Node* children[4] = {nullptr, nullptr, nullptr, nullptr};
     int id; // Unique integer ID
-    int level; // Depth level of the node
+    int depth; // Depth level of the node
 
-    Node(float x, float y, float size, int id, int level, Node* parent = nullptr) : id(id), level(level), parent(parent) {
+    Node(float x, float y, float size, int id, int depth, Node* parent = nullptr) : id(id), depth(depth), parent(parent) {
         shape.setSize({size, size});
         shape.setPosition(x, y);
         shape.setFillColor(sf::Color::Transparent);
@@ -38,7 +38,7 @@ public:
                 int childIndex = (i << 1) | j;
                 // Calculate child ID using 2 additional bits
                 int childId = (id << 2) | childIndex; 
-                Node* child = new Node(x + j * size, y + i * size, size, childId, level + 1, this);
+                Node* child = new Node(x + j * size, y + i * size, size, childId, depth + 1, this);
                 child->shape.setOutlineColor(sf::Color::Black);
                 children[childIndex] = child;
                 nodeMap[childId] = child;
@@ -75,15 +75,15 @@ public:
 
 class Quadtree {
 private:
-    int rows, cols;
     float cellSize;
+    int maxDepth;
     std::vector<Node*> baseNodes;
     std::unordered_map<int, Node*> nodeMap;
 
     // Function to get the depth of a cell based on its ID
     int getDepth(int id) const {
         // Calculate depth based on the number of bits in the ID
-        // Base cells start with 4 bits, and each level adds 2 bits
+        // Base cells start with 4 bits, and each depth adds 2 bits
         int tempId = id;
         int depth = 0;
         while (tempId > 0) {
@@ -112,7 +112,7 @@ private:
         int row = 0, col = 0;
         
         // The two most significant bits are removed since they are only used
-        // for identifying the level
+        // for identifying the depth
         id >>= 2;
         for (int i = 0; i < 16; i++) {
             col |= ((id >> (2 * i)) & 1) << i;
@@ -121,12 +121,36 @@ private:
         return {row, col};
     }
 
+    // Helper function to recursively split cells based on a path
+    void splitRecursive(Node* node, const std::vector<int>& path, int pathIndex, std::unordered_map<int, Node*>& nodeMap) {
+        if (!node) return;
+
+        if (pathIndex == path.size()) {
+            // If we have reached the end of the path, split the current node
+            if (!node->isSplit) {
+                node->split(nodeMap);
+            }
+            return;
+        }
+
+        if (!node->isSplit) {
+            node->split(nodeMap);
+        }
+
+        int childIndex = path[pathIndex];
+        if (childIndex < 0 || childIndex > 3) {
+            std::cerr << "Error: Invalid child index in path.\n";
+            return;
+        }
+        splitRecursive(node->children[childIndex], path, pathIndex + 1, nodeMap);
+    }
+
 public:
-    Quadtree(int cols, int rows, float cellSize)
-        : rows(rows), cols(cols), cellSize(cellSize) {
+    Quadtree(float cellSize)
+        : cellSize(cellSize) {
         // Initialize base cells with 4-bit Morton codes
-        for (int i = 0; i < rows; ++i) {
-            for (int j = 0; j < cols; ++j) {
+        for (int i = 0; i < 2; ++i) {
+            for (int j = 0; j < 2; ++j) {
                 // Base IDs are 12, 13, 14, 15 (1100, 1101, 1110, 1111 in binary)
                 int baseId = 0b1100 | mortonEncode(i, j);
                 Node* n = new Node(j * cellSize, i * cellSize, cellSize, baseId, 1);
@@ -150,31 +174,25 @@ public:
         return nullptr;
     }
 
-    void splitCell(int firstId, std::initializer_list<int> path = {}) {
+    void splitCell(int firstId, const std::vector<int>& path) {
         Node* currentNode = getNodeById(firstId);
         if (!currentNode) {
             std::cerr << "Error: starting cell ID not found.\n";
             return;
         }
 
-        for (int childIndex : path) {
-            if (!currentNode->isSplit) {
-                currentNode->split(nodeMap);
-            }
-            if (childIndex < 0 || childIndex > 3) {
-                std::cerr << "Error: Invalid child index.\n";
-                return;
-            }
-            currentNode = currentNode->children[childIndex];
-            if (!currentNode) {
-                std::cerr << "Error: Path leads to null child.\n";
-                return;
-            }
+        splitRecursive(currentNode, path, 0, nodeMap);
+    }
+
+    // New function to split based on a sequence starting from the root
+    void splitCell(std::vector<int>& sequence) {
+        if (baseNodes.empty()) {
+            std::cerr << "Error: Quadtree not initialized.\n";
+            return;
         }
 
-        if (!currentNode->isSplit) {
-            currentNode->split(nodeMap);
-        }
+        // Start from the NW base node (or any of the base nodes)
+        splitRecursive(baseNodes[0], sequence, 0, nodeMap);
     }
 
     template <typename... Args>
@@ -184,9 +202,15 @@ public:
             std::cerr << "Error: No path specified for splitCell.\n";
             return;
         }
-        int firstId = pathVec[0];
-        pathVec.erase(pathVec.begin());
-        splitCell(firstId, pathVec);
+        // If the first argument is not a valid node ID, 
+        // assume it's the start of a root-based sequence
+        if (pathVec.size() > 1 && getNodeById(pathVec[0]) != nullptr) {
+            int firstId = pathVec[0];
+            pathVec.erase(pathVec.begin());
+            splitCell(firstId, pathVec);
+        } else {
+            splitCell(pathVec);
+        }
     }
 
     sf::Vector2f getCellCenter(int id) const {
@@ -300,8 +324,8 @@ public:
         int col = static_cast<int>(position.x / cellSize);
         int row = static_cast<int>(position.y / cellSize);
 
-        col = std::max(0, std::min(col, cols - 1));
-        row = std::max(0, std::min(row, rows - 1));
+        col = std::max(0, std::min(col, 1));
+        row = std::max(0, std::min(row, 1));
 
         int baseId = mortonEncode(row, col);
         Node* currentNode = getNodeById(baseId);
@@ -342,7 +366,7 @@ public:
         }
 
         sf::RectangleShape border;
-        border.setSize({cols * cellSize, rows * cellSize});
+        border.setSize({2 * cellSize, 2 * cellSize});
         border.setPosition(0, 0);
         border.setFillColor(sf::Color::Transparent);
         border.setOutlineThickness(2);
@@ -390,42 +414,13 @@ int main() {
         return -1;
     }
 
-    Quadtree quadtree(2, 2, 600);
-    quadtree.splitCell(12);
-    quadtree.splitCell(13);
-    quadtree.splitCell(12, {0});
+    Quadtree quadtree(600);
+    int cellId = 12;
+    std::vector<int> seq = {0, 0, 0};
+    quadtree.splitCell(seq);
 
-    // sf::Vector2f cell = quadtree.getCellCenter(15);
-    // std::cout << "Center of cell 15: (" << cell.x << ", " << cell.y << ")\n";
 
     try {
-        // // Test cases to find neighbors
-        // std::vector<std::pair<int, std::vector<int>>> neighborTestCases = {
-        //     {3, {0, 1, 2, 8, 9, 96, 402, 414}}
-        // };
-
-        // for (const auto& testCase : neighborTestCases) {
-        //     int cellId = testCase.first;
-        //     std::vector<int> expectedNeighbors = testCase.second;
-        //     std::vector<int> actualNeighbors = quadtree.getNeighboringCells(cellId);
-
-        //     std::cout << "\nVerifying neighbors of cell ID " << cellId << ":\n";
-        //     std::cout << "Neighbors of cell " << cellId << ": ";
-        //     for (int neighborId : actualNeighbors) {
-        //         std::cout << neighborId << " ";
-        //     }
-        //     std::cout << std::endl;
-
-        //     std::sort(expectedNeighbors.begin(), expectedNeighbors.end());
-
-        //     if (actualNeighbors == expectedNeighbors) {
-        //         std::cout << "Neighbor verification for cell " << cellId << ": PASSED\n";
-        //     } else {
-        //         std::cout << "Neighbor verification for cell " << cellId << ": FAILED\n";
-        //     }
-        // }
-        
-        // quadtree.printChildren(48);
 
         while (window.isOpen()) {
             sf::Event event;
@@ -447,11 +442,6 @@ int main() {
                     std::cout << "Clicked at (" << mousePos.x << ", " << mousePos.y << ") -> Nearest cell: " << nearestCellId
                               << " with center at (" << cellCenter.x << ", " << cellCenter.y << ")\n";
 
-                    std::vector<int> neighbors = quadtree.getNeighboringCells(nearestCellId);
-                    std::cout << "Neighbors of cell " << nearestCellId << ": ";
-                    for (int neighborId : neighbors) {
-                        std::cout << neighborId << " ";
-                    }
                     std::cout << std::endl;
                 }
             }

@@ -27,12 +27,12 @@ public:
     std::atomic<int> readBufferIndex;
     std::atomic<size_t> currentReadFrameIndex;
     std::atomic<size_t> currentWriteFrameIndex;
-    std::atomic<bool> stop;
+    std::atomic<bool> stop = false;
 
 private:
     std::queue<std::vector<Agent>> buffers[2];
     std::mutex queueMutex;
     std::condition_variable queueCond;
     std::vector<Agent> currentFrame;
-    std::atomic<bool> finished;
+    std::atomic<bool> finished = false;
 };

@@ -15,8 +15,9 @@ public:
     Node* parent = nullptr;
     Node* children[4] = {nullptr, nullptr, nullptr, nullptr};
     int id; // Unique integer ID
+    int level; // Depth level of the node
 
-    Node(float x, float y, float size, int id, Node* parent = nullptr) : id(id), parent(parent) {
+    Node(float x, float y, float size, int id, int level, Node* parent = nullptr) : id(id), level(level), parent(parent) {
         shape.setSize({size, size});
         shape.setPosition(x, y);
         shape.setFillColor(sf::Color::Transparent);
@@ -25,7 +26,7 @@ public:
     }
 
     void split(std::unordered_map<int, Node*>& nodeMap) {
-        if (isSplit) return; // Avoid re-splitting
+        if (isSplit) return;
 
         float x = shape.getPosition().x;
         float y = shape.getPosition().y;
@@ -35,8 +36,9 @@ public:
         for (int i = 0; i < 2; ++i) {
             for (int j = 0; j < 2; ++j) {
                 int childIndex = (i << 1) | j;
-                int childId = (id << 2) | childIndex; // Generate unique ID using bitwise operations
-                Node* child = new Node(x + j * size, y + i * size, size, childId, this);
+                // Calculate child ID using 2 additional bits
+                int childId = (id << 2) | childIndex; 
+                Node* child = new Node(x + j * size, y + i * size, size, childId, level + 1, this);
                 child->shape.setOutlineColor(sf::Color::Black);
                 children[childIndex] = child;
                 nodeMap[childId] = child;
@@ -79,25 +81,23 @@ private:
     std::unordered_map<int, Node*> nodeMap;
 
     // Function to get the depth of a cell based on its ID
-    // Depth here is the number of times we've shifted right by 2
     int getDepth(int id) const {
+        // Calculate depth based on the number of bits in the ID
+        // Base cells start with 4 bits, and each level adds 2 bits
+        int tempId = id;
         int depth = 0;
-        // Base cells have IDs formed by Morton encoding at depth 0.
-        // Every split adds 2 more bits.
-        // We can guess the max depth by continuous shifting:
-        // But we must know the maximum base ID range.
-        // Let's assume depth is simply how many times we can >>2 before reaching a small number.
-        // This is heuristic:
-        while (id >> (2 * depth) > (rows * cols - 1)) {
+        while (tempId > 0) {
+            tempId >>= 2;
             depth++;
         }
-        // Alternatively, if you know the maximum depth another way, you could adjust this.
-        return depth;
+        return depth - 1; // Subtract 1 because base cells have depth 1
     }
 
-    // Convert (row,col) to morton code
+    // Convert (row,col) to morton code with initial 4 bits
     int mortonEncode(int row, int col) const {
-        int morton = 0;
+        // Start with 11 in the most significant bits for root cells
+        int morton = 0b11;
+        morton <<= 2;
         for (int i = 0; i < 16; ++i) {
             morton |= (col & 1) << (2 * i);
             col >>= 1;
@@ -110,6 +110,10 @@ private:
     // Decode Morton code to (row, col)
     std::pair<int,int> mortonDecode(int id) const {
         int row = 0, col = 0;
+        
+        // The two most significant bits are removed since they are only used
+        // for identifying the level
+        id >>= 2;
         for (int i = 0; i < 16; i++) {
             col |= ((id >> (2 * i)) & 1) << i;
             row |= ((id >> (2 * i + 1)) & 1) << i;
@@ -120,11 +124,12 @@ private:
 public:
     Quadtree(int cols, int rows, float cellSize)
         : rows(rows), cols(cols), cellSize(cellSize) {
-        // Initialize base cells
+        // Initialize base cells with 4-bit Morton codes
         for (int i = 0; i < rows; ++i) {
             for (int j = 0; j < cols; ++j) {
-                int baseId = mortonEncode(i, j);
-                Node* n = new Node(j * cellSize, i * cellSize, cellSize, baseId);
+                // Base IDs are 12, 13, 14, 15 (1100, 1101, 1110, 1111 in binary)
+                int baseId = 0b1100 | mortonEncode(i, j);
+                Node* n = new Node(j * cellSize, i * cellSize, cellSize, baseId, 1);
                 baseNodes.push_back(n);
                 nodeMap[baseId] = n;
             }
@@ -132,7 +137,6 @@ public:
     }
 
     ~Quadtree() {
-        // Clean up dynamically allocated nodes
         for (auto &kv : nodeMap) {
             delete kv.second;
         }
@@ -221,29 +225,11 @@ public:
                 return;
             }
 
-            // If the current node is split, check its children
             if (node->isSplit) {
-                // Determine the relative position of the children to the target cell
-                int targetRow, targetCol;
-                std::tie(targetRow, targetCol) = mortonDecode(targetNode->id);
-                int nodeRow, nodeCol;
-                std::tie(nodeRow, nodeCol) = mortonDecode(node->id);
-
-                int rowDiff = targetRow - nodeRow;
-                int colDiff = targetCol - nodeCol;
-
-                // Recursively check the children based on the relative position
-                if (node->children[0]) { // NW child
-                    findNeighborsRecursively(node->children[0], depth + 1);
-                }
-                if (node->children[1]) { // NE child
-                    findNeighborsRecursively(node->children[1], depth + 1);
-                }
-                if (node->children[2]) { // SW child
-                    findNeighborsRecursively(node->children[2], depth + 1);
-                }
-                if (node->children[3]) { // SE child
-                    findNeighborsRecursively(node->children[3], depth + 1);
+                for (int i = 0; i < 4; ++i) {
+                    if (node->children[i]) {
+                        findNeighborsRecursively(node->children[i], depth + 1);
+                    }
                 }
             }
         };
@@ -253,7 +239,6 @@ public:
             [&](Node* node, int dx, int dy) {
             if (!node) return;
 
-            // Move up to the parent until we can move in the desired direction
             while (node->parent) {
                 int parentId = node->parent->id;
                 int nodeRow, nodeCol;
@@ -261,32 +246,34 @@ public:
                 int parentRow, parentCol;
                 std::tie(parentRow, parentCol) = mortonDecode(parentId);
 
-                // Check if moving in the desired direction is possible at this level
-                if ((nodeRow + dy) >= parentRow && (nodeRow + dy) < parentRow + 2 &&
-                    (nodeCol + dx) >= parentCol && (nodeCol + dx) < parentCol + 2) {
+                
+                int depthDiff = getDepth(node->id) - getDepth(parentId);
+
+                if ((nodeRow + dy * pow(2, depthDiff)) >= parentRow && (nodeRow + dy * pow(2, depthDiff)) < parentRow + pow(2, depthDiff+1) &&
+                    (nodeCol + dx * pow(2, depthDiff)) >= parentCol && (nodeCol + dx * pow(2, depthDiff)) < parentCol + pow(2, depthDiff+1)) {
                     
-                    // Move to the neighbor at this level
                     Node* neighbor = nullptr;
+                    int childIndex;
                     if (dx == 0 && dy == -1) { // North
-                        neighbor = (node == node->parent->children[2]) ? node->parent->children[0] : node->parent->children[1];
+                        childIndex = (node == node->parent->children[2]) ? 0 : 1;
                     } else if (dx == 1 && dy == -1) { // North-East
-                        neighbor = node->parent->children[2];
+                        childIndex = 2;
                     } else if (dx == 1 && dy == 0) { // East
-                        neighbor = (node == node->parent->children[0]) ? node->parent->children[1] : node->parent->children[3];
+                        childIndex = (node == node->parent->children[0]) ? 1 : 3;
                     } else if (dx == 1 && dy == 1) { // South-East
-                        neighbor = node->parent->children[0];
+                        childIndex = 0;
                     } else if (dx == 0 && dy == 1) { // South
-                        neighbor = (node == node->parent->children[0]) ? node->parent->children[2] : node->parent->children[3];
+                        childIndex = (node == node->parent->children[0]) ? 2 : 3;
                     } else if (dx == -1 && dy == 1) { // South-West
-                        neighbor = node->parent->children[1];
+                        childIndex = 1;
                     } else if (dx == -1 && dy == 0) { // West
-                        neighbor = (node == node->parent->children[1]) ? node->parent->children[0] : node->parent->children[2];
+                        childIndex = (node == node->parent->children[1]) ? 0 : 2;
                     } else if (dx == -1 && dy == -1) { // North-West
-                        neighbor = node->parent->children[3];
+                        childIndex = 3;
                     }
+                    neighbor = node->parent->children[childIndex];
 
                     if (neighbor) {
-                        // Start recursive search for neighbors from this node
                         findNeighborsRecursively(neighbor, getDepth(neighbor->id));
                     }
                     break;
@@ -295,7 +282,9 @@ public:
             }
         };
 
-        // Use the lambdas to find neighbors in all directions
+        int dx[] = {0, 1, 1, 0, -1, -1, -1, 0};
+        int dy[] = {-1, -1, 0, 1, 1, 1, 0, -1};
+
         for (int i = 0; i < 8; ++i) {
             findNeighborsInDirection(targetNode, dx[i], dy[i]);
         }
@@ -394,7 +383,7 @@ public:
 };
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(1200, 1200), "Quadtree (2x2 Base Grid)");
+    sf::RenderWindow window(sf::VideoMode(600, 600), "Quadtree (2x2 Base Grid)");
     sf::Font font;
     if (!font.loadFromFile("/Library/Fonts/Arial Unicode.ttf")) {
         std::cerr << "Error: Failed to load font.\n";
@@ -402,42 +391,53 @@ int main() {
     }
 
     Quadtree quadtree(2, 2, 600);
-    quadtree.splitCell(1, {2, 0, 0});
+    quadtree.splitCell(12);
+    quadtree.splitCell(13);
+    quadtree.splitCell(12, {0});
+
+    // sf::Vector2f cell = quadtree.getCellCenter(15);
+    // std::cout << "Center of cell 15: (" << cell.x << ", " << cell.y << ")\n";
 
     try {
-        // Test cases to find neighbors
-        std::vector<std::pair<int, std::vector<int>>> neighborTestCases = {
-            {3, {0, 1, 2, 8, 9, 96, 402, 414}}
-        };
+        // // Test cases to find neighbors
+        // std::vector<std::pair<int, std::vector<int>>> neighborTestCases = {
+        //     {3, {0, 1, 2, 8, 9, 96, 402, 414}}
+        // };
 
-        for (const auto& testCase : neighborTestCases) {
-            int cellId = testCase.first;
-            std::vector<int> expectedNeighbors = testCase.second;
-            std::vector<int> actualNeighbors = quadtree.getNeighboringCells(cellId);
+        // for (const auto& testCase : neighborTestCases) {
+        //     int cellId = testCase.first;
+        //     std::vector<int> expectedNeighbors = testCase.second;
+        //     std::vector<int> actualNeighbors = quadtree.getNeighboringCells(cellId);
 
-            std::cout << "\nVerifying neighbors of cell ID " << cellId << ":\n";
-            std::cout << "Neighbors of cell " << cellId << ": ";
-            for (int neighborId : actualNeighbors) {
-                std::cout << neighborId << " ";
-            }
-            std::cout << std::endl;
+        //     std::cout << "\nVerifying neighbors of cell ID " << cellId << ":\n";
+        //     std::cout << "Neighbors of cell " << cellId << ": ";
+        //     for (int neighborId : actualNeighbors) {
+        //         std::cout << neighborId << " ";
+        //     }
+        //     std::cout << std::endl;
 
-            std::sort(expectedNeighbors.begin(), expectedNeighbors.end());
+        //     std::sort(expectedNeighbors.begin(), expectedNeighbors.end());
 
-            if (actualNeighbors == expectedNeighbors) {
-                std::cout << "Neighbor verification for cell " << cellId << ": PASSED\n";
-            } else {
-                std::cout << "Neighbor verification for cell " << cellId << ": FAILED\n";
-            }
-        }
+        //     if (actualNeighbors == expectedNeighbors) {
+        //         std::cout << "Neighbor verification for cell " << cellId << ": PASSED\n";
+        //     } else {
+        //         std::cout << "Neighbor verification for cell " << cellId << ": FAILED\n";
+        //     }
+        // }
         
-        quadtree.printChildren(6);
+        // quadtree.printChildren(48);
 
         while (window.isOpen()) {
             sf::Event event;
             while (window.pollEvent(event)) {
                 if (event.type == sf::Event::Closed)
                     window.close();
+
+                if (event.type == sf::Event::KeyPressed) {
+                    if (event.key.code == sf::Keyboard::Escape) {
+                        window.close();
+                    }
+                }
 
                 if (event.type == sf::Event::MouseButtonPressed) {
                     sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));

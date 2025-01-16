@@ -2,26 +2,32 @@ import numpy as np
 
 # positions = np.array([[72, 35], [13, 12], [72, 35], [100, 100]])
 positions = np.array([[395, 55]])
-cell_size = 600.0
-max_depth = 3  # Changed max_depth to 3
+cell_size = 1200.0
+max_depth = 8  # Changed max_depth to 3
 cell_ids = []
 seen_cell_ids = set()
 
 def get_quadtree_cell(position, cell_size, max_depth):
     center = np.array([cell_size, cell_size]) / 2.0
     cell_id = 3
+    current_cell_size = cell_size
     for i in range(max_depth):
         cell_id <<= 2
         if position[1] >= center[1]:
-            center[1] += cell_size / (2 ** (i + 2))
+            current_cell_size = cell_size / (2 ** (i + 1))
+            center[1] += current_cell_size
             cell_id += 2
         else:
-            center[1] -= cell_size / (2 ** (i + 2))
+            current_cell_size = cell_size / (2 ** (i + 1))
+            center[1] -= current_cell_size
         if position[0] >= center[0]:
-            center[0] += cell_size / (2 ** (i + 2))
+            current_cell_size = cell_size / (2 ** (i + 1))
+            center[0] += current_cell_size
             cell_id += 1
         else:
-            center[0] -= cell_size / (2 ** (i + 2))
+            current_cell_size = cell_size / (2 ** (i + 1))
+            center[0] -= current_cell_size
+        print(f"cell size: {current_cell_size}")
     return cell_id
 
 def get_split_sequence(cell_id, max_depth):

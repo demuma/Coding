@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <functional>
 #include <stdexcept>
+#include <random>
 
 class Node {
 public:
@@ -55,7 +56,7 @@ public:
         sf::Text text;
         text.setFont(font);
         text.setString(std::to_string(id));
-        text.setCharacterSize(10);
+        text.setCharacterSize(3);
         text.setFillColor(sf::Color::Black);
 
         sf::FloatRect textBounds = text.getLocalBounds();
@@ -156,9 +157,78 @@ public:
         }
     }
 
-    ~Quadtree() {
-        for (auto &kv : nodeMap) {
-            delete kv.second;
+   ~Quadtree() {
+        // Use a recursive function for safe and complete deletion
+        std::function<void(Node*)> deleteNodeRecursive = [&](Node* node) {
+            if (node != nullptr) {
+                for (int i = 0; i < 4; ++i) {
+                    deleteNodeRecursive(node->children[i]);
+                }
+                delete node;
+            }
+        };
+
+        // Start the deletion from each base node
+        for (Node* baseNode : baseNodes) {
+            deleteNodeRecursive(baseNode);
+        }
+
+        // Clear the nodeMap and baseNodes vector after deletion
+        nodeMap.clear();
+        baseNodes.clear();
+    }
+
+    void reset() {
+        std::function<void(Node*)> resetNodeRecursive = [&](Node* node) {
+            if (node != nullptr) {
+                for (int i = 0; i < 4; ++i) {
+                    if (node->children[i]) {
+                        resetNodeRecursive(node->children[i]);
+                        node->children[i] = nullptr;
+                    }
+                }
+                node->isSplit = false;
+            }
+        };
+
+        for (Node* baseNode : baseNodes) {
+            resetNodeRecursive(baseNode);
+        }
+
+        nodeMap.clear();
+
+        for (Node* baseNode : baseNodes) {
+            nodeMap[baseNode->id] = baseNode;
+        }
+    }
+
+    void clear() {
+        std::function<void(Node*)> deleteNodeRecursive = [&](Node* node) {
+            if (node != nullptr) {
+                for (int i = 0; i < 4; ++i) {
+                    deleteNodeRecursive(node->children[i]);
+                    node->children[i] = nullptr; // Set to null after deleting
+                }
+                delete node;
+            }
+        };
+
+        // Start deletion from each base node, but skip the base nodes themselves
+        for (Node* baseNode : baseNodes) {
+            for (int i = 0; i < 4; ++i) {
+                deleteNodeRecursive(baseNode->children[i]);
+                baseNode->children[i] = nullptr; // Set to null after deleting
+            }
+            baseNode->isSplit = false; // Reset the isSplit flag
+        }
+
+        // Remove non-base nodes from nodeMap
+        for (auto it = nodeMap.begin(); it != nodeMap.end();) {
+            if (std::find(baseNodes.begin(), baseNodes.end(), it->second) == baseNodes.end()) {
+                it = nodeMap.erase(it);
+            } else {
+                ++it;
+            }
         }
     }
 
@@ -315,7 +385,7 @@ public:
         return neighbors;
     }
 
-    int getNearestCellIndex(sf::Vector2f position) {
+    int getNearestCell(sf::Vector2f position) {
         // Find the base cell that contains the position
         int col = static_cast<int>(position.x / cellSize);
         int row = static_cast<int>(position.y / cellSize);
@@ -371,7 +441,7 @@ public:
     }
 
     void drawPositions(sf::RenderWindow &window, const std::vector<sf::Vector2f>& positions) {
-        float circleSize = 3;
+        float circleSize = 2;
         sf::CircleShape circle(circleSize);
         circle.setFillColor(sf::Color::Red);
         int scale = window.getSize().x / cellSize;
@@ -383,7 +453,7 @@ public:
         }
     }
 
-    int getNewCellForPosition(sf::Vector2f position) {
+    int makeCell(sf::Vector2f position) {
 
         // Set the initial cell size, center and cell ID
         float currentCellSize = cellSize;
@@ -442,7 +512,7 @@ public:
         // Calculate and store cell IDs for unique positions
         for (const auto& pos : positions) {
             if (positionToCellID.find(pos) == positionToCellID.end()) {
-                int cellID = getNewCellForPosition(pos);
+                int cellID = makeCell(pos);
                 positionToCellID[pos] = cellID;
             }
         }
@@ -486,6 +556,31 @@ public:
         }
     };
 
+    std::vector<sf::Vector2f> generatePositions(int number) {
+        std::vector<sf::Vector2f> positions;
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(0.0, cellSize);
+
+        for (int i = 0; i < number; ++i) {
+            positions.push_back(sf::Vector2f(dis(gen), dis(gen)));
+        }
+
+        return positions;
+    }
+
+    // Move every position to the right by x pixels
+    void movePositionsRight(std::vector<sf::Vector2f>& positions, float x) {
+        for (auto& pos : positions) {
+            pos.x += x;
+
+            // If position is out of bounds, wrap around
+            if (pos.x >= cellSize) {
+                pos.x -= cellSize;
+            }
+        }
+    }
+
     void printChildren(int id) {
         Node* targetNode = getNodeById(id);
         if (!targetNode) {
@@ -519,46 +614,72 @@ public:
 };
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(600, 600), "Quadtree (2x2 Base Grid)");
+    sf::RenderWindow window(sf::VideoMode(1200, 1200), "Quadtree (2x2 Base Grid)");
     sf::Font font;
     if (!font.loadFromFile("/Library/Fonts/Arial Unicode.ttf")) {
         std::cerr << "Error: Failed to load font.\n";
         return -1;
     }
 
-    std::vector<sf::Vector2f> positions = {sf::Vector2f(395, 55), sf::Vector2f(54, 32)};
-    Quadtree quadtree(600, 4);
-    quadtree.splitFromPositions(positions);
+    // std::vector<sf::Vector2f> positions = {sf::Vector2f(395, 55), sf::Vector2f(54, 32)};
+
+    Quadtree quadtree(1200, 8);
+
+    sf::Clock clock;
+    sf::Time timePerFrame = sf::seconds(1.f / 30.f); // 30 Hz
+    sf::Time timeSinceLastUpdate = sf::Time::Zero;
+
+    std::vector<sf::Vector2f> positions = quadtree.generatePositions(1);
 
     try {
-
         while (window.isOpen()) {
-            sf::Event event;
-            while (window.pollEvent(event)) {
-                if (event.type == sf::Event::Closed)
-                    window.close();
+            timeSinceLastUpdate += clock.restart();
 
-                if (event.type == sf::Event::KeyPressed) {
-                    if (event.key.code == sf::Keyboard::Escape) {
+            while (timeSinceLastUpdate > timePerFrame) {
+                timeSinceLastUpdate -= timePerFrame;
+
+                sf::Event event;
+                while (window.pollEvent(event)) {
+                    if (event.type == sf::Event::Closed)
                         window.close();
+
+                    if (event.type == sf::Event::KeyPressed) {
+                        if (event.key.code == sf::Keyboard::Escape) {
+                            window.close();
+                        } 
+                        if (event.key.code == sf::Keyboard::R) {
+                            quadtree.clear();
+                            positions.clear();
+                        }
+                    }
+                    if (event.type == sf::Event::MouseButtonPressed) {
+                        sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+                        int nearestCellId = quadtree.getNearestCell(mousePos);
+                        sf::Vector2f cellCenter = quadtree.getCellCenter(nearestCellId);
+
+                        std::cout << "Clicked at (" << mousePos.x << ", " << mousePos.y << ") -> Nearest cell: " << nearestCellId
+                                << " with center at (" << cellCenter.x << ", " << cellCenter.y << ")\n";
+
+                        std::cout << std::endl;
+
+                        positions.push_back(mousePos);
+
                     }
                 }
+                // Clear the existing quadtree
+                // quadtree.clear();
+                quadtree.reset();
 
-                if (event.type == sf::Event::MouseButtonPressed) {
-                    sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-                    int nearestCellId = quadtree.getNearestCellIndex(mousePos);
-                    sf::Vector2f cellCenter = quadtree.getCellCenter(nearestCellId);
+                // Move positions
+                quadtree.movePositionsRight(positions, 1);
 
-                    std::cout << "Clicked at (" << mousePos.x << ", " << mousePos.y << ") -> Nearest cell: " << nearestCellId
-                              << " with center at (" << cellCenter.x << ", " << cellCenter.y << ")\n";
-
-                    std::cout << std::endl;
-                }
+                // Split the quadtree based on new positions
+                quadtree.splitFromPositions(positions);
             }
 
             window.clear(sf::Color::White);
             quadtree.draw(window, font);
-            quadtree.drawPositions(window, positions);
+            quadtree.drawPositions(window, positions); // Assuming you want to draw positions every frame
             window.display();
         }
     } catch (const std::exception& e) {

@@ -1,5 +1,6 @@
-CMakeFiles/Simulator.dir/src/Main.cpp.o: \
-  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Quadtree/src/Main.cpp \
+CMakeFiles/Simulator.dir/src/Quadtree.cpp.o: \
+  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Quadtree/src/Quadtree.cpp \
+  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Quadtree/include/Quadtree.hpp \
   /usr/local/include/SFML/Graphics.hpp \
   /usr/local/include/SFML/Window.hpp /usr/local/include/SFML/System.hpp \
   /usr/local/include/SFML/Config.hpp \
@@ -950,8 +951,6 @@ CMakeFiles/Simulator.dir/src/Main.cpp.o: \
   /usr/local/include/SFML/Graphics/Sprite.hpp \
   /usr/local/include/SFML/Graphics/Text.hpp \
   /usr/local/include/SFML/Graphics/VertexBuffer.hpp \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/iostream \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/istream \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/random \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/__random/bernoulli_distribution.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/__random/uniform_real_distribution.h \
@@ -999,39 +998,5 @@ CMakeFiles/Simulator.dir/src/Main.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/__random/seed_seq.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/__random/student_t_distribution.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/__random/weibull_distribution.h \
-  /usr/local/include/yaml-cpp/yaml.h \
-  /usr/local/include/yaml-cpp/parser.h /usr/local/include/yaml-cpp/dll.h \
-  /usr/local/include/yaml-cpp/emitter.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/sstream \
-  /usr/local/include/yaml-cpp/binary.h \
-  /usr/local/include/yaml-cpp/emitterdef.h \
-  /usr/local/include/yaml-cpp/emittermanip.h \
-  /usr/local/include/yaml-cpp/null.h \
-  /usr/local/include/yaml-cpp/ostream_wrapper.h \
-  /usr/local/include/yaml-cpp/emitterstyle.h \
-  /usr/local/include/yaml-cpp/stlemitter.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/list \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/set \
-  /usr/local/include/yaml-cpp/exceptions.h \
-  /usr/local/include/yaml-cpp/mark.h \
-  /usr/local/include/yaml-cpp/noexcept.h \
-  /usr/local/include/yaml-cpp/traits.h \
-  /usr/local/include/yaml-cpp/node/node.h \
-  /usr/local/include/yaml-cpp/node/detail/iterator_fwd.h \
-  /usr/local/include/yaml-cpp/node/ptr.h \
-  /usr/local/include/yaml-cpp/node/type.h \
-  /usr/local/include/yaml-cpp/node/impl.h \
-  /usr/local/include/yaml-cpp/node/detail/memory.h \
-  /usr/local/include/yaml-cpp/node/detail/node.h \
-  /usr/local/include/yaml-cpp/node/detail/node_ref.h \
-  /usr/local/include/yaml-cpp/node/detail/node_data.h \
-  /usr/local/include/yaml-cpp/node/detail/node_iterator.h \
-  /usr/local/include/yaml-cpp/node/iterator.h \
-  /usr/local/include/yaml-cpp/node/detail/iterator.h \
-  /usr/local/include/yaml-cpp/node/convert.h \
-  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/valarray \
-  /usr/local/include/yaml-cpp/node/detail/impl.h \
-  /usr/local/include/yaml-cpp/node/parse.h \
-  /usr/local/include/yaml-cpp/node/emit.h \
-  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Quadtree/src/../include/Logging.hpp \
-  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Quadtree/src/../include/Quadtree.hpp
+  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/iostream \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/istream

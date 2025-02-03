@@ -5,6 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/Simulator.dir/src/Main.cpp.o.d"
   "CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o"
   "CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o.d"
+  "CMakeFiles/Simulator.dir/src/Quadtree.cpp.o"
+  "CMakeFiles/Simulator.dir/src/Quadtree.cpp.o.d"
   "CMakeFiles/Simulator.dir/src/Sensor.cpp.o"
   "CMakeFiles/Simulator.dir/src/Sensor.cpp.o.d"
   "CMakeFiles/Simulator.dir/src/Utilities.cpp.o"

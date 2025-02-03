@@ -11,6 +11,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Quadtree/src/Agent.cpp" "CMakeFiles/Simulator.dir/src/Agent.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Agent.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Quadtree/src/Main.cpp" "CMakeFiles/Simulator.dir/src/Main.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Main.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Quadtree/src/PerlinNoise.cpp" "CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o.d"
+  "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Quadtree/src/Quadtree.cpp" "CMakeFiles/Simulator.dir/src/Quadtree.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Quadtree.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Quadtree/src/Sensor.cpp" "CMakeFiles/Simulator.dir/src/Sensor.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Sensor.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Quadtree/src/Utilities.cpp" "CMakeFiles/Simulator.dir/src/Utilities.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Utilities.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Quadtree/src/Visualizer.cpp" "CMakeFiles/Simulator.dir/src/Visualizer.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Visualizer.cpp.o.d"

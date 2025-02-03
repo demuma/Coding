@@ -114,6 +114,9 @@ void GridBasedSensor::postData() {
 
             // Iterate through the grid data
             for (const auto& [cellIndex, cellData] : gridData) {
+
+                // Get the cell position
+                sf::Vector2f cellPosition = getCellPosition(cellIndex);
                 
                 // Document for the grid cell
                 bsoncxx::builder::stream::document document{}; 
@@ -127,8 +130,8 @@ void GridBasedSensor::postData() {
                             << bsoncxx::builder::stream::close_array
                          << "cell_position"
                             << bsoncxx::builder::stream::open_array
-                            << getCellPosition(cellIndex).x
-                            << getCellPosition(cellIndex).y
+                            << cellPosition.x
+                            << cellPosition.y
                             << bsoncxx::builder::stream::close_array;
             
                 // Embed agent counts as a subdocument

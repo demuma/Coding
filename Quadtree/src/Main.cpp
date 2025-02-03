@@ -8,6 +8,8 @@
 #include <functional>
 #include <stdexcept>
 #include <random>
+#include <yaml-cpp/yaml.h>
+#include "../include/Logging.hpp"
 
 class Node {
 public:
@@ -17,6 +19,7 @@ public:
     Node* children[4] = {nullptr, nullptr, nullptr, nullptr};
     int id; // Unique integer ID
     int depth; // Depth level of the node
+    int fontSize = 9;
 
     Node(float x, float y, float size, int id, int depth, Node* parent = nullptr) : id(id), depth(depth), parent(parent) {
         shape.setSize({size, size});
@@ -56,7 +59,7 @@ public:
         sf::Text text;
         text.setFont(font);
         text.setString(std::to_string(id));
-        text.setCharacterSize(3);
+        text.setCharacterSize(fontSize);  // Default: 3
         text.setFillColor(sf::Color::Black);
 
         sf::FloatRect textBounds = text.getLocalBounds();
@@ -441,7 +444,7 @@ public:
     }
 
     void drawPositions(sf::RenderWindow &window, const std::vector<sf::Vector2f>& positions) {
-        float circleSize = 2;
+        float circleSize = 4;  // Default: 2
         sf::CircleShape circle(circleSize);
         circle.setFillColor(sf::Color::Red);
         int scale = window.getSize().x / cellSize;
@@ -614,6 +617,22 @@ public:
 };
 
 int main() {
+
+    // Configuration loading
+    YAML::Node config;
+    try {
+        config = YAML::LoadFile("config.yaml");
+    } catch (const YAML::Exception& e) {
+        ERROR_MSG("Error loading config file: " << e.what());
+        return 1;
+    }
+
+    // Load global configuration data
+    int maxDepth = config["quadtree"]["max_depth"].as<int>();
+    int agentSize = config["quadtree"]["agent_size"].as<int>();
+    int agentSpeed = config["quadtree"]["agent_speed"].as<int>();
+    int fontSize = config["quadtree"]["font_size"].as<int>();
+
     sf::RenderWindow window(sf::VideoMode(1200, 1200), "Quadtree (2x2 Base Grid)");
     sf::Font font;
     if (!font.loadFromFile("/Library/Fonts/Arial Unicode.ttf")) {
@@ -623,7 +642,7 @@ int main() {
 
     // std::vector<sf::Vector2f> positions = {sf::Vector2f(395, 55), sf::Vector2f(54, 32)};
 
-    Quadtree quadtree(1200, 8);
+    Quadtree quadtree(1200, maxDepth);
 
     sf::Clock clock;
     sf::Time timePerFrame = sf::seconds(1.f / 30.f); // 30 Hz
@@ -671,7 +690,7 @@ int main() {
                 quadtree.reset();
 
                 // Move positions
-                quadtree.movePositionsRight(positions, 1);
+                quadtree.movePositionsRight(positions, agentSpeed);
 
                 // Split the quadtree based on new positions
                 quadtree.splitFromPositions(positions);

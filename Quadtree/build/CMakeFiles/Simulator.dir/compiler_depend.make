@@ -1762,6 +1762,7 @@ CMakeFiles/Simulator.dir/src/Main.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/P
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/iterator \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/limits \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/limits.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/list \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/locale \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/locale.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/map \
@@ -1774,6 +1775,8 @@ CMakeFiles/Simulator.dir/src/Main.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/P
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/ostream \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/random \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/ratio \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/set \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/sstream \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/stddef.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/stdexcept \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/stdint.h \
@@ -1789,6 +1792,7 @@ CMakeFiles/Simulator.dir/src/Main.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/P
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/typeinfo \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/unordered_map \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/utility \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/valarray \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/variant \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/vector \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/version \
@@ -1933,6 +1937,7 @@ CMakeFiles/Simulator.dir/src/Main.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/P
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stdarg.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stddef.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/15.0.0/include/stdint.h \
+  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Quadtree/include/Logging.hpp \
   /usr/local/include/SFML/Config.hpp \
   /usr/local/include/SFML/Graphics.hpp \
   /usr/local/include/SFML/Graphics/BlendMode.hpp \
@@ -2008,7 +2013,38 @@ CMakeFiles/Simulator.dir/src/Main.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/P
   /usr/local/include/SFML/Window/Window.hpp \
   /usr/local/include/SFML/Window/WindowBase.hpp \
   /usr/local/include/SFML/Window/WindowHandle.hpp \
-  /usr/local/include/SFML/Window/WindowStyle.hpp
+  /usr/local/include/SFML/Window/WindowStyle.hpp \
+  /usr/local/include/yaml-cpp/binary.h \
+  /usr/local/include/yaml-cpp/dll.h \
+  /usr/local/include/yaml-cpp/emitter.h \
+  /usr/local/include/yaml-cpp/emitterdef.h \
+  /usr/local/include/yaml-cpp/emittermanip.h \
+  /usr/local/include/yaml-cpp/emitterstyle.h \
+  /usr/local/include/yaml-cpp/exceptions.h \
+  /usr/local/include/yaml-cpp/mark.h \
+  /usr/local/include/yaml-cpp/node/convert.h \
+  /usr/local/include/yaml-cpp/node/detail/impl.h \
+  /usr/local/include/yaml-cpp/node/detail/iterator.h \
+  /usr/local/include/yaml-cpp/node/detail/iterator_fwd.h \
+  /usr/local/include/yaml-cpp/node/detail/memory.h \
+  /usr/local/include/yaml-cpp/node/detail/node.h \
+  /usr/local/include/yaml-cpp/node/detail/node_data.h \
+  /usr/local/include/yaml-cpp/node/detail/node_iterator.h \
+  /usr/local/include/yaml-cpp/node/detail/node_ref.h \
+  /usr/local/include/yaml-cpp/node/emit.h \
+  /usr/local/include/yaml-cpp/node/impl.h \
+  /usr/local/include/yaml-cpp/node/iterator.h \
+  /usr/local/include/yaml-cpp/node/node.h \
+  /usr/local/include/yaml-cpp/node/parse.h \
+  /usr/local/include/yaml-cpp/node/ptr.h \
+  /usr/local/include/yaml-cpp/node/type.h \
+  /usr/local/include/yaml-cpp/noexcept.h \
+  /usr/local/include/yaml-cpp/null.h \
+  /usr/local/include/yaml-cpp/ostream_wrapper.h \
+  /usr/local/include/yaml-cpp/parser.h \
+  /usr/local/include/yaml-cpp/stlemitter.h \
+  /usr/local/include/yaml-cpp/traits.h \
+  /usr/local/include/yaml-cpp/yaml.h
 
 CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Quadtree/src/PerlinNoise.cpp \
   /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/Availability.h \
@@ -6231,36 +6267,6 @@ CMakeFiles/Simulator.dir/src/Visualizer.cpp.o: /Users/maxdemu/Documents/HAW\ Ham
   /usr/local/include/yaml-cpp/yaml.h
 
 
-/usr/local/include/yaml-cpp/yaml.h:
-
-/usr/local/include/yaml-cpp/stlemitter.h:
-
-/usr/local/include/yaml-cpp/parser.h:
-
-/usr/local/include/yaml-cpp/null.h:
-
-/usr/local/include/yaml-cpp/node/ptr.h:
-
-/usr/local/include/yaml-cpp/node/parse.h:
-
-/usr/local/include/yaml-cpp/node/impl.h:
-
-/usr/local/include/yaml-cpp/node/emit.h:
-
-/usr/local/include/yaml-cpp/node/detail/node_ref.h:
-
-/usr/local/include/yaml-cpp/node/detail/memory.h:
-
-/usr/local/include/yaml-cpp/node/detail/iterator_fwd.h:
-
-/usr/local/include/yaml-cpp/node/detail/iterator.h:
-
-/usr/local/include/yaml-cpp/node/convert.h:
-
-/usr/local/include/yaml-cpp/emitter.h:
-
-/usr/local/include/yaml-cpp/binary.h:
-
 /usr/local/include/mongocxx/v_noabi/mongocxx/write_concern-fwd.hpp:
 
 /usr/local/include/mongocxx/v_noabi/mongocxx/validation_criteria-fwd.hpp:
@@ -6274,10 +6280,6 @@ CMakeFiles/Simulator.dir/src/Visualizer.cpp.o: /Users/maxdemu/Documents/HAW\ Ham
 /usr/local/include/mongocxx/v_noabi/mongocxx/result/replace_one-fwd.hpp:
 
 /usr/local/include/mongocxx/v_noabi/mongocxx/result/insert_one.hpp:
-
-/usr/local/include/yaml-cpp/node/node.h:
-
-/usr/local/include/mongocxx/v_noabi/mongocxx/result/insert_one-fwd.hpp:
 
 /usr/local/include/mongocxx/v_noabi/mongocxx/result/insert_many-fwd.hpp:
 
@@ -6298,10 +6300,6 @@ CMakeFiles/Simulator.dir/src/Visualizer.cpp.o: /Users/maxdemu/Documents/HAW\ Ham
 /usr/local/include/mongocxx/v_noabi/mongocxx/read_concern-fwd.hpp:
 
 /usr/local/include/mongocxx/v_noabi/mongocxx/pipeline.hpp:
-
-/usr/local/include/yaml-cpp/node/detail/node_data.h:
-
-/usr/local/include/mongocxx/v_noabi/mongocxx/options/transaction-fwd.hpp:
 
 /usr/local/include/mongocxx/v_noabi/mongocxx/options/server_api-fwd.hpp:
 
@@ -6459,10 +6457,6 @@ CMakeFiles/Simulator.dir/src/Visualizer.cpp.o: /Users/maxdemu/Documents/HAW\ Ham
 
 /usr/local/include/bsoncxx/v_noabi/bsoncxx/json-fwd.hpp:
 
-/usr/local/include/yaml-cpp/ostream_wrapper.h:
-
-/usr/local/include/bsoncxx/v_noabi/bsoncxx/enums/type.hpp:
-
 /usr/local/include/bsoncxx/v_noabi/bsoncxx/enums/binary_sub_type.hpp:
 
 /usr/local/include/bsoncxx/v_noabi/bsoncxx/document/view-fwd.hpp:
@@ -6529,27 +6523,15 @@ CMakeFiles/Simulator.dir/src/Visualizer.cpp.o: /Users/maxdemu/Documents/HAW\ Ham
 
 /usr/local/include/bsoncxx/v_noabi/bsoncxx/array/element-fwd.hpp:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/valarray:
-
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/thread:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/set:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/deque:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/__thread/thread.h:
 
-/usr/local/include/yaml-cpp/node/detail/impl.h:
-
-/usr/local/include/bsoncxx/v_noabi/bsoncxx/document/view_or_value.hpp:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/__thread/this_thread.h:
-
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/__thread/formatter.h:
 
 /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Quadtree/include/Utilities.hpp:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/sstream:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/chrono:
 
@@ -6576,6 +6558,60 @@ CMakeFiles/Simulator.dir/src/Visualizer.cpp.o: /Users/maxdemu/Documents/HAW\ Ham
 /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Quadtree/src/Utilities.cpp:
 
 /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/Quadtree/src/PerlinNoise.cpp:
+
+/usr/local/include/yaml-cpp/yaml.h:
+
+/usr/local/include/yaml-cpp/stlemitter.h:
+
+/usr/local/include/yaml-cpp/parser.h:
+
+/usr/local/include/bsoncxx/v_noabi/bsoncxx/enums/type.hpp:
+
+/usr/local/include/yaml-cpp/ostream_wrapper.h:
+
+/usr/local/include/yaml-cpp/null.h:
+
+/usr/local/include/yaml-cpp/node/ptr.h:
+
+/usr/local/include/yaml-cpp/node/parse.h:
+
+/usr/local/include/mongocxx/v_noabi/mongocxx/result/insert_one-fwd.hpp:
+
+/usr/local/include/yaml-cpp/node/node.h:
+
+/usr/local/include/yaml-cpp/node/impl.h:
+
+/usr/local/include/yaml-cpp/node/emit.h:
+
+/usr/local/include/yaml-cpp/node/detail/node_ref.h:
+
+/usr/local/include/mongocxx/v_noabi/mongocxx/options/transaction-fwd.hpp:
+
+/usr/local/include/yaml-cpp/node/detail/node_data.h:
+
+/usr/local/include/yaml-cpp/node/detail/memory.h:
+
+/usr/local/include/yaml-cpp/node/detail/iterator_fwd.h:
+
+/usr/local/include/yaml-cpp/node/detail/iterator.h:
+
+/usr/local/include/bsoncxx/v_noabi/bsoncxx/document/view_or_value.hpp:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/__thread/this_thread.h:
+
+/usr/local/include/yaml-cpp/node/detail/impl.h:
+
+/usr/local/include/yaml-cpp/node/convert.h:
+
+/usr/local/include/yaml-cpp/emitter.h:
+
+/usr/local/include/yaml-cpp/binary.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/valarray:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/sstream:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/set:
 
 /usr/local/include/mongocxx/v_noabi/mongocxx/options/client_encryption.hpp:
 
@@ -6719,11 +6755,11 @@ CMakeFiles/Simulator.dir/src/Visualizer.cpp.o: /Users/maxdemu/Documents/HAW\ Ham
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/sys/qos.h:
 
+/usr/local/include/bsoncxx/v_noabi/bsoncxx/config/export.hpp:
+
 /usr/local/include/yaml-cpp/node/iterator.h:
 
 /usr/local/include/yaml-cpp/emitterstyle.h:
-
-/usr/local/include/bsoncxx/v_noabi/bsoncxx/config/export.hpp:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/sys/cdefs.h:
 
@@ -8319,9 +8355,9 @@ CMakeFiles/Simulator.dir/src/Visualizer.cpp.o: /Users/maxdemu/Documents/HAW\ Ham
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/__algorithm/in_found_result.h:
 
-/usr/local/include/yaml-cpp/exceptions.h:
-
 /usr/local/include/mongocxx/v_noabi/mongocxx/events/server_description-fwd.hpp:
+
+/usr/local/include/yaml-cpp/exceptions.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include/c++/v1/__algorithm/ranges_make_heap.h:
 

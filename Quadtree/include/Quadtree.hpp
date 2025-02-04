@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <cmath>
 #include <random>
+#include "Agent.hpp"
 
 // The Quadtree class encapsulates the data‐structure logic.
 // Nodes store their geometry in an sf::FloatRect (left, top, width, height).
@@ -20,6 +21,7 @@ public:
         Node* children[4];
         int id;    // Unique integer ID (using a Morton-code style bit‐encoding)
         int depth; // Depth level (base nodes are depth 1)
+        std::vector<Agent*> agents;
 
         // Constructor: creates a node with the given position and size.
         Node(float x, float y, float size, int id, int depth, Node* parent = nullptr);
@@ -33,8 +35,8 @@ public:
     float cellSize;
     int maxDepth;
     std::vector<Node*> baseNodes;               // The four base cells.
-    std::unordered_map<int, Node*> nodeMap;       // Maps cell IDs to nodes.
-    std::vector<sf::Vector2f> positions;          // Agent positions (or any positions)
+    std::unordered_map<int, Node*> nodeMap;     // Maps cell IDs to nodes.
+    std::vector<sf::Vector2f> positions;        // Agent positions (or any positions)
 
     // Constructor & destructor
     Quadtree(float cellSize, int maxDepth);
@@ -71,6 +73,9 @@ public:
     // Returns the center of the cell given its id.
     sf::Vector2f getCellCenter(int id) const;
 
+    // Returns the positon of the cell (top-left corner) given its id.
+    sf::Vector2f getCellPosition(int id) const;
+
     // Returns the IDs of neighboring cells (at the same depth or leaves).
     std::vector<int> getNeighboringCells(int id);
 
@@ -90,17 +95,19 @@ public:
     void splitFromPositions();
 
     // Utility functions to generate and update positions.
-    void generatePositions(int number);
-    void movePositionsRight(float x);
+    void generatePositions(int number);  // DELETE
+    void movePositionsRight(float x);    // DELETE
 
     // (A placeholder for any per-frame update logic.)
-    void update();
+    void update();  // DELETE
 
     // Draw the quadtree structure and the positions.
-    void draw(sf::RenderWindow& window, sf::Font& font);
+    void draw(sf::RenderWindow& window, sf::Font& font);  // MOVE TO RENDERER
 
     // Draw the positions as red circles.
-    void drawPositions(sf::RenderWindow& window, const std::vector<sf::Vector2f>& positions);
+    void drawPositions(sf::RenderWindow& window, const std::vector<sf::Vector2f>& positions);  // DELETE
+
+    void addAgent(Agent* agent);
 
     // Debug: prints the children of a node.
     void printChildren(int id);

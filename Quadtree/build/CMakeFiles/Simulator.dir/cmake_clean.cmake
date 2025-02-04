@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/Simulator.dir/src/AdaptiveGridBasedSensor.cpp.o"
+  "CMakeFiles/Simulator.dir/src/AdaptiveGridBasedSensor.cpp.o.d"
   "CMakeFiles/Simulator.dir/src/Agent.cpp.o"
   "CMakeFiles/Simulator.dir/src/Agent.cpp.o.d"
   "CMakeFiles/Simulator.dir/src/Main.cpp.o"

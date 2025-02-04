@@ -129,6 +129,30 @@ Simulator/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/build
 .PHONY : Simulator/fast
 
+src/AdaptiveGridBasedSensor.o: src/AdaptiveGridBasedSensor.cpp.o
+.PHONY : src/AdaptiveGridBasedSensor.o
+
+# target to build an object file
+src/AdaptiveGridBasedSensor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/AdaptiveGridBasedSensor.cpp.o
+.PHONY : src/AdaptiveGridBasedSensor.cpp.o
+
+src/AdaptiveGridBasedSensor.i: src/AdaptiveGridBasedSensor.cpp.i
+.PHONY : src/AdaptiveGridBasedSensor.i
+
+# target to preprocess a source file
+src/AdaptiveGridBasedSensor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/AdaptiveGridBasedSensor.cpp.i
+.PHONY : src/AdaptiveGridBasedSensor.cpp.i
+
+src/AdaptiveGridBasedSensor.s: src/AdaptiveGridBasedSensor.cpp.s
+.PHONY : src/AdaptiveGridBasedSensor.s
+
+# target to generate assembly for a file
+src/AdaptiveGridBasedSensor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/AdaptiveGridBasedSensor.cpp.s
+.PHONY : src/AdaptiveGridBasedSensor.cpp.s
+
 src/Agent.o: src/Agent.cpp.o
 .PHONY : src/Agent.o
 
@@ -306,6 +330,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... Simulator"
+	@echo "... src/AdaptiveGridBasedSensor.o"
+	@echo "... src/AdaptiveGridBasedSensor.i"
+	@echo "... src/AdaptiveGridBasedSensor.s"
 	@echo "... src/Agent.o"
 	@echo "... src/Agent.i"
 	@echo "... src/Agent.s"

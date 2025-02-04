@@ -208,6 +208,16 @@ sf::Vector2f Quadtree::getCellCenter(int id) const {
     return sf::Vector2f(x + size / 2, y + size / 2);
 }
 
+sf::Vector2f Quadtree::getCellPosition(int id) const {
+    auto it = nodeMap.find(id);
+    if (it == nodeMap.end())
+        throw std::runtime_error("Cell not found.");
+    Node* currentNode = it->second;
+    float x = currentNode->bounds.left;
+    float y = currentNode->bounds.top;
+    return sf::Vector2f(x, y);
+}
+
 std::vector<int> Quadtree::getNeighboringCells(int id) {
     std::vector<int> neighbors;
     Node* targetNode = getNodeById(id);
@@ -424,6 +434,18 @@ void Quadtree::printChildren(int id) {
     for (int i = 0; i < 4; ++i) {
         if (targetNode->children[i])
             printChildrenRecursive(targetNode->children[i], 1);
+    }
+}
+
+// Add agent to the grid
+void Quadtree::addAgent(Agent* agent) {
+
+    int cellId = getNearestCell(agent->position);
+    
+    // Add agent to node with cellId
+    Node* node = getNodeById(cellId);
+    if (node) {
+        node->agents.push_back(agent);
     }
 }
 

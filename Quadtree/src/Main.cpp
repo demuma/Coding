@@ -11,6 +11,7 @@
 #include <yaml-cpp/yaml.h>
 #include "../include/Logging.hpp"
 #include "../include/Quadtree.hpp"
+#include "../include/Agent.hpp"
 
 int main() {
 
@@ -28,6 +29,7 @@ int main() {
     int agentSize = config["quadtree"]["agent_size"].as<int>();
     int agentSpeed = config["quadtree"]["agent_speed"].as<int>();
     int fontSize = config["quadtree"]["font_size"].as<int>();
+    std::map<std::string, Agent::AgentTypeAttributes> agentTypeAttributes;
 
     sf::RenderWindow window(sf::VideoMode(1200, 1200), "Quadtree (2x2 Base Grid)");
     sf::Font font;
@@ -36,13 +38,28 @@ int main() {
         return -1;
     }
 
-    Quadtree quadtree(1200, maxDepth);
+    Quadtree quadtree(600, maxDepth);
 
     sf::Clock clock;
     sf::Time timePerFrame = sf::seconds(1.f / 30.f); // 30 Hz
     sf::Time timeSinceLastUpdate = sf::Time::Zero;
 
-   quadtree.generatePositions(1);
+    int numberAgents = 1;
+
+    // Generate agents
+    for (int i = 0; i < numberAgents; ++i) {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> disPosX(0, quadtree.cellSize * 2);
+        std::uniform_real_distribution<> disPosY(0, quadtree.cellSize * 2);
+
+        Agent agent(agentTypeAttributes["Adult Cyclist"]);
+        agent.initialPosition = sf::Vector2f(disPosX(gen), disPosY(gen));
+        quadtree.positions.push_back(agent.initialPosition);
+        std::cout << "Agent " << i << " at (" << agent.initialPosition.x << ", " << agent.initialPosition.y << ")\n";
+    }
+
+    // quadtree.generatePositions(2);
 
     try {
         while (window.isOpen()) {

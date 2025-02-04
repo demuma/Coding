@@ -32,7 +32,7 @@ simulation:
 quadtree:
   font_size: 10
   agent_size: 5
-  max_depth: 5
+  max_depth: 4
   agent_speed: 3
 
 collision:

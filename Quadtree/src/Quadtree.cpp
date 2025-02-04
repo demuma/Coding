@@ -80,7 +80,8 @@ void Quadtree::drawPositions(sf::RenderWindow& window, const std::vector<sf::Vec
     float circleSize = 4;
     sf::CircleShape circle(circleSize);
     circle.setFillColor(sf::Color::Red);
-    int scale = window.getSize().x / cellSize;
+    // int scale = window.getSize().x / cellSize;
+    int scale = 1;
     for (const sf::Vector2f& pos : positions) {
         sf::Vector2f newPos = sf::Vector2f((pos.x * scale), (pos.y * scale));
         newPos -= sf::Vector2f(circleSize, circleSize);
@@ -93,6 +94,7 @@ void Quadtree::drawPositions(sf::RenderWindow& window, const std::vector<sf::Vec
 // Quadtree Member Functions
 // ========================
 
+// TO-DO: Add quadtree offset to the node bounds!!
 Quadtree::Quadtree(float cellSize, int maxDepth)
     : cellSize(cellSize), maxDepth(maxDepth)
 {
@@ -193,8 +195,14 @@ void Quadtree::splitCell(std::vector<int>& sequence) {
         std::cerr << "Error: Quadtree not initialized.\n";
         return;
     }
-    // Start splitting from the NW base node (or any base cell).
-    splitRecursive(baseNodes[0], sequence, 0, nodeMap);
+    auto baseNode = baseNodes[sequence[0]];
+
+    if (!sequence.empty()) {
+        sequence.erase(sequence.begin());
+    }
+
+    // splitRecursive(baseNodes[0], sequence, 0, nodeMap);
+    splitRecursive(baseNode, sequence, 0, nodeMap);
 }
 
 sf::Vector2f Quadtree::getCellCenter(int id) const {
@@ -323,7 +331,7 @@ int Quadtree::getNearestCell(sf::Vector2f position) {
 }
 
 int Quadtree::makeCell(sf::Vector2f position) {
-    float currentCellSize = cellSize;
+    float currentCellSize = cellSize * 2.0f; // Root cell size
     sf::Vector2f currentCenter(currentCellSize / 2, currentCellSize / 2);
     int cellID = 0b11; // Start with root cell ID (3)
 
@@ -376,6 +384,7 @@ void Quadtree::splitFromPositions() {
     if (!positions.empty()) {
         std::vector<std::vector<int>> splitSequences = getSplitSequences(positions);
         for (const auto& seq : splitSequences) {
+
             // Note: splitCell expects a non-const reference.
             splitCell(const_cast<std::vector<int>&>(seq));
         }

@@ -297,30 +297,6 @@ src/Utilities.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Utilities.cpp.s
 .PHONY : src/Utilities.cpp.s
 
-src/Visualizer.o: src/Visualizer.cpp.o
-.PHONY : src/Visualizer.o
-
-# target to build an object file
-src/Visualizer.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Visualizer.cpp.o
-.PHONY : src/Visualizer.cpp.o
-
-src/Visualizer.i: src/Visualizer.cpp.i
-.PHONY : src/Visualizer.i
-
-# target to preprocess a source file
-src/Visualizer.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Visualizer.cpp.i
-.PHONY : src/Visualizer.cpp.i
-
-src/Visualizer.s: src/Visualizer.cpp.s
-.PHONY : src/Visualizer.s
-
-# target to generate assembly for a file
-src/Visualizer.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Visualizer.cpp.s
-.PHONY : src/Visualizer.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -351,9 +327,6 @@ help:
 	@echo "... src/Utilities.o"
 	@echo "... src/Utilities.i"
 	@echo "... src/Utilities.s"
-	@echo "... src/Visualizer.o"
-	@echo "... src/Visualizer.i"
-	@echo "... src/Visualizer.s"
 .PHONY : help
 
 

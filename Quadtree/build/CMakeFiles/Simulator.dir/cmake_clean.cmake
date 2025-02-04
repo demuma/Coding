@@ -13,8 +13,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/Simulator.dir/src/Sensor.cpp.o.d"
   "CMakeFiles/Simulator.dir/src/Utilities.cpp.o"
   "CMakeFiles/Simulator.dir/src/Utilities.cpp.o.d"
-  "CMakeFiles/Simulator.dir/src/Visualizer.cpp.o"
-  "CMakeFiles/Simulator.dir/src/Visualizer.cpp.o.d"
   "Simulator"
   "Simulator.pdb"
 )

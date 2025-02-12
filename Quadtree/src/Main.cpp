@@ -38,7 +38,7 @@ int main() {
         return -1;
     }
 
-    Quadtree quadtree(600, maxDepth);
+    Quadtree quadtree(0, 0, 500, maxDepth);
 
     sf::Clock clock;
     sf::Time timePerFrame = sf::seconds(1.f / 30.f); // 30 Hz
@@ -47,17 +47,19 @@ int main() {
     int numberAgents = 1;
 
     // Generate agents
-    for (int i = 0; i < numberAgents; ++i) {
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_real_distribution<> disPosX(0, quadtree.cellSize * 2);
-        std::uniform_real_distribution<> disPosY(0, quadtree.cellSize * 2);
+    // for (int i = 0; i < numberAgents; ++i) {
+    //     std::random_device rd;
+    //     std::mt19937 gen(rd());
+    //     std::uniform_real_distribution<> disPosX(0, quadtree.cellSize * 2);
+    //     std::uniform_real_distribution<> disPosY(0, quadtree.cellSize * 2);
 
-        Agent agent(agentTypeAttributes["Adult Cyclist"]);
-        agent.initialPosition = sf::Vector2f(disPosX(gen), disPosY(gen));
-        quadtree.positions.push_back(agent.initialPosition);
-        std::cout << "Agent " << i << " at (" << agent.initialPosition.x << ", " << agent.initialPosition.y << ")\n";
-    }
+    //     Agent agent(agentTypeAttributes["Adult Cyclist"]);
+    //     agent.initialPosition = sf::Vector2f(disPosX(gen), disPosY(gen));
+    //     quadtree.positions.push_back(agent.initialPosition);
+    //     std::cout << "Agent " << i << " at (" << agent.initialPosition.x << ", " << agent.initialPosition.y << ")\n";
+    // }
+    sf::Vector2f pos1(10, 300);
+    quadtree.positions.push_back(pos1);
 
     // quadtree.generatePositions(2);
 

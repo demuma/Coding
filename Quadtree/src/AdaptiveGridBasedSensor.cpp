@@ -16,7 +16,7 @@ AdaptiveGridBasedSensor::AdaptiveGridBasedSensor(
     : Sensor(frameRate, detectionArea, client), 
     db(client->database(databaseName)),
     collection(db[collectionName]), 
-    adaptiveGrid(std::max(detectionArea.height, detectionArea.width) / 2, maxDepth) {
+    adaptiveGrid(detectionArea.left, detectionArea.top, std::max(detectionArea.height, detectionArea.width) / 2, maxDepth) {
         this->detectionArea = detectionArea;
     }
 
@@ -25,7 +25,7 @@ AdaptiveGridBasedSensor::AdaptiveGridBasedSensor(
     sf::FloatRect detectionArea, sf::Color detectionAreaColor, int maxDepth, 
     bool showGrid)
     : Sensor(detectionArea, detectionAreaColor),
-    adaptiveGrid(std::max(detectionArea.height, detectionArea.width) / 2, maxDepth) {
+    adaptiveGrid(detectionArea.left, detectionArea.top, std::max(detectionArea.height, detectionArea.width) / 2, maxDepth) {
         this->detectionArea = detectionArea;
         this->detectionAreaColor = detectionAreaColor;
         this->showGrid = showGrid;

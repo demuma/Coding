@@ -33,13 +33,14 @@ public:
 
     // Data members
     float cellSize;
+    sf::Vector2f origin;
     int maxDepth;
     std::vector<Node*> baseNodes;               // The four base cells.
     std::unordered_map<int, Node*> nodeMap;     // Maps cell IDs to nodes.
     std::vector<sf::Vector2f> positions;        // Agent positions (or any positions)
 
     // Constructor & destructor
-    Quadtree(float cellSize, int maxDepth);
+    Quadtree(float x, float y, float cellSize, int maxDepth);
     ~Quadtree();
 
     // Tree management functions

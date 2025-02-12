@@ -1,9 +1,11 @@
-#include "Quadtree.hpp"
 #include <iostream>
 #include <algorithm>
 #include <functional>
 #include <stdexcept>
 #include <cmath>
+
+#include "Quadtree.hpp"
+#include "Logging.hpp"
 
 // ========================
 // Node Member Functions
@@ -80,10 +82,8 @@ void Quadtree::drawPositions(sf::RenderWindow& window, const std::vector<sf::Vec
     float circleSize = 4;
     sf::CircleShape circle(circleSize);
     circle.setFillColor(sf::Color::Red);
-    // int scale = window.getSize().x / cellSize;
-    int scale = 1;
     for (const sf::Vector2f& pos : positions) {
-        sf::Vector2f newPos = sf::Vector2f((pos.x * scale), (pos.y * scale));
+        sf::Vector2f newPos = sf::Vector2f(pos.x, pos.y);
         newPos -= sf::Vector2f(circleSize, circleSize);
         circle.setPosition(newPos);
         window.draw(circle);
@@ -95,16 +95,16 @@ void Quadtree::drawPositions(sf::RenderWindow& window, const std::vector<sf::Vec
 // ========================
 
 // TO-DO: Add quadtree offset to the node bounds!!
-Quadtree::Quadtree(float cellSize, int maxDepth)
-    : cellSize(cellSize), maxDepth(maxDepth)
+Quadtree::Quadtree(float x, float y, float cellSize, int maxDepth)
+    : cellSize(cellSize), maxDepth(maxDepth), origin(x, y)
 {
     // Initialize the 4 base cells using 4-bit Morton codes.
     for (int i = 0; i < 2; ++i) {
         for (int j = 0; j < 2; ++j) {
-            int baseId = 0b1100 | mortonEncode(i, j);
-            Node* n = new Node(j * cellSize, i * cellSize, cellSize, baseId, 1);
+            int baseNodeId = 0b1100 | mortonEncode(i, j);
+            Node* n = new Node(origin.x + j * cellSize, origin.y + i * cellSize, cellSize, baseNodeId, 1);
             baseNodes.push_back(n);
-            nodeMap[baseId] = n;
+            nodeMap[baseNodeId] = n;
         }
     }
 }
@@ -329,10 +329,10 @@ int Quadtree::getNearestCell(sf::Vector2f position) {
     }
     return currentNode->id;
 }
-
+// TO-DO: Don't make cell when position is outside the grid!!
 int Quadtree::makeCell(sf::Vector2f position) {
     float currentCellSize = cellSize * 2.0f; // Root cell size
-    sf::Vector2f currentCenter(currentCellSize / 2, currentCellSize / 2);
+    sf::Vector2f currentCenter(origin.x + currentCellSize / 2, origin.y + currentCellSize / 2);
     int cellID = 0b11; // Start with root cell ID (3)
 
     for (int i = 0; i < maxDepth; ++i) {
@@ -362,21 +362,35 @@ std::vector<int> Quadtree::getSplitSequence(int cellID) {
     return splitSequence;
 }
 
-std::vector<std::vector<int>> Quadtree::getSplitSequences(const std::vector<sf::Vector2f>& positionsVec) {
+std::vector<std::vector<int>> Quadtree::getSplitSequences(const std::vector<sf::Vector2f>& positions) {
     std::vector<std::vector<int>> splitSequences;
     std::unordered_map<sf::Vector2f, int, Vector2fHash> positionToCellID;
-    for (const auto& pos : positionsVec) {
-        if (positionToCellID.find(pos) == positionToCellID.end()) {
+
+    for (const auto& pos : positions) {
+        // Check if the position is within the grid bounds.
+        if (pos.x < origin.x || pos.x >= origin.x + cellSize * 2 ||
+            pos.y < origin.y || pos.y >= origin.y + cellSize * 2)
+        {
+            ERROR_MSG("Error: Position (" << pos.x << ", " << pos.y 
+                      << ") outside the grid bounds.");
+            continue;
+        }
+        
+        // Compute cell ID once for each unique position.
+        auto it = positionToCellID.find(pos);
+        if (it == positionToCellID.end()) {
             int cellID = makeCell(pos);
             positionToCellID[pos] = cellID;
+            splitSequences.push_back(getSplitSequence(cellID));
+        } else {
+            splitSequences.push_back(getSplitSequence(it->second));
         }
     }
-    for (const auto& pos : positionsVec) {
-        int cellID = positionToCellID[pos];
-        splitSequences.push_back(getSplitSequence(cellID));
-    }
+
+    // Remove duplicate sequences.
     std::sort(splitSequences.begin(), splitSequences.end());
     splitSequences.erase(std::unique(splitSequences.begin(), splitSequences.end()), splitSequences.end());
+
     return splitSequences;
 }
 
@@ -404,8 +418,8 @@ void Quadtree::generatePositions(int number) {
 void Quadtree::movePositionsRight(float x) {
     for (auto& pos : positions) {
         pos.x += x;
-        if (pos.x >= cellSize)
-            pos.x -= cellSize;
+        if (pos.x >= cellSize * 2 + origin.x)
+            pos.x -= cellSize * 2 + origin.x;
     }
 }
 

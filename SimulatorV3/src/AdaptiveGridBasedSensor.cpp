@@ -9,26 +9,34 @@
 
 // Constructor
 AdaptiveGridBasedSensor::AdaptiveGridBasedSensor(
-    float frameRate, sf::FloatRect detectionArea, float cellSize, 
-    const std::string& databaseName, const std::string& collectionName,
-    std::shared_ptr<mongocxx::client> client)
+    float frameRate, 
+    sf::FloatRect detectionArea, 
+    float cellSize, 
+    int maxDepth,
+    const std::string& databaseName, 
+    const std::string& collectionName,
+    std::shared_ptr<mongocxx::client> client
+)
 
     : Sensor(frameRate, detectionArea, client), 
-    cellSize(cellSize), 
+    cellSize(cellSize), // Half the longest side of the detection area
+    maxDepth(maxDepth),
     db(client->database(databaseName)),
     collection(db[collectionName]), 
-    currentGrid(cellSize, detectionArea.width, detectionArea.height), 
-    previousGrid(cellSize, detectionArea.width, detectionArea.height) {
+    adaptiveGrid(detectionArea.left, detectionArea.top, cellSize, maxDepth) {
         this->detectionArea = detectionArea;
     }
 
 // Alternative constructor for rendering
 AdaptiveGridBasedSensor::AdaptiveGridBasedSensor(
-    sf::FloatRect detectionArea, sf::Color detectionAreaColor, float cellSize, 
-    bool showGrid)
+    sf::FloatRect detectionArea, 
+    sf::Color detectionAreaColor, 
+    float cellSize, 
+    int maxDepth,
+    bool showGrid
+)
     : Sensor(detectionArea, detectionAreaColor), 
-    cellSize(cellSize), currentGrid(cellSize, detectionArea.width, detectionArea.height), 
-    previousGrid(cellSize, detectionArea.width, detectionArea.height) {
+    cellSize(cellSize), adaptiveGrid(detectionArea.left, detectionArea.top, cellSize, maxDepth), maxDepth(maxDepth) {
         this->detectionArea = detectionArea;
         this->detectionAreaColor = detectionAreaColor;
         this->showGrid = showGrid;
@@ -40,13 +48,16 @@ AdaptiveGridBasedSensor::~AdaptiveGridBasedSensor() {
     // Empty
     adaptiveGridData.clear();
     dataStorage.clear();
-    currentGrid.clear();
-    previousGrid.clear();
+    adaptiveGrid.reset(); // Reset instead of clear
 }
 
 // Update grid-based agent detection and output one gridData entry per frame
 void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string datetime) {
 
+    adaptiveGrid.printChildren(12);
+    adaptiveGrid.printChildren(13);
+    adaptiveGrid.printChildren(14);
+    adaptiveGrid.printChildren(15);
     // Clear data storage
     dataStorage.clear();
 
@@ -60,40 +71,40 @@ void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep,
 
         // Clear the grid data
         adaptiveGridData.clear();
-
-        // Store the previous grid data
-        previousGrid = currentGrid;
-        currentGrid.clear();
+        adaptiveGrid.agents.clear();
+        adaptiveGrid.positions.clear();
 
         // Reset boolean flag
         bool hasAgents = false;
 
         // Declare a variable to store the cell index
-        sf::Vector2i cellIndex;
+        int cellId;
 
         // Iterate through the agents
         for (Agent& agent : agents) {
-
-            // Check if the agent is within the detection area
             if (detectionArea.contains(agent.position)) {
-                
-                // Set the flag to true
+                adaptiveGrid.agents.push_back(&agent);
+                adaptiveGrid.positions.push_back(agent.position);
                 hasAgents = true;
-
-                // Get the cell index of the agent's position
-                cellIndex = getCellIndex(agent.position);
-
-                // Add the agent to the current grid
-                currentGrid.addAgent(&agent);
-
-                // Increment the count of the agent type in the cell
-                adaptiveGridData[cellIndex][agent.type]++;
             }
         }
 
-        // Clear the previous positions and reset the time since the last update
         if(hasAgents) {
 
+            // Generate split sequence
+            adaptiveGrid.splitFromPositions();
+
+            for (Agent* agentPtr : adaptiveGrid.agents) {
+                Agent& agent = *agentPtr;
+
+                // Add the agent to the adaptive grid
+                cellId = adaptiveGrid.addAgent(&agent);
+
+                // Increment the count of the agent type in the cell
+                adaptiveGridData[cellId][agent.type]++;
+            }
+
+            // Reset the time since the last update
             timeSinceLastUpdate = 0.0f;
             dataStorage.push_back({currentTime, adaptiveGridData}); // Pushing exactly one entry to dataStorage
         }
@@ -113,27 +124,22 @@ void AdaptiveGridBasedSensor::postData() {
         for (const auto& [timestamp, adaptiveGridData] : dataStorage) {
 
             // Iterate through the grid data
-            for (const auto& [cellIndex, cellData] : adaptiveGridData) {
+            for (const auto& [cellId, cellData] : adaptiveGridData) {
                 
                 // Document for the grid cell
                 bsoncxx::builder::stream::document document{}; 
                 document << "timestamp" << timestamp
                          << "sensor_id" << sensor_id
-                         << "data_type" << "grid_data"
-                         << "cell_index" // Vector2i as an array
-                            << bsoncxx::builder::stream::open_array 
-                            << cellIndex.x 
-                            << cellIndex.y
-                            << bsoncxx::builder::stream::close_array
+                         << "data_type" << "adaptive_grid_data"
+                         << "cell_id" << cellId
                          << "cell_position"
                             << bsoncxx::builder::stream::open_array
-                            << getCellPosition(cellIndex).x
-                            << getCellPosition(cellIndex).y
+                            << adaptiveGrid.getCellPosition(cellId).x
+                            << adaptiveGrid.getCellPosition(cellId).y
                             << bsoncxx::builder::stream::close_array;
             
                 // Embed agent counts as a subdocument
                 int totalAgents = 0;
-                std::vector<int> numbers = {1, 2, 3, 4, 5};
 
                 // Open an array for the agent type count
                 auto agentTypeBuilder = document << "agent_type_count" << bsoncxx::builder::stream::open_array;
@@ -204,7 +210,7 @@ void AdaptiveGridBasedSensor::postMetadata() {
 
     document << "timestamp" << timestamp
              << "sensor_id" << sensor_id
-             << "sensor_type" << "grid-based"
+             << "sensor_type" << "adaptive-grid-based"
              << "data_type" << "metadata"
              << "position" << positionDocument
              << "detection_area" << detectionAreaDocument
@@ -232,10 +238,10 @@ void AdaptiveGridBasedSensor::printData() {
     // Print grid data
     for (const auto& kvp : adaptiveGridData) { // key-value pair
 
-        const sf::Vector2i& cellIndex = kvp.first;
+        const int& cellId = kvp.first;
         const std::unordered_map<std::string, int>& cellData = kvp.second;
 
-        std::cout << "Current time: " << ss.str() << " Cell (" << cellIndex.x << ", " << cellIndex.y << "): ";
+        std::cout << "Current time: " << ss.str() << " Cell ID(" << cellId << "): ";
 
         // Going through key-value pairs in the cell data
         for (const auto& kvp : cellData) {
@@ -255,21 +261,4 @@ void AdaptiveGridBasedSensor::clearDatabase() {
 
     // Clear the collection
     collection.delete_many({});
-}
-
-// Helper function to get cell index based on position
-sf::Vector2i AdaptiveGridBasedSensor::getCellIndex(const sf::Vector2f& position) const {
-
-    int x = static_cast<int>((position.x - detectionArea.left) / cellSize);
-    int y = static_cast<int>((position.y - detectionArea.top)/ cellSize);
-
-    return sf::Vector2i(x, y);
-}
-
-sf::Vector2f AdaptiveGridBasedSensor::getCellPosition(const sf::Vector2i& cellIndex) const {
-
-    float x = (cellIndex.x * cellSize + detectionArea.left + cellSize / 2) / scale;
-    float y = (cellIndex.y * cellSize + detectionArea.top + cellSize / 2) / scale;
-
-    return sf::Vector2f(x, y);
 }

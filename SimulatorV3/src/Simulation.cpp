@@ -2,6 +2,7 @@
 #include "../include/CollisionGrid.hpp"
 #include "../include/AgentBasedSensor.hpp"
 #include "../include/GridBasedSensor.hpp"
+#include "../include/AdaptiveGridBasedSensor.hpp"
 
 // Simulation::Simulation(std::queue<std::vector<Agent>> (&buffers)[2], std::mutex &queueMutex, std::condition_variable &queueCond, std::atomic<float>& currentSimulationTimeStep, std::atomic<bool>& stop, std::atomic<int>& currentNumAgents, const YAML::Node& config, std::atomic<std::queue<std::vector<Agent>>*>& currentReadBuffer)
 Simulation::Simulation(SharedBuffer& buffer, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config)
@@ -341,15 +342,37 @@ void Simulation::initializeSensors() {
                     }
                 }
             }
+        }
 
         // Create the grid-based sensor
-        } else if (type == "grid-based") {
+        else if (type == "grid-based") {
 
             float cellSize = sensorNode["grid"]["cell_size"].as<float>();
             bool showGrid = sensorNode["grid"]["show_grid"].as<bool>();
 
             // Create the grid-based sensor and add to sensors vector
             sensors.push_back(std::make_unique<GridBasedSensor>(frameRate, detectionArea, cellSize, databaseName, collectionName, client));
+            sensors.back()->scale = scale;
+            sensors.back()->timestamp = generateISOTimestamp(simulationTime, datetime);
+
+            // Clear the database if specified
+            if(clearDatabase) {
+                sensors.back()->clearDatabase();
+            }
+
+            // Post metadata to the database
+            sensors.back()->postMetadata();
+        }
+
+        // Create the grid-based sensor
+        else if (type == "adaptive-grid-based") {
+
+            float cellSize = sensorNode["grid"]["cell_size"].as<float>();
+            bool showGrid = sensorNode["grid"]["show_grid"].as<bool>();
+            int maxDepth = sensorNode["grid"]["max_depth"].as<int>();
+
+            // Create the grid-based sensor and add to sensors vector
+            sensors.push_back(std::make_unique<AdaptiveGridBasedSensor>(frameRate, detectionArea, cellSize, maxDepth, databaseName, collectionName, client));
             sensors.back()->scale = scale;
             sensors.back()->timestamp = generateISOTimestamp(simulationTime, datetime);
 

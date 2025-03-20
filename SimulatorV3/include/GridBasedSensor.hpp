@@ -18,17 +18,21 @@ public:
 
     // Base constructor for simulation
     GridBasedSensor(
-        float frameRate, sf::FloatRect detectionArea, 
-        float cellSize, const std::string& databaseName, 
+        float frameRate, 
+        sf::FloatRect detectionArea, 
+        float cellSize, 
+        const std::string& databaseName, 
         const std::string& collectionName, 
-        std::shared_ptr<mongocxx::client> client);
+        std::shared_ptr<mongocxx::client> client
+    );
 
     // Alternative constructor for rendering
     GridBasedSensor(
         sf::FloatRect detectionArea, 
         sf::Color detectionAreaColor, 
         float cellSize, 
-        bool showGrid);
+        bool showGrid
+    );
 
     ~GridBasedSensor();
     float cellSize;

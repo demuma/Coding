@@ -59,6 +59,7 @@ public:
     void resume(const std::vector<Agent>& agents);
     void resetCollisionState();
     void setBufferZoneSize();
+    sf::FloatRect getBufferZoneBounds() const;
 
     // Agent features
     std::string uuid;

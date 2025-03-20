@@ -38,6 +38,16 @@ void Agent::calculateVelocity(sf::Vector2f waypoint) {
     velocity = heading * velocityMagnitude;
 }
 
+// Get the bounds of the agent's buffer zone
+sf::FloatRect Agent::getBufferZoneBounds() const {
+    return sf::FloatRect(
+        position.x - bufferZoneRadius,
+        position.y - bufferZoneRadius,
+        2 * bufferZoneRadius,
+        2 * bufferZoneRadius
+    );
+}
+
 // Update the agent's velocity based on Perlin noise
 void Agent::updateVelocity(float deltaTime, sf::Time simulationTime) {
     

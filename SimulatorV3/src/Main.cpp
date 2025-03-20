@@ -26,7 +26,7 @@ int main() {
     }
 
     // Buffer for shared data
-    SharedBuffer buffer;
+    SharedBuffer agentBuffer;
 
     // Load global configuration data
     float timeStep = config["simulation"]["time_step"].as<float>();
@@ -35,12 +35,12 @@ int main() {
     // Shared variabes
     std::atomic<float> currentSimulationTimeStep{timeStep};
 
-    Simulation simulation(buffer, currentSimulationTimeStep, config);
+    Simulation simulation(agentBuffer, currentSimulationTimeStep, config);
     std::thread simulationThread(&Simulation::run, &simulation);
 
     // Run the renderer if not in headless mode
     if (enableRendering) {
-        Renderer renderer(buffer, currentSimulationTimeStep, config);
+        Renderer renderer(agentBuffer, currentSimulationTimeStep, config);
         renderer.run();
     }
 

@@ -345,6 +345,30 @@ src/PerlinNoise.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.s
 .PHONY : src/PerlinNoise.cpp.s
 
+src/Quadtree.o: src/Quadtree.cpp.o
+.PHONY : src/Quadtree.o
+
+# target to build an object file
+src/Quadtree.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Quadtree.cpp.o
+.PHONY : src/Quadtree.cpp.o
+
+src/Quadtree.i: src/Quadtree.cpp.i
+.PHONY : src/Quadtree.i
+
+# target to preprocess a source file
+src/Quadtree.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Quadtree.cpp.i
+.PHONY : src/Quadtree.cpp.i
+
+src/Quadtree.s: src/Quadtree.cpp.s
+.PHONY : src/Quadtree.s
+
+# target to generate assembly for a file
+src/Quadtree.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Quadtree.cpp.s
+.PHONY : src/Quadtree.cpp.s
+
 src/Renderer.o: src/Renderer.cpp.o
 .PHONY : src/Renderer.o
 
@@ -525,6 +549,9 @@ help:
 	@echo "... src/PerlinNoise.o"
 	@echo "... src/PerlinNoise.i"
 	@echo "... src/PerlinNoise.s"
+	@echo "... src/Quadtree.o"
+	@echo "... src/Quadtree.i"
+	@echo "... src/Quadtree.s"
 	@echo "... src/Renderer.o"
 	@echo "... src/Renderer.i"
 	@echo "... src/Renderer.s"

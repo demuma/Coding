@@ -195,10 +195,24 @@ CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.s"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/PerlinNoise.cpp" -o CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.s
 
+CMakeFiles/Simulator.dir/src/Quadtree.cpp.o: CMakeFiles/Simulator.dir/flags.make
+CMakeFiles/Simulator.dir/src/Quadtree.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/Quadtree.cpp
+CMakeFiles/Simulator.dir/src/Quadtree.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/Simulator.dir/src/Quadtree.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/Quadtree.cpp.o -MF CMakeFiles/Simulator.dir/src/Quadtree.cpp.o.d -o CMakeFiles/Simulator.dir/src/Quadtree.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/Quadtree.cpp"
+
+CMakeFiles/Simulator.dir/src/Quadtree.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/Simulator.dir/src/Quadtree.cpp.i"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/Quadtree.cpp" > CMakeFiles/Simulator.dir/src/Quadtree.cpp.i
+
+CMakeFiles/Simulator.dir/src/Quadtree.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/Simulator.dir/src/Quadtree.cpp.s"
+	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/Quadtree.cpp" -o CMakeFiles/Simulator.dir/src/Quadtree.cpp.s
+
 CMakeFiles/Simulator.dir/src/Renderer.cpp.o: CMakeFiles/Simulator.dir/flags.make
 CMakeFiles/Simulator.dir/src/Renderer.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/Renderer.cpp
 CMakeFiles/Simulator.dir/src/Renderer.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/Simulator.dir/src/Renderer.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/Simulator.dir/src/Renderer.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/Renderer.cpp.o -MF CMakeFiles/Simulator.dir/src/Renderer.cpp.o.d -o CMakeFiles/Simulator.dir/src/Renderer.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/Renderer.cpp"
 
 CMakeFiles/Simulator.dir/src/Renderer.cpp.i: cmake_force
@@ -212,7 +226,7 @@ CMakeFiles/Simulator.dir/src/Renderer.cpp.s: cmake_force
 CMakeFiles/Simulator.dir/src/Sensor.cpp.o: CMakeFiles/Simulator.dir/flags.make
 CMakeFiles/Simulator.dir/src/Sensor.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/Sensor.cpp
 CMakeFiles/Simulator.dir/src/Sensor.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/Simulator.dir/src/Sensor.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/Simulator.dir/src/Sensor.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/Sensor.cpp.o -MF CMakeFiles/Simulator.dir/src/Sensor.cpp.o.d -o CMakeFiles/Simulator.dir/src/Sensor.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/Sensor.cpp"
 
 CMakeFiles/Simulator.dir/src/Sensor.cpp.i: cmake_force
@@ -226,7 +240,7 @@ CMakeFiles/Simulator.dir/src/Sensor.cpp.s: cmake_force
 CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o: CMakeFiles/Simulator.dir/flags.make
 CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/SharedBuffer.cpp
 CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o -MF CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o.d -o CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/SharedBuffer.cpp"
 
 CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.i: cmake_force
@@ -240,7 +254,7 @@ CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.s: cmake_force
 CMakeFiles/Simulator.dir/src/Simulation.cpp.o: CMakeFiles/Simulator.dir/flags.make
 CMakeFiles/Simulator.dir/src/Simulation.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/Simulation.cpp
 CMakeFiles/Simulator.dir/src/Simulation.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/Simulator.dir/src/Simulation.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/Simulator.dir/src/Simulation.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/Simulation.cpp.o -MF CMakeFiles/Simulator.dir/src/Simulation.cpp.o.d -o CMakeFiles/Simulator.dir/src/Simulation.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/Simulation.cpp"
 
 CMakeFiles/Simulator.dir/src/Simulation.cpp.i: cmake_force
@@ -254,7 +268,7 @@ CMakeFiles/Simulator.dir/src/Simulation.cpp.s: cmake_force
 CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o: CMakeFiles/Simulator.dir/flags.make
 CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/ThreadPool.cpp
 CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o -MF CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o.d -o CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/ThreadPool.cpp"
 
 CMakeFiles/Simulator.dir/src/ThreadPool.cpp.i: cmake_force
@@ -268,7 +282,7 @@ CMakeFiles/Simulator.dir/src/ThreadPool.cpp.s: cmake_force
 CMakeFiles/Simulator.dir/src/Utilities.cpp.o: CMakeFiles/Simulator.dir/flags.make
 CMakeFiles/Simulator.dir/src/Utilities.cpp.o: /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/Utilities.cpp
 CMakeFiles/Simulator.dir/src/Utilities.cpp.o: CMakeFiles/Simulator.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/Simulator.dir/src/Utilities.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/Simulator.dir/src/Utilities.cpp.o"
 	/Library/Developer/CommandLineTools/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Simulator.dir/src/Utilities.cpp.o -MF CMakeFiles/Simulator.dir/src/Utilities.cpp.o.d -o CMakeFiles/Simulator.dir/src/Utilities.cpp.o -c "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/Utilities.cpp"
 
 CMakeFiles/Simulator.dir/src/Utilities.cpp.i: cmake_force
@@ -290,6 +304,7 @@ Simulator_OBJECTS = \
 "CMakeFiles/Simulator.dir/src/Main.cpp.o" \
 "CMakeFiles/Simulator.dir/src/Obstacle.cpp.o" \
 "CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o" \
+"CMakeFiles/Simulator.dir/src/Quadtree.cpp.o" \
 "CMakeFiles/Simulator.dir/src/Renderer.cpp.o" \
 "CMakeFiles/Simulator.dir/src/Sensor.cpp.o" \
 "CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o" \
@@ -309,6 +324,7 @@ Simulator: CMakeFiles/Simulator.dir/src/GridBasedSensor.cpp.o
 Simulator: CMakeFiles/Simulator.dir/src/Main.cpp.o
 Simulator: CMakeFiles/Simulator.dir/src/Obstacle.cpp.o
 Simulator: CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o
+Simulator: CMakeFiles/Simulator.dir/src/Quadtree.cpp.o
 Simulator: CMakeFiles/Simulator.dir/src/Renderer.cpp.o
 Simulator: CMakeFiles/Simulator.dir/src/Sensor.cpp.o
 Simulator: CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o
@@ -323,7 +339,7 @@ Simulator: /usr/local/lib/libyaml-cpp.0.8.0.dylib
 Simulator: /usr/local/lib/libmongocxx.3.10.1.dylib
 Simulator: /usr/local/lib/libbsoncxx.3.10.1.dylib
 Simulator: CMakeFiles/Simulator.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_16) "Linking CXX executable Simulator"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_17) "Linking CXX executable Simulator"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/Simulator.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

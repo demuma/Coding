@@ -32,6 +32,6 @@ target_compile_options(Simulator PRIVATE -O3)
 
 # Define DEBUG macro when building in debug mode
 # target_compile_definitions(Simulator PRIVATE DEBUG)
-target_compile_definitions(Simulator PRIVATE STATS)
-target_compile_definitions(Simulator PRIVATE ERROR)
+# target_compile_definitions(Simulator PRIVATE STATS)
+# target_compile_definitions(Simulator PRIVATE ERROR)
 # target_compile_definitions(Simulator PRIVATE TIMING)

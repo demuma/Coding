@@ -9,9 +9,13 @@
 
 // Constructor
 GridBasedSensor::GridBasedSensor(
-    float frameRate, sf::FloatRect detectionArea, float cellSize, 
-    const std::string& databaseName, const std::string& collectionName,
-    std::shared_ptr<mongocxx::client> client)
+    float frameRate, 
+    sf::FloatRect detectionArea, 
+    float cellSize, 
+    const std::string& databaseName, 
+    const std::string& collectionName,
+    std::shared_ptr<mongocxx::client> client
+)
 
     : Sensor(frameRate, detectionArea, client), 
     cellSize(cellSize), 
@@ -24,8 +28,11 @@ GridBasedSensor::GridBasedSensor(
 
 // Alternative constructor for rendering
 GridBasedSensor::GridBasedSensor(
-    sf::FloatRect detectionArea, sf::Color detectionAreaColor, float cellSize, 
-    bool showGrid)
+    sf::FloatRect detectionArea, 
+    sf::Color detectionAreaColor, 
+    float cellSize, 
+    bool showGrid
+)
     : Sensor(detectionArea, detectionAreaColor), 
     cellSize(cellSize), currentGrid(cellSize, detectionArea.width, detectionArea.height), 
     previousGrid(cellSize, detectionArea.width, detectionArea.height) {

@@ -24,6 +24,7 @@
 #include "Logging.hpp"
 #include "CollisionGrid.hpp"
 #include "Sensor.hpp"
+#include "Quadtree.hpp"
 
 /**************************************/
 /********** SIMULATION CLASS **********/
@@ -41,6 +42,7 @@ public:
     void loadAgentsAttributes();
     void loadObstacles();
     void initializeGrid();
+    void initializeAdaptiveGrid();
     void initializeDatabase();
     void initializeAgents();
     void initializeSensors();

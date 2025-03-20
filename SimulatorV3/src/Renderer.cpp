@@ -1,6 +1,7 @@
 #include "../include/Renderer.hpp"
 #include "../include/GridBasedSensor.hpp"
 #include "../include/AgentBasedSensor.hpp"
+#include "../include/AdaptiveGridBasedSensor.hpp"
 
 // Renderer member functions
 Renderer::Renderer(SharedBuffer& buffer, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config)
@@ -181,6 +182,15 @@ void Renderer::initializeSensors() {
 
             // Create the grid-based sensor and add to sensors vector
             sensors.push_back(std::make_unique<GridBasedSensor>(detectionArea, colorAlpha, cellSize, showSensorGrid));
+            sensors.back()->scale = scale;
+        } else if (type == "adaptive-grid-based") {
+
+            float cellSize = sensorNode["grid"]["cell_size"].as<float>();
+            bool showSensorGrid = sensorNode["grid"]["show_grid"].as<bool>();
+            int maxDepth = sensorNode["grid"]["max_depth"].as<int>();
+
+            // Create the grid-based sensor and add to sensors vector
+            sensors.push_back(std::make_unique<AdaptiveGridBasedSensor>(detectionArea, colorAlpha, cellSize, maxDepth, showSensorGrid));
             sensors.back()->scale = scale;
         }
     }
@@ -762,8 +772,10 @@ void Renderer::render() {  // Input: meters, Output: pixels
 
                         // Draw outer rectangle
                         sf::RectangleShape gridBoundaries(sf::Vector2f(gridBasedSensor->detectionArea.width * scale, gridBasedSensor->detectionArea.height * scale));
-                        gridBoundaries.setPosition(gridBasedSensor->detectionArea.left + offset.x, gridBasedSensor->detectionArea.top + offset.y); // Set position in pixels
+                        gridBoundaries.setPosition(gridBasedSensor->detectionArea.left * scale + offset.x, gridBasedSensor->detectionArea.top * scale + offset.y); // Set position in pixels
                         gridBoundaries.setFillColor(sf::Color::Transparent);
+                        gridBoundaries.setOutlineColor(sf::Color::Black);
+                        gridBoundaries.setOutlineThickness(1);
                         window.draw(gridBoundaries);
 
                         // Draw vertical lines
@@ -784,7 +796,30 @@ void Renderer::render() {  // Input: meters, Output: pixels
                             window.draw(line, 2, sf::Lines);
                         }
                     }
-                }   
+                }
+
+                if(auto adaptiveGridBasedSensor = dynamic_cast<AdaptiveGridBasedSensor*>(sensor.get())) {
+
+                    // Draw the grid if enabled
+                    if(adaptiveGridBasedSensor->showGrid && showSensors) {
+
+                        // Draw outer rectangle
+                        // sf::RectangleShape gridBoundaries(sf::Vector2f(adaptiveGridBasedSensor->detectionArea.width * scale, adaptiveGridBasedSensor->detectionArea.height * scale));
+                        // gridBoundaries.setPosition(adaptiveGridBasedSensor->detectionArea.left * scale + offset.x, adaptiveGridBasedSensor->detectionArea.top * scale + offset.y); // Set position in pixels
+                        // gridBoundaries.setFillColor(sf::Color::Transparent);
+                        // gridBoundaries.setOutlineColor(sf::Color::Black);
+                        // gridBoundaries.setOutlineThickness(1);
+                        // window.draw(gridBoundaries);
+
+                        // Draw the adaptive grid with scaling and offset
+                        adaptiveGridBasedSensor->adaptiveGrid.draw(window, font, scale, offset);
+                        adaptiveGridBasedSensor->adaptiveGrid.printChildren(12);
+                        adaptiveGridBasedSensor->adaptiveGrid.printChildren(13);
+                        adaptiveGridBasedSensor->adaptiveGrid.printChildren(14);
+                        adaptiveGridBasedSensor->adaptiveGrid.printChildren(15);
+
+                    }
+                }
             }
         }
 
@@ -943,11 +978,11 @@ void Renderer::render() {  // Input: meters, Output: pixels
                 // Dereference the sensor pointer
                 const Sensor& sensor = *sensorPtr;
 
-                // Draw the detection area for each sensor
-                sf::RectangleShape detectionAreaShape(sf::Vector2f(sensor.detectionArea.width * scale, sensor.detectionArea.height * scale));
-                detectionAreaShape.setPosition(sensor.detectionArea.left * scale + offset.x, sensor.detectionArea.top * scale + offset.y);
-                detectionAreaShape.setFillColor(sensor.detectionAreaColor); // Set the color with alpha
-                window.draw(detectionAreaShape);
+                // // Draw the detection area for each sensor
+                // sf::RectangleShape detectionAreaShape(sf::Vector2f(sensor.detectionArea.width * scale, sensor.detectionArea.height * scale));
+                // detectionAreaShape.setPosition(sensor.detectionArea.left * scale + offset.x, sensor.detectionArea.top * scale + offset.y);
+                // detectionAreaShape.setFillColor(sensor.detectionAreaColor); // Set the color with alpha
+                // window.draw(detectionAreaShape);
             }
         }
 
@@ -1020,7 +1055,7 @@ void Renderer::appendAgentBodies(sf::VertexArray& quads, const Agent& agent) {
     float maxRadius = std::ceil(agent.bodyRadius);
     float divX, divY;
 
-    // Determine the division factors for the agent body based on its type
+    // Determine the division factors for the agent body based on its type // TO-DO: all types?
     if(word2 == "Cyclist") {
         divX = 1;
         divY = 2;

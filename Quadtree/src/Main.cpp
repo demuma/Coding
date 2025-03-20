@@ -61,6 +61,8 @@ int main() {
     sf::Vector2f pos1(10, 300);
     quadtree.positions.push_back(pos1);
 
+    bool paused = false;
+
     // quadtree.generatePositions(2);
 
     try {
@@ -79,9 +81,12 @@ int main() {
                         if (event.key.code == sf::Keyboard::Escape) {
                             window.close();
                         } 
-                        if (event.key.code == sf::Keyboard::R) {
+                        else if (event.key.code == sf::Keyboard::R) {
                             quadtree.clear();
                             quadtree.positions.clear();
+                        }
+                        else if (event.key.code == sf::Keyboard::Space) {
+                            paused = !paused;
                         }
                     }
                     if (event.type == sf::Event::MouseButtonPressed) {
@@ -98,15 +103,18 @@ int main() {
 
                     }
                 }
-                // Clear the existing quadtree
-                // quadtree.clear();
-                quadtree.reset();
 
-                // Move positions
-                quadtree.movePositionsRight(agentSpeed);
+                if (!paused) {
+                    // Clear the existing quadtree
+                    // quadtree.clear();
+                    quadtree.reset();
 
-                // Split the quadtree based on new positions
-                quadtree.splitFromPositions();
+                    // Move positions
+                    quadtree.movePositionsRight(agentSpeed);
+
+                    // Split the quadtree based on new positions
+                    quadtree.splitFromPositions();
+                }
             }
 
             window.clear(sf::Color::White);

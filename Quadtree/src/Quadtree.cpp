@@ -4,8 +4,8 @@
 #include <stdexcept>
 #include <cmath>
 
-#include "Quadtree.hpp"
-#include "Logging.hpp"
+#include "../include/Quadtree.hpp"
+#include "../include/Logging.hpp"
 
 // ========================
 // Node Member Functions

@@ -145,7 +145,8 @@
     "semaphore": "cpp",
     "codecvt": "cpp",
     "fstream": "cpp",
-    "numbers": "cpp"
+    "numbers": "cpp",
+    "forward_list": "cpp"
   },
   "C_Cpp.default.compilerPath": "",
   "C_Cpp.default.includePath": [

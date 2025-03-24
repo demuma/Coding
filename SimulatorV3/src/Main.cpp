@@ -28,6 +28,8 @@ int main() {
     // Shared buffers for agent data
     SharedBuffer<std::vector<Agent>> agentBuffer;
 
+    // Shared buffers for sensor data
+
     // Load global configuration data
     float timeStep = config["simulation"]["time_step"].as<float>();
     bool enableRendering = config["renderer"]["show_renderer"].as<bool>();

@@ -69,23 +69,23 @@ void AgentBasedSensor::captureAgentData(std::vector<Agent>& agents) {
 
             // Prepare SensorData object for the agent
             AgentBasedSensorData agentData;
-            agentData.sensor_id = sensor_id;
-            agentData.agent_id = agent.uuid;
+            agentData.sensorId = sensorId;
+            agentData.agentId = agent.agentId;
             agentData.timestamp = agent.timestamp; // Use the agent timestamp
             agentData.type = agent.type;
             agentData.position = agent.position;
 
             // Estimate and store the velocity of the agent TODO: Only save with velocity
-            if (previousPositions.find(agent.uuid) != previousPositions.end()) {
-                sf::Vector2f prevPos = previousPositions[agent.uuid];
-                agentData.estimatedVelocity = (agent.position - previousPositions[agent.uuid]) * frameRate;
+            if (previousPositions.find(agent.agentId) != previousPositions.end()) {
+                sf::Vector2f prevPos = previousPositions[agent.agentId];
+                agentData.estimatedVelocity = (agent.position - previousPositions[agent.agentId]) * frameRate;
             }
 
             // Store the agent data
             dataStorage.push_back(agentData);
 
             // Store the current position of a specific agent using its UUID 
-            currentPositions[agent.uuid] = agent.position;
+            currentPositions[agent.agentId] = agent.position;
         }
     }
 }
@@ -108,9 +108,9 @@ void AgentBasedSensor::postData() {
 
             // Append the fields to the document
             document << "timestamp" << agentData.timestamp
-                     << "sensor_id" << agentData.sensor_id
+                     << "sensor_id" << agentData.sensorId
                      << "data_type" << "agent_data"
-                     << "agent_id" << agentData.agent_id
+                     << "agent_id" << agentData.agentId
                      << "type" << agentData.type
                      << "position" 
                         << bsoncxx::builder::stream::open_array
@@ -150,7 +150,7 @@ void AgentBasedSensor::postMetadata() {
 
     // Append the metadata fields to the document
     document << "timestamp" << timestamp
-             << "sensor_id" << sensor_id
+             << "sensor_id" << sensorId
              << "sensor_type" << "agent-based"
              << "data_type" << "metadata"             
              << "position" << positionDocument
@@ -174,8 +174,8 @@ void AgentBasedSensor::printData() {
     for (const AgentBasedSensorData& data : dataStorage) {
 
         std::cout << "  Timestamp: " << data.timestamp << std::endl;
-        std::cout << "  Sensor ID: " << data.sensor_id << std::endl;
-        std::cout << "  Agent ID: " << data.agent_id << std::endl;
+        std::cout << "  Sensor ID: " << data.sensorId << std::endl;
+        std::cout << "  Agent ID: " << data.agentId << std::endl;
         std::cout << "  Agent Type: " << data.type << std::endl;
         std::cout << "  Position: (" << data.position.x << ", " << data.position.y << ")" << std::endl;
         std::cout << "  Estimated Velocity: (" << data.estimatedVelocity.x << ", " << data.estimatedVelocity.y << ")" << std::endl;

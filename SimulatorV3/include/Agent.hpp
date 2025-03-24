@@ -62,8 +62,8 @@ public:
     sf::FloatRect getBufferZoneBounds() const;
 
     // Agent features
-    std::string uuid;
-    std::string sensorID;
+    std::string agentId;
+    std::string sensorId;
     std::string type;
     sf::Color color;
     sf::Color initialColor;

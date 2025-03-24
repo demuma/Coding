@@ -129,7 +129,7 @@ void AdaptiveGridBasedSensor::postData() {
                 // Document for the grid cell
                 bsoncxx::builder::stream::document document{}; 
                 document << "timestamp" << timestamp
-                         << "sensor_id" << sensor_id
+                         << "sensor_id" << sensorId
                          << "data_type" << "adaptive_grid_data"
                          << "cell_id" << cellId
                          << "cell_position"
@@ -209,7 +209,7 @@ void AdaptiveGridBasedSensor::postMetadata() {
                           << "height" << detectionArea.height;
 
     document << "timestamp" << timestamp
-             << "sensor_id" << sensor_id
+             << "sensor_id" << sensorId
              << "sensor_type" << "adaptive-grid-based"
              << "data_type" << "metadata"
              << "position" << positionDocument

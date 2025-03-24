@@ -125,7 +125,7 @@ void GridBasedSensor::postData() {
                 // Document for the grid cell
                 bsoncxx::builder::stream::document document{}; 
                 document << "timestamp" << timestamp
-                         << "sensor_id" << sensor_id
+                         << "sensor_id" << sensorId
                          << "data_type" << "grid_data"
                          << "cell_index" // Vector2i as an array
                             << bsoncxx::builder::stream::open_array 
@@ -210,7 +210,7 @@ void GridBasedSensor::postMetadata() {
                           << "height" << detectionArea.height;
 
     document << "timestamp" << timestamp
-             << "sensor_id" << sensor_id
+             << "sensor_id" << sensorId
              << "sensor_type" << "grid-based"
              << "data_type" << "metadata"
              << "position" << positionDocument

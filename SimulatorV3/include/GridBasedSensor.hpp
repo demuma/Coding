@@ -10,7 +10,7 @@ public:
     struct GridBasedSensorData {
 
         // Sensor data structure
-        std::string sensor_id;
+        std::string sensorId;
         std::string timestamp;
         sf::Vector2i cellIndex;
         int count;

@@ -8,8 +8,8 @@ public:
     struct AgentBasedSensorData {
 
         // Sensor data structure
-        std::string sensor_id;
-        std::string agent_id;
+        std::string sensorId;
+        std::string agentId;
         std::string timestamp;
         std::string type;
         sf::Vector2f position;

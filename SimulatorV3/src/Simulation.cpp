@@ -155,8 +155,8 @@ void Simulation::initializeAgents() {
 
             Agent agent(agentTypeAttributes["Adult Cyclist"]);
 
-            agent.uuid = generateUUID();
-            agent.sensorID = "0";
+            agent.agentId = generateUUID();
+            agent.sensorId = "0";
             agent.type = "Adult Cyclist";
             agent.color = stringToColor(agent.attributes.color);
             agent.priority = agent.attributes.priority;
@@ -217,8 +217,8 @@ void Simulation::initializeAgents() {
                 
                 Agent agent(agentType.second); // Initialize agent with attributes: map(type as string, AgentTypeAttributes)
                 
-                agent.uuid = generateUUID();
-                agent.sensorID = "0";
+                agent.agentId = generateUUID();
+                agent.sensorId = "0";
                 agent.type = agentType.first;
                 agent.color = stringToColor(agentType.second.color);
                 agent.priority = agentType.second.priority;
@@ -338,7 +338,7 @@ void Simulation::initializeSensors() {
 
                     // Check if cast succeeded
                     if (agentBasedSensor != nullptr) { 
-                        agentBasedSensor->previousPositions[agent.uuid] = agent.position;
+                        agentBasedSensor->previousPositions[agent.agentId] = agent.position;
                     }
                 }
             }
@@ -561,7 +561,7 @@ void Simulation::postData(const std::vector<Agent>& agents) {
             // Append the agent data to the document
             document << "timestamp" << agent.timestamp
                      << "data_type" << "agent_data"
-                     << "agent_id" << agent.uuid
+                     << "agent_id" << agent.agentId
                      << "type" << agent.type
                      << "position" 
                         << bsoncxx::builder::stream::open_array

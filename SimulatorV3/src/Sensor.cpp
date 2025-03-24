@@ -12,7 +12,7 @@
 Sensor::Sensor(
     float frameRate, sf::FloatRect detectionArea, std::shared_ptr<mongocxx::client> client)
     : frameRate(frameRate), timeSinceLastUpdate(0.0f), client(std::move(client)), 
-    sensor_id(generateUUID()) {}
+    sensorId(generateUUID()) {}
 
 // Base Sensor constructor for rendering
 Sensor::Sensor(

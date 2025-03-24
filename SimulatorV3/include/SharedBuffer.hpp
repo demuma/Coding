@@ -14,15 +14,27 @@
 /********** SHARED BUFFER CLASS **********/
 /*****************************************/
 
+/*
+
+Shared buffer class for inter-thread communication
+
+Template class for different types: 
+- agent data
+- adaptive grid data using a quadtree structure
+
+*/
+
+
+template<typename T>
 class SharedBuffer {
 public:
     SharedBuffer();
-    void write(const std::vector<Agent>& frame);
-    std::vector<Agent> read();
+    void write(const T& frame);
+    T read();
     void swap();
     void end();
-    std::atomic<std::queue<std::vector<Agent>>*> currentReadBuffer;
-    std::atomic<std::queue<std::vector<Agent>>*> currentWriteBuffer;
+    std::atomic<std::queue<T>*> currentReadBuffer;
+    std::atomic<std::queue<T>*> currentWriteBuffer;
     std::atomic<int> writeBufferIndex;
     std::atomic<int> readBufferIndex;
     std::atomic<size_t> currentReadFrameIndex;
@@ -30,9 +42,11 @@ public:
     std::atomic<bool> stop = false;
 
 private:
-    std::queue<std::vector<Agent>> buffers[2];
+    std::queue<T> buffers[2];
     std::mutex queueMutex;
     std::condition_variable queueCond;
-    std::vector<Agent> currentFrame;
+    T currentFrame;
     std::atomic<bool> finished = false;
 };
+
+#include "SharedBuffer.tpp"

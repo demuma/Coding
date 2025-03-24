@@ -417,30 +417,6 @@ src/Sensor.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Sensor.cpp.s
 .PHONY : src/Sensor.cpp.s
 
-src/SharedBuffer.o: src/SharedBuffer.cpp.o
-.PHONY : src/SharedBuffer.o
-
-# target to build an object file
-src/SharedBuffer.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o
-.PHONY : src/SharedBuffer.cpp.o
-
-src/SharedBuffer.i: src/SharedBuffer.cpp.i
-.PHONY : src/SharedBuffer.i
-
-# target to preprocess a source file
-src/SharedBuffer.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.i
-.PHONY : src/SharedBuffer.cpp.i
-
-src/SharedBuffer.s: src/SharedBuffer.cpp.s
-.PHONY : src/SharedBuffer.s
-
-# target to generate assembly for a file
-src/SharedBuffer.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.s
-.PHONY : src/SharedBuffer.cpp.s
-
 src/Simulation.o: src/Simulation.cpp.o
 .PHONY : src/Simulation.o
 
@@ -558,9 +534,6 @@ help:
 	@echo "... src/Sensor.o"
 	@echo "... src/Sensor.i"
 	@echo "... src/Sensor.s"
-	@echo "... src/SharedBuffer.o"
-	@echo "... src/SharedBuffer.i"
-	@echo "... src/SharedBuffer.s"
 	@echo "... src/Simulation.o"
 	@echo "... src/Simulation.i"
 	@echo "... src/Simulation.s"

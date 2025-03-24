@@ -4,7 +4,7 @@
 #include "../include/AdaptiveGridBasedSensor.hpp"
 
 // Renderer member functions
-Renderer::Renderer(SharedBuffer& buffer, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config)
+Renderer::Renderer(SharedBuffer<std::vector<Agent>>& buffer, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config)
 :   buffer(buffer), currentSimulationTimeStep(currentSimulationTimeStep), config(config), // Reserve VRAM for the vertex arrays depending on the number of agents
     bufferZonesVertexArray(sf::PrimitiveType::Points), 
     agentBodyVertexArray(sf::PrimitiveType::Quads, 4), 

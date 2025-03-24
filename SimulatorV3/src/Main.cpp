@@ -16,7 +16,7 @@
 // Main function
 int main() {
 
-    // Configuration Loading
+    // Loading configuration file
     YAML::Node config;
     try {
         config = YAML::LoadFile("config.yaml");
@@ -25,8 +25,8 @@ int main() {
         return 1;
     }
 
-    // Buffer for shared data
-    SharedBuffer agentBuffer;
+    // Shared buffers for agent data
+    SharedBuffer<std::vector<Agent>> agentBuffer;
 
     // Load global configuration data
     float timeStep = config["simulation"]["time_step"].as<float>();

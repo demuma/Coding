@@ -201,7 +201,7 @@ sensors:
       color: green
       alpha: 0.1
     grid:
-      cell_size: 30 # in meters
+      cell_size: 30 # in meters // TO-DO: remove and use max(width, height) / 2
       show_grid: true
       max_depth: 2
     database:

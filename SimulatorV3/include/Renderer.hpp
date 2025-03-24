@@ -23,7 +23,7 @@
 // Renderer class
 class Renderer {
 public:
-    Renderer(SharedBuffer& buffer, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config);
+    Renderer(SharedBuffer<std::vector<Agent>>& buffer, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config);
     void run();
     void loadConfiguration();
     void loadAgentsAttributes();
@@ -123,7 +123,7 @@ private:
     int frameEmptyCount = 0;
 
     // Shared buffer
-    SharedBuffer& buffer;
+    SharedBuffer<std::vector<Agent>>& buffer;
 
     // Sensors
     std::vector<std::unique_ptr<Sensor>> sensors;

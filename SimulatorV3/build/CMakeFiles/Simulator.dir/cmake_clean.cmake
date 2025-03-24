@@ -23,8 +23,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/Simulator.dir/src/Renderer.cpp.o.d"
   "CMakeFiles/Simulator.dir/src/Sensor.cpp.o"
   "CMakeFiles/Simulator.dir/src/Sensor.cpp.o.d"
-  "CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o"
-  "CMakeFiles/Simulator.dir/src/SharedBuffer.cpp.o.d"
   "CMakeFiles/Simulator.dir/src/Simulation.cpp.o"
   "CMakeFiles/Simulator.dir/src/Simulation.cpp.o.d"
   "CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o"

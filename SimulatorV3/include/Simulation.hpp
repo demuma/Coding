@@ -34,7 +34,7 @@
 class Simulation {
 public:
     // Simulation(std::queue<std::vector<Agent>> (&buffer)[2], std::mutex &queueMutex, std::condition_variable &queueCond, std::atomic<float>& currentSimulationTimeStep, std::atomic<bool>& stop, std::atomic<int>& currentNumAgents, const YAML::Node& config, std::atomic<std::queue<std::vector<Agent>>*>& currentReadBuffer);
-    Simulation(SharedBuffer& buffer, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config);
+    Simulation(SharedBuffer<std::vector<Agent>>& buffer, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config);
     void run();
     void update();
     float getCurrentFrameRate();
@@ -78,7 +78,7 @@ private:
     std::map<std::string, Agent::AgentTypeAttributes> agentTypeAttributes;
 
     // Shared buffer reference
-    SharedBuffer& buffer;
+    SharedBuffer<std::vector<Agent>>& buffer;
 
     // Obstacles
     std::vector<Obstacle> obstacles;

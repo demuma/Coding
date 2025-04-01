@@ -188,7 +188,7 @@ void Visualizer::getData() {
     mongocxx::pipeline pipeline;
 
     // Filter out metadata entries
-    pipeline.match(make_document(kvp("data_type", "grid_data")));
+    pipeline.match(make_document(kvp("data_type", "grid data")));
 
     // Group by timestamp and collect grid cells in an array
     pipeline.group(make_document(

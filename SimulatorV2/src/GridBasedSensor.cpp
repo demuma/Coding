@@ -122,7 +122,7 @@ void GridBasedSensor::postData() {
                 bsoncxx::builder::stream::document document{}; 
                 document << "timestamp" << timestamp
                          << "sensor_id" << sensor_id
-                         << "data_type" << "grid_data"
+                         << "data_type" << "grid data"
                          << "cell_index" // Vector2i as an array
                             << bsoncxx::builder::stream::open_array 
                             << cellIndex.x 

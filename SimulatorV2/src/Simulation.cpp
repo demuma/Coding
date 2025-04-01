@@ -537,7 +537,7 @@ void Simulation::postData(const std::vector<Agent>& agents) {
 
             // Append the agent data to the document
             document << "timestamp" << agent.timestamp
-                     << "data_type" << "agent_data"
+                     << "data_type" << "agent data"
                      << "agent_id" << agent.uuid
                      << "type" << agent.type
                      << "position" 

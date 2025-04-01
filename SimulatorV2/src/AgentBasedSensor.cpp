@@ -109,7 +109,7 @@ void AgentBasedSensor::postData() {
             // Append the fields to the document
             document << "timestamp" << agentData.timestamp
                      << "sensor_id" << agentData.sensor_id
-                     << "data_type" << "agent_data"
+                     << "data_type" << "agent data"
                      << "agent_id" << agentData.agent_id
                      << "type" << agentData.type
                      << "position" 

@@ -217,7 +217,7 @@ void Visualizer::getData() {
     mongocxx::cursor cursor = collection.find({}, {});
 
     // Filter out metadata entries
-    pipeline.match(make_document(kvp("data_type", "agent_data")));
+    pipeline.match(make_document(kvp("data_type", "agent data")));
 
     // Group by timestamp and get distinct values
     // pipeline.group(make_document(kvp("_id", "$timestamp")));

@@ -121,7 +121,7 @@ def stop_motion():
 def calculate_angles(pan_pos, tilt_pos):
     if pan_pos[0] is None or tilt_pos[0] is None:
             print("Error: Could not read current pan/tilt.")
-            return (None, None)
+            return
     pan_angle = (pan_pos[0] * 256 + pan_pos[1]) / 100
     tilt_angle = (tilt_pos[0] * 256 + tilt_pos[1])
     if(tilt_angle > 18000):
@@ -133,10 +133,8 @@ def calculate_angles(pan_pos, tilt_pos):
 def get_angles():
     pan_pos = query_pan_position()
     tilt_pos = query_tilt_position()
+
     pan_angle, tilt_angle = calculate_angles(pan_pos, tilt_pos)
-    if pan_angle is None or tilt_angle is None:
-        print("Error: Could not read current pan/tilt.")
-        return (None, None)
     print(f"Current pan angle: {pan_angle}° Current tilt angle: {tilt_angle}°")
 
     return (pan_angle, tilt_angle)
@@ -163,7 +161,7 @@ def go_home():
         send_pelco_d_command(bits, p_spd, t_spd)
     print(f"Pan angle: {pan_angle}° Tilt angle: {tilt_angle}°")
 
-def log_angles_to_csv(t_pan_angle, t_tilt_angle, hz=10, delta=0.015):
+def log_angles_to_csv(t_pan_angle, t_tilt_angle, hz=10, delta=0.01):
     """
     Logs current pan/tilt angles at 10 Hz with a timestamp into angles_log.csv.
     The logging runs for the specified duration (in seconds).
@@ -173,19 +171,14 @@ def log_angles_to_csv(t_pan_angle, t_tilt_angle, hz=10, delta=0.015):
     with open(filename, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["timestamp", "pan_angle", "tilt_angle"])
-        read_success = False
-        while (read_success == False):
-            pan_angle, tilt_angle = get_angles()
-            if pan_angle is not None and tilt_angle is not None:
-                read_success = True
-        
+        pan_angle, tilt_angle = get_angles()
         while abs(abs(t_pan_angle)-abs(pan_angle)) > delta or abs(abs(t_tilt_angle) - abs(tilt_angle)) > delta:
             # Read angles from the device.
-            read_success = False
-            while (read_success == False):
-                pan_angle, tilt_angle = get_angles()
-                if pan_angle is not None and tilt_angle is not None:
-                    read_success = True
+            angles = get_angles()            
+            if angles is None:
+                pan_angle, tilt_angle = (None, None)
+            else:
+                pan_angle, tilt_angle = angles
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
             writer.writerow([timestamp, pan_angle, tilt_angle])
             time.sleep(1/hz)
@@ -254,7 +247,7 @@ def software_set_preset():
           f"Tilt=({tilt_pos[0]:02X}, {tilt_pos[1]:02X})")
     pan_angle, tilt_angle = calculate_angles(pan_pos, tilt_pos)
     print(f"Pan angle: {pan_angle}° Tilt angle: {tilt_angle}°")
-    
+
 def software_call_preset():
     preset_num = prompt_preset_number("Call")
     if preset_num is None:
@@ -265,11 +258,12 @@ def software_call_preset():
     pan_msb, pan_lsb, tilt_msb, tilt_lsb = presets[preset_num]
     print(f"Moving to software preset #{preset_num} => Pan=({pan_msb:02X},{pan_lsb:02X}), "
           f"Tilt=({tilt_msb:02X},{tilt_lsb:02X})")
-    pan_angle, tilt_angle = calculate_angles([pan_msb,pan_lsb],[tilt_msb, tilt_lsb])
-    print(f"Target pan angle: {pan_angle}° Target tilt angle: {tilt_angle}°")
     set_positioning_speed()
     set_pan_position(pan_msb, pan_lsb)
     set_tilt_position(tilt_msb, tilt_lsb)
+    pan_angle, tilt_angle = calculate_angles([pan_msb,pan_lsb],[tilt_msb, tilt_lsb])
+    print(f"Target pan angle: {pan_angle}° Target tilt angle: {tilt_angle}°")
+    log_angles_to_csv(pan_angle, tilt_angle)
 
 def software_clear_preset():
     preset_num = prompt_preset_number("Clear")
@@ -280,25 +274,6 @@ def software_clear_preset():
         print(f"Cleared software preset #{preset_num}.")
     else:
         print(f"No software preset #{preset_num} found.")
-        
-def record_preset():
-    preset_num = prompt_preset_number("Call")
-    if preset_num is None:
-        return
-    if preset_num not in presets:
-        print(f"No software preset #{preset_num} stored.")
-        return
-    pan_msb, pan_lsb, tilt_msb, tilt_lsb = presets[preset_num]
-    print(f"Moving to software preset #{preset_num} => Pan=({pan_msb:02X},{pan_lsb:02X}), "
-          f"Tilt=({tilt_msb:02X},{tilt_lsb:02X})")
-    pan_angle, tilt_angle = calculate_angles([pan_msb,pan_lsb],[tilt_msb, tilt_lsb])
-    print(f"Target pan angle: {pan_angle}° Target tilt angle: {tilt_angle}°")
-    print("Writing angles to CSV file.")
-    set_positioning_speed()
-    set_pan_position(pan_msb, pan_lsb)
-    set_tilt_position(tilt_msb, tilt_lsb)
-    log_angles_to_csv(pan_angle, tilt_angle)
-    print("Target angles reached. Logging complete.")
 
 #######################################
 #   Speed Prompt for Arrow Keys       #
@@ -356,8 +331,6 @@ def on_press(key):
             get_angles()
         elif key.char == 'h':
             go_home()
-        elif key.char == 'r':
-            record_preset()
 
 def on_release(key):
     global pressed_keys
@@ -398,7 +371,6 @@ Controls:
   v          = Adjust speeds
   t          = Self-check for calibration
   a          = Get current pan and tilt angle
-  r          = Write angles to CSV file
   ESC        = Stop motion
   q          = Quit
 """)

@@ -3,7 +3,7 @@
 ## Install dependencies
 - sudo apt-get install cmake uuid uuid-dev libssl-dev libsfml-dev libyaml-cpp-dev
 
-## Install MongoDB C++-driver (Version 3.1.0 for Mac)
+## Install MongoDB C++-driver (Version 3.10.1 for Mac)
 - curl -OL https://github.com/mongodb/mongo-cxx-driver/releases/download/r4.0.0/mongo-cxx-driver-r4.0.0.tar.gz 
 - tar -xzf mongo-cxx-driver-r4.0.0.tar.gz 
 - cd mongo-cxx-driver-r4.0.0/build 

@@ -16,7 +16,7 @@
 ## Build project
 - cd ./SimulatorV2
 - cmake -S . -B build
-- cmake --build build -j4 
+- cmake --build build -j$(sysctl -n hw.ncpu)
 
 ## Start simulator
 - ./build/Simulator

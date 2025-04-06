@@ -1,6 +1,6 @@
 # Install guide for Linux
 
-## Install dependencies
+## Install dependencies (CMake 3.3, SFML 2.5)
 - sudo apt-get install cmake uuid uuid-dev libssl-dev libsfml-dev libyaml-cpp-dev
 
 ## Install MongoDB C++-driver (Version 3.10.1 for Mac)

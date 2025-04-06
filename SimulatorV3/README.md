@@ -9,7 +9,7 @@
 - cd mongo-cxx-driver-r4.0.0/build 
 
 ## Configure and build driver (in /usr/local)
-- cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17
+- cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX=/usr/local -DBSONCXX_POLY_USE_IMPLS=ON
 - cmake --build .
 - sudo cmake --build . --target install
 

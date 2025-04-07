@@ -41,7 +41,8 @@
 - tar xvf cmake-3.31.6-macos-universal.tar.gz
 - cd cmake-3.31.6-macos-universal
 - mv CMake.app /Applications/
-- sudo "/Applications/CMake.app/Contents/bin/cmake-gui" --install=/usr/local
+- sudo "/Applications/CMake.app/Contents/bin/cmake-gui" --install=/usr/local/bin (Intel Chip)
+- sudo "/Applications/CMake.app/Contents/bin/cmake-gui" --install=/usr/local (M Chip)
 
 ## Download and install MongoDB C++-driver 3.10.1
 - curl -OL https://github.com/mongodb/mongo-cxx-driver/releases/download/r3.10.1/mongo-cxx-driver-r3.10.1.tar.gz

@@ -23,7 +23,7 @@ AdaptiveGridBasedSensor::AdaptiveGridBasedSensor(
     maxDepth(maxDepth),
     db(client->database(databaseName)),
     collection(db[collectionName]), 
-    adaptiveGrid(detectionArea.left, detectionArea.top, cellSize, maxDepth) {
+    adaptiveGrid(detectionArea.position.x, detectionArea.position.y, cellSize, maxDepth) {
         this->detectionArea = detectionArea;
     }
 
@@ -36,7 +36,7 @@ AdaptiveGridBasedSensor::AdaptiveGridBasedSensor(
     bool showGrid
 )
     : Sensor(detectionArea, detectionAreaColor), 
-    cellSize(cellSize), adaptiveGrid(detectionArea.left, detectionArea.top, cellSize, maxDepth), maxDepth(maxDepth) {
+    cellSize(cellSize), adaptiveGrid(detectionArea.position.x, detectionArea.position.y, cellSize, maxDepth), maxDepth(maxDepth) {
         this->detectionArea = detectionArea;
         this->detectionAreaColor = detectionAreaColor;
         this->showGrid = showGrid;
@@ -54,10 +54,10 @@ AdaptiveGridBasedSensor::~AdaptiveGridBasedSensor() {
 // Update grid-based agent detection and output one gridData entry per frame
 void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string datetime) {
 
-    adaptiveGrid.printChildren(12);
-    adaptiveGrid.printChildren(13);
-    adaptiveGrid.printChildren(14);
-    adaptiveGrid.printChildren(15);
+    // adaptiveGrid.printChildren(12);
+    // adaptiveGrid.printChildren(13);
+    // adaptiveGrid.printChildren(14);
+    // adaptiveGrid.printChildren(15);
     // Clear data storage
     dataStorage.clear();
 
@@ -130,7 +130,7 @@ void AdaptiveGridBasedSensor::postData() {
                 bsoncxx::builder::stream::document document{}; 
                 document << "timestamp" << timestamp
                          << "sensor_id" << sensorId
-                         << "data_type" << "adaptive_grid_data"
+                         << "data_type" << "adaptive grid data"
                          << "cell_id" << cellId
                          << "cell_position"
                             << bsoncxx::builder::stream::open_array
@@ -203,10 +203,10 @@ void AdaptiveGridBasedSensor::postMetadata() {
     // Append the metadata fields to the document
 
     bsoncxx::builder::stream::document positionDocument{}, detectionAreaDocument{};
-    positionDocument << "x" << detectionArea.left
-                      << "y" << detectionArea.top;
-    detectionAreaDocument << "width" << detectionArea.width
-                          << "height" << detectionArea.height;
+    positionDocument << "x" << detectionArea.position.x
+                      << "y" << detectionArea.position.y;
+    detectionAreaDocument << "width" << detectionArea.size.x
+                          << "height" << detectionArea.size.y;
 
     document << "timestamp" << timestamp
              << "sensor_id" << sensorId

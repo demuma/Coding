@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -isystem /usr/local/include -isystem /usr/local/include/mongocxx/v_noabi -isystem /usr/local/include/bsoncxx/v_noabi/bsoncxx/third_party/mnmlstc -isystem /usr/local/include/bsoncxx/v_noabi
 
-CXX_FLAGS = -g -std=gnu++17 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk
+CXX_FLAGS = -g -std=gnu++17 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk -mmacosx-version-min=15.3
 

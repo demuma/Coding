@@ -21,8 +21,8 @@ GridBasedSensor::GridBasedSensor(
     cellSize(cellSize), 
     db(client->database(databaseName)),
     collection(db[collectionName]), 
-    currentGrid(cellSize, detectionArea.width, detectionArea.height), 
-    previousGrid(cellSize, detectionArea.width, detectionArea.height) {
+    currentGrid(cellSize, detectionArea.size.x, detectionArea.size.y), 
+    previousGrid(cellSize, detectionArea.size.x, detectionArea.size.y) {
         this->detectionArea = detectionArea;
     }
 
@@ -34,8 +34,8 @@ GridBasedSensor::GridBasedSensor(
     bool showGrid
 )
     : Sensor(detectionArea, detectionAreaColor), 
-    cellSize(cellSize), currentGrid(cellSize, detectionArea.width, detectionArea.height), 
-    previousGrid(cellSize, detectionArea.width, detectionArea.height) {
+    cellSize(cellSize), currentGrid(cellSize, detectionArea.size.x, detectionArea.size.y), 
+    previousGrid(cellSize, detectionArea.size.x, detectionArea.size.y) {
         this->detectionArea = detectionArea;
         this->detectionAreaColor = detectionAreaColor;
         this->showGrid = showGrid;
@@ -126,7 +126,7 @@ void GridBasedSensor::postData() {
                 bsoncxx::builder::stream::document document{}; 
                 document << "timestamp" << timestamp
                          << "sensor_id" << sensorId
-                         << "data_type" << "grid_data"
+                         << "data_type" << "grid data"
                          << "cell_index" // Vector2i as an array
                             << bsoncxx::builder::stream::open_array 
                             << cellIndex.x 
@@ -191,23 +191,23 @@ void GridBasedSensor::postMetadata() {
     //          << "data_type" << "metadata"
     //          << "position"
     //             << bsoncxx::builder::stream::open_array
-    //             << detectionArea.left
-    //             << detectionArea.top
+    //             << detectionArea.position.x
+    //             << detectionArea.position.y
     //             << bsoncxx::builder::stream::close_array
     //          << "detection_area" 
     //             << bsoncxx::builder::stream::open_array
-    //             << detectionArea.width
-    //             << detectionArea.height
+    //             << detectionArea.size.x
+    //             << detectionArea.size.y
     //             << bsoncxx::builder::stream::close_array
     //          << "frame_rate" << frameRate
     //          << "cell_size" << cellSize;
     // Append the metadata fields to the document
 
     bsoncxx::builder::stream::document positionDocument{}, detectionAreaDocument{};
-    positionDocument << "x" << detectionArea.left
-                      << "y" << detectionArea.top;
-    detectionAreaDocument << "width" << detectionArea.width
-                          << "height" << detectionArea.height;
+    positionDocument << "x" << detectionArea.position.x
+                      << "y" << detectionArea.position.y;
+    detectionAreaDocument << "width" << detectionArea.size.x
+                          << "height" << detectionArea.size.y;
 
     document << "timestamp" << timestamp
              << "sensor_id" << sensorId
@@ -267,16 +267,16 @@ void GridBasedSensor::clearDatabase() {
 // Helper function to get cell index based on position
 sf::Vector2i GridBasedSensor::getCellIndex(const sf::Vector2f& position) const {
 
-    int x = static_cast<int>((position.x - detectionArea.left) / cellSize);
-    int y = static_cast<int>((position.y - detectionArea.top)/ cellSize);
+    int x = static_cast<int>((position.x - detectionArea.position.x) / cellSize);
+    int y = static_cast<int>((position.y - detectionArea.position.y)/ cellSize);
 
     return sf::Vector2i(x, y);
 }
 
 sf::Vector2f GridBasedSensor::getCellPosition(const sf::Vector2i& cellIndex) const {
 
-    float x = (cellIndex.x * cellSize + detectionArea.left + cellSize / 2) / scale;
-    float y = (cellIndex.y * cellSize + detectionArea.top + cellSize / 2) / scale;
+    float x = (cellIndex.x * cellSize + detectionArea.position.x + cellSize / 2) / scale;
+    float y = (cellIndex.y * cellSize + detectionArea.position.y + cellSize / 2) / scale;
 
     return sf::Vector2f(x, y);
 }

@@ -11,6 +11,7 @@
 
 #include "Agent.hpp"
 #include "SharedBuffer.hpp"
+#include "QuadtreeSnapshot.hpp"
 #include "Logging.hpp"
 #include "Obstacle.hpp"
 #include "Utilities.hpp"
@@ -23,7 +24,9 @@
 // Renderer class
 class Renderer {
 public:
-    Renderer(SharedBuffer<std::vector<Agent>>& buffer, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config);
+    Renderer(SharedBuffer<std::vector<Agent>>& buffer, 
+        std::unordered_map<std::string, std::shared_ptr<SharedBuffer<std::shared_ptr<QuadtreeSnapshot::Node>>>> sensorBuffers,
+        std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config);
     void run();
     void loadConfiguration();
     void loadAgentsAttributes();
@@ -36,13 +39,14 @@ public:
     void updateAgentCountText();
     void updateTimeText();
     void updatePlayBackSpeedText();
-    void handleEvents(sf::Event& event);
+    // void handleEvents(sf::Event& event); // Note: SFML 2.6.2 or prior
+    void handleEvents();
     sf::Time calculateSleepTime();
 
 private:
     void render();
     void appendBufferZones(sf::VertexArray& vertices, const Agent& agent);
-    void appendAgentBodies(sf::VertexArray& quads, const Agent& agent);
+    void appendAgentBodies(sf::VertexArray& triangles, const Agent& agent);
 
     // Renderer parameters
     sf::RenderWindow window;
@@ -58,8 +62,8 @@ private:
     bool isCtrlPressed = false;
 
     // Window scaling
-    int windowWidth;  // Pixels
-    int windowHeight; // Pixels
+    unsigned int windowWidth;  // Pixels
+    unsigned int windowHeight; // Pixels
     float simulationWidth;  // Pixels
     float simulationHeight; // Pixels
     float initialSimulationWidth;  // Pixels
@@ -67,6 +71,8 @@ private:
     float initialScale;
     float scale;
     sf::Vector2f offset;
+    bool isPanning = false; // Currently dragging
+    sf::Vector2f lastMousePosition = {0, 0}; // Last mouse position
 
     // Renderer parameters
     float timeStep;
@@ -77,6 +83,7 @@ private:
     int numAgents;
     bool showGrids = false;
     bool showBufferZones = false;
+    float EPSILON = 1e-6f;
 
     // Visualization elements
     sf::Text frameText;
@@ -124,6 +131,7 @@ private:
 
     // Shared buffer
     SharedBuffer<std::vector<Agent>>& buffer;
+    std::unordered_map<std::string, std::shared_ptr<SharedBuffer<std::shared_ptr<QuadtreeSnapshot::Node>>>> sensorBuffers;
 
     // Sensors
     std::vector<std::unique_ptr<Sensor>> sensors;

@@ -150,21 +150,42 @@ bool predictCollisionObstacle(Agent& agent, const std::vector<Obstacle>& obstacl
         sf::Vector2f futurePos = agent.getFuturePositionAtTime(t);
 
         // Calculate agent's future bounds (including buffer radius)
+        // Note: SFML 2.6.2 and prior
+        // sf::FloatRect agentBounds(
+        //     futurePos.x - agent.bufferZoneRadius,
+        //     futurePos.y - agent.bufferZoneRadius,
+        //     2 * agent.bufferZoneRadius,
+        //     2 * agent.bufferZoneRadius
+        // );
         sf::FloatRect agentBounds(
-            futurePos.x - agent.bufferZoneRadius,
-            futurePos.y - agent.bufferZoneRadius,
-            2 * agent.bufferZoneRadius,
-            2 * agent.bufferZoneRadius
+            {
+                futurePos.x - agent.bufferZoneRadius,
+                futurePos.y - agent.bufferZoneRadius
+            },
+            {
+                2 * agent.bufferZoneRadius,
+                2 * agent.bufferZoneRadius
+            }
         );
 
         for (const Obstacle& obstacle : obstacles) {
-            std::cout << "Obstacle: " << obstacle.getBounds().top << ", " << obstacle.getBounds().left << std::endl;
-            std:: cout << "Agent: " << agentBounds.top << ", " << agentBounds.left << std::endl;
-            if (obstacle.getBounds().intersects(agentBounds)) {
+            std::cout << "Obstacle: " << obstacle.getBounds().position.x << ", " << obstacle.getBounds().position.y << std::endl;
+            std:: cout << "Agent: " << agentBounds.position.x << ", " << agentBounds.position.y << std::endl;
+            if (obstacle.getBounds().findIntersection(agentBounds)) {
                 agent.stop(); // or agent->adjustDirection() 
                 return true; // Collision detected
             }
         }
+
+        // Note: SFML 2.6.2 and prior
+        // for (const Obstacle& obstacle : obstacles) {
+        //     std::cout << "Obstacle: " << obstacle.getBounds().top << ", " << obstacle.getBounds().left << std::endl; // Error: top=y, left=x
+        //     std:: cout << "Agent: " << agentBounds.top << ", " << agentBounds.left << std::endl;
+        //     if (obstacle.getBounds().intersects(agentBounds)) {
+        //         agent.stop(); // or agent->adjustDirection() 
+        //         return true; // Collision detected
+        //     }
+        // }
     }
     return false; // No collision detected in the lookahead time frame
 }
@@ -230,8 +251,11 @@ bool agentObstaclesCollision(Agent& agent, const std::vector<Obstacle>& obstacle
         sf::FloatRect rect = obstacle.getBounds();
     
         // Find the closest point on the rectangle to the circle's center
-        float closestX = std::max(rect.left, std::min(circleCenter.x, rect.left + rect.width));
-        float closestY = std::max(rect.top, std::min(circleCenter.y, rect.top + rect.height));
+        // Note: SFML 2.6.2 and prior
+        // float closestX = std::max(rect.left, std::min(circleCenter.x, rect.left + rect.width));
+        // float closestY = std::max(rect.top, std::min(circleCenter.y, rect.top + rect.height));
+        float closestX = std::max(rect.position.x, std::min(circleCenter.x, rect.position.x + rect.size.x));
+        float closestY = std::max(rect.position.y, std::min(circleCenter.y, rect.position.y + rect.size.y));
 
         // Calculate the distance between the circle's center and the closest point
         float distanceX = circleCenter.x - closestX;

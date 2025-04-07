@@ -4,12 +4,17 @@
 #include "../include/AdaptiveGridBasedSensor.hpp"
 
 // Renderer member functions
-Renderer::Renderer(SharedBuffer<std::vector<Agent>>& buffer, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config)
-:   buffer(buffer), currentSimulationTimeStep(currentSimulationTimeStep), config(config), // Reserve VRAM for the vertex arrays depending on the number of agents
+Renderer::Renderer(SharedBuffer<std::vector<Agent>>& buffer, 
+    std::unordered_map<std::string, std::shared_ptr<SharedBuffer<std::shared_ptr<QuadtreeSnapshot::Node>>>> sensorBuffers, 
+    std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config)
+:   buffer(buffer), sensorBuffers(sensorBuffers),
+    currentSimulationTimeStep(currentSimulationTimeStep), config(config), // Reserve VRAM for the vertex arrays depending on the number of agents
     bufferZonesVertexArray(sf::PrimitiveType::Points), 
-    agentBodyVertexArray(sf::PrimitiveType::Quads, 4), 
+    agentBodyVertexArray(sf::PrimitiveType::Triangles, 6), // Note: SFML 2.6.2 or prior -> (Quads, 4)
     agentArrowHeadVertexArray(sf::PrimitiveType::Triangles, 3), 
-    agentArrowBodyVertexArray(sf::PrimitiveType::Lines, 2) {
+    agentArrowBodyVertexArray(sf::PrimitiveType::Lines, 2),
+    font(), frameText(font,"", 20), frameRateText(font, "", 24), agentCountText(font, "",  24), timeText(font, "", 24), 
+    playbackSpeedText(font, "", 24), pauseButton(), pauseButtonText(font, "", 20), resetButton(), resetButtonText(font, "", 20) {
 
     DEBUG_MSG("Renderer: read buffer: " << buffer.currentReadFrameIndex);
     loadConfiguration();
@@ -67,7 +72,7 @@ void Renderer::loadConfiguration() {
     collisionGridCellSize = (config["collision"]["grid"]["cell_size"].as<float>());
 
     // Load font
-    if (!font.loadFromFile("/Library/Fonts/Arial Unicode.ttf")) {
+    if (!font.openFromFile("/Library/Fonts/Arial Unicode.ttf")) {
         ERROR_MSG("Error loading font\n");
     }
 
@@ -125,7 +130,7 @@ void Renderer::loadObstacles() {
                 std::vector<float> position = obstacleNode["position"].as<std::vector<float>>();
                 std::vector<float> size = obstacleNode["size"].as<std::vector<float>>();
                 obstacles.push_back(Obstacle(
-                    sf::FloatRect(position[0] * scale, position[1] * scale, size[0] * scale, size[1] * scale), 
+                    sf::FloatRect({position[0], position[1]}, {size[0], size[1]}), 
                     stringToColor(obstacleNode["color"].as<std::string>())
                 ));
             } else {
@@ -160,10 +165,14 @@ void Renderer::initializeSensors() {
         // Define the detection area for the sensor
         sf::FloatRect detectionArea(
 
-            sensorNode["detection_area"]["left"].as<float>(),
-            sensorNode["detection_area"]["top"].as<float>(),
-            sensorNode["detection_area"]["width"].as<float>(),
-            sensorNode["detection_area"]["height"].as<float>()
+            {
+                sensorNode["detection_area"]["x"].as<float>(),
+                sensorNode["detection_area"]["y"].as<float>()
+            },
+            {
+                sensorNode["detection_area"]["width"].as<float>(),
+                sensorNode["detection_area"]["height"].as<float>()
+            }
         );
 
         // Create the agent-based sensor
@@ -201,10 +210,11 @@ void Renderer::initializeWindow() {
 
     // Turn on antialiasing
     sf::ContextSettings settings;
-    settings.antialiasingLevel = 8;
+    settings.antiAliasingLevel = 16;
 
     // Create window
-    window.create(sf::VideoMode(windowWidth, windowHeight), title, sf::Style::Default, settings);
+    // window.create(sf::VideoMode(windowWidth, windowHeight), title, sf::Style::Default, settings); // Note: SFML 2.6.2 or prior
+    window.create(sf::VideoMode({windowWidth, windowHeight}), title, sf::Style::Default, sf::State::Windowed, settings);
 }
 
 // Initialize the GUI elements
@@ -243,7 +253,7 @@ void Renderer::initializeGUI() {
     // Pause button
     pauseButton.setSize(sf::Vector2f(100, 50)); 
     pauseButton.setFillColor(sf::Color::Green);
-    pauseButton.setPosition(window.getSize().x - 110, window.getSize().y - 60);
+    pauseButton.setPosition({static_cast<float>(window.getSize().x) - 110, static_cast<float>(window.getSize().y) - 60});
 
     pauseButtonText.setFont(font);
     pauseButtonText.setString("Pause");
@@ -252,15 +262,15 @@ void Renderer::initializeGUI() {
     
     // Center the pause button text
     sf::FloatRect pauseButtonTextRect = pauseButtonText.getLocalBounds();
-    pauseButtonText.setOrigin(pauseButtonTextRect.left + pauseButtonTextRect.width / 2.0f,
-                              pauseButtonTextRect.top + pauseButtonTextRect.height / 2.0f);
-    pauseButtonText.setPosition(pauseButton.getPosition().x + pauseButton.getSize().x / 2.0f,
-                                pauseButton.getPosition().y + pauseButton.getSize().y / 2.0f);
+    pauseButtonText.setOrigin({pauseButtonTextRect.position.x + pauseButtonTextRect.size.x / 2.0f,
+                              pauseButtonTextRect.position.y + pauseButtonTextRect.size.y / 2.0f});
+    pauseButtonText.setPosition({pauseButton.getPosition().x + pauseButton.getSize().x / 2.0f,
+                                pauseButton.getPosition().y + pauseButton.getSize().y / 2.0f});
 
     // Reset button
     resetButton.setSize(sf::Vector2f(100, 50));
     resetButton.setFillColor(sf::Color::Cyan);
-    resetButton.setPosition(window.getSize().x - 110, window.getSize().y - 120); 
+    resetButton.setPosition({static_cast<float>(window.getSize().x) - 110, static_cast<float>(window.getSize().y) - 120}); 
 
     resetButtonText.setFont(font);
     resetButtonText.setString("Infos");
@@ -269,10 +279,10 @@ void Renderer::initializeGUI() {
 
     // Center the reset button text
     sf::FloatRect resetButtonTextRect = resetButtonText.getLocalBounds();
-    resetButtonText.setOrigin(resetButtonTextRect.left + resetButtonTextRect.width / 2.0f,
-                              resetButtonTextRect.top + resetButtonTextRect.height / 2.0f);
-    resetButtonText.setPosition(resetButton.getPosition().x + resetButton.getSize().x / 2.0f,
-                                resetButton.getPosition().y + resetButton.getSize().y / 2.0f);
+    resetButtonText.setOrigin({resetButtonTextRect.position.x + resetButtonTextRect.size.x / 2.0f,
+                              resetButtonTextRect.position.y + resetButtonTextRect.size.y / 2.0f});
+    resetButtonText.setPosition({resetButton.getPosition().x + resetButton.getSize().x / 2.0f,
+                                resetButton.getPosition().y + resetButton.getSize().y / 2.0f});
 
 }
 
@@ -281,8 +291,8 @@ void Renderer::updateFrameCountText() {
 
     frameText.setString("Frame " + std::to_string(buffer.currentReadFrameIndex) + " / " + (maxFrames > 0 ? std::to_string(maxFrames) : "∞")); // ∞ for unlimited frames
     sf::FloatRect textRect = frameText.getLocalBounds();
-    frameText.setOrigin(textRect.width, 0); // Right-align the text
-    frameText.setPosition(window.getSize().x - 10, 40); // Position with padding
+    frameText.setOrigin({textRect.size.x, 0}); // Right-align the text
+    frameText.setPosition({static_cast<float>(window.getSize().x) - 10, 40}); // Position with padding
 }
 
 // Function to update the text that displays the current agent count
@@ -290,8 +300,8 @@ void Renderer::updateAgentCountText() {
 
     agentCountText.setString("Agents: " + std::to_string(currentNumAgents));
     sf::FloatRect textRect = agentCountText.getLocalBounds();
-    agentCountText.setOrigin(textRect.width, 0); // Right-align the text
-    agentCountText.setPosition(window.getSize().x - 6, 100); // Position with padding
+    agentCountText.setOrigin({textRect.size.x, 0}); // Right-align the text
+    agentCountText.setPosition({static_cast<float>(window.getSize().x) - 6, 100}); // Position with padding
 }
 
 // Function to update the text that displays the current elapsed time
@@ -331,8 +341,8 @@ void Renderer::updateTimeText() {
 
     // Right-align and position the text
     sf::FloatRect textRect = timeText.getLocalBounds();
-    timeText.setOrigin(textRect.width, 0); 
-    timeText.setPosition(window.getSize().x - 10, 10); 
+    timeText.setOrigin({textRect.size.x, 0}); 
+    timeText.setPosition({static_cast<float>(window.getSize().x) - 10, 10}); 
 }
 
 // Function to calculate the moving average frame rate and update the text after warmup
@@ -356,8 +366,8 @@ void Renderer::updateFrameRateText() {
         // Update the frame rate text
         frameRateText.setString("FPS: " + std::to_string(static_cast<int>(movingAverageFrameRate)));
         sf::FloatRect textRect = frameRateText.getLocalBounds();
-        frameRateText.setOrigin(textRect.width, 0); // Right-align the text
-        frameRateText.setPosition(window.getSize().x - 10, 70); // Position with padding
+        frameRateText.setOrigin({textRect.size.x, 0}); // Right-align the text
+        frameRateText.setPosition({static_cast<float>(window.getSize().x) - 10, 70}); // Position with padding
 
         // Update the frame rate buffer
         frameRates.pop_front();
@@ -374,206 +384,425 @@ void Renderer::updatePlayBackSpeedText() {
     // playbackSpeedText.setString("Playback Speed: " + std::to_string(playbackSpeed));
     playbackSpeedText.setString(playbackSpeedStream.str());
     sf::FloatRect textRect = playbackSpeedText.getLocalBounds();
-    playbackSpeedText.setOrigin(textRect.width, 0); // Right-align the text
-    playbackSpeedText.setPosition(window.getSize().x - 6, 130); // Position with padding
+    playbackSpeedText.setOrigin({textRect.size.x, 0}); // Right-align the text
+    playbackSpeedText.setPosition({static_cast<float>(window.getSize().x) - 6, 130}); // Position with padding
 }
 
 // Function to handle events
-void Renderer::handleEvents(sf::Event& event) {
+// void Renderer::handleEvents(sf::Event& event) { // Note: SFML 2.6.2 or prior
+// void Renderer::handleEvents(const std::__1::optional<sf::Event> event) {
 
-    if (event.type == sf::Event::Closed) {
+//     // if (event.type == sf::Event::Closed) {
+//     if(event->is<sf::Event::Closed>()) {
+//         window.close();
+//         buffer.stop.store(true);
+//         return;
+//     }
+//     // else if (event.type == sf::Event::Resized) {
+//     else if (const auto* resized = event->getIf<sf::Event::Resized>()) {
+        
+//         // Resize the window
+//         // sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height); // Note: SFML 2.6.2 or prior
+//         sf::FloatRect visibleArea({0, 0}, {resized->size.x, resized->size.y});
+//         window.setView(sf::View(visibleArea));
+//         initializeGUI(); // Reinitialize UI elements
+
+//         // Update the simulation offsets
+//         // windowWidth = event.size.width;
+//         // windowHeight = event.size.height;
+//         windowWidth = resized->size.x;
+//         windowHeight = resized->size.y;
+//         offset = sf::Vector2f((windowWidth - simulationWidth) / 2, (windowHeight - simulationHeight) / 2);
+//         return;
+//     }
+//     else if (event.type == sf::Event::KeyReleased) {
+//         if(event.key.code == sf::Keyboard::Scancode::LShift || event.key.code == sf::Keyboard::Scancode::RShift) {
+//             isShiftPressed = false;
+//             DEBUG_MSG("Shift released");
+//             return;
+//         }
+//         else if(event.key.code == sf::Keyboard::Scancode::LControl || event.key.code == sf::Keyboard::Scancode::RControl) {
+//             isCtrlPressed = false;
+//             DEBUG_MSG("Ctrl released");
+//             return;
+//         }
+//     } 
+//     else if (event.type == sf::Event::KeyPressed) {
+//         if (event.key.code == sf::Keyboard::Scancode::Space) {
+//             paused = !paused;
+//             pauseButtonText.setString(paused ? "  Play" : "Pause");
+//             pauseButton.setFillColor(paused ? sf::Color::Red : sf::Color::Green);
+//             window.draw(pauseButton); // NEW
+//             window.draw(pauseButtonText); // NEW
+//             window.display(); // NEW
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::LShift || event.key.code == sf::Keyboard::Scancode::RShift) {
+//             isShiftPressed = true;
+//             DEBUG_MSG("Shift pressed");
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::LControl || event.key.code == sf::Keyboard::Scancode::RControl) {
+//             isCtrlPressed = true;
+//             DEBUG_MSG("Ctrl pressed");
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::Left) {
+//             playbackSpeed -= 0.1f;
+//             DEBUG_MSG("Playback speed decreased to: " << playbackSpeed);
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::Right) {
+//             playbackSpeed += 0.1f;
+//             DEBUG_MSG("Playback speed increased to: " << playbackSpeed);
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::A) {
+//             showArrow = !showArrow;
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::B) {
+//             showBufferZones = !showBufferZones;
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::C) {
+//             showCollisionGrid = !showCollisionGrid;
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::O) {
+//             showObstacles = !showObstacles;
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::R) {
+//             playbackSpeed = 1.0f;
+//             DEBUG_MSG("Playback speed reset to: " << playbackSpeed);
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::S) {
+//             showSensors = !showSensors;
+//             showSensorGrid = !showSensorGrid;
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::T) {
+//             showTrajectories = !showTrajectories;
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::W) {
+//             showWaypoints = !showWaypoints;
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::Q) {
+//             window.close();
+//             buffer.stop.store(true);
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::Z) {
+//             scale = initialScale;
+//             simulationHeight = initialSimulationHeight;
+//             simulationWidth = initialSimulationWidth;
+//             offset.x = (windowWidth - initialSimulationWidth) / 2;
+//             offset.y = (windowHeight - initialSimulationHeight) / 2;
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::Escape) {
+//             window.close();
+//             buffer.stop.store(true);
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::Up) {
+//             if (playbackSpeed >= 1.0f) {
+//                 playbackSpeed += 1.0f;
+//                 playbackSpeed = std::floor(playbackSpeed);
+//             } else if (playbackSpeed < 1.0f && playbackSpeed > 0.1f) {
+//                 playbackSpeed += 0.1f;
+//             } else {
+//                 playbackSpeed = 0.1f;
+//             }
+//             DEBUG_MSG("Playback speed increased to: " << playbackSpeed);
+//             return;
+//         }
+//         else if (event.key.code == sf::Keyboard::Scancode::Down) {
+//             if (playbackSpeed > 1.0f) {
+//                 playbackSpeed -= 1.0f;
+//                 playbackSpeed = std::ceil(playbackSpeed);
+//             } else if (playbackSpeed <= 1.0f && playbackSpeed > 0.1f) {
+//                 playbackSpeed -= 0.1f;
+//             } else {
+//                 playbackSpeed = 0.1f;
+//             }
+//             DEBUG_MSG("Playback speed decreased to: " << playbackSpeed);
+//             return;
+//         }
+//     } else if (event.type == sf::Event::MouseButtonPressed) {
+//         if (event.mouseButton.button == sf::Mouse::Left) {
+//             sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
+//             if (pauseButton.getGlobalBounds().contains(mousePosition.x, mousePosition.y)) {
+//                 paused = !paused;
+//                 pauseButtonText.setString(paused ? "  Play" : "Pause");
+//                 pauseButton.setFillColor(paused ? sf::Color::Red : sf::Color::Green);
+//                 window.draw(pauseButton); // NEW
+//                 window.draw(pauseButtonText); // NEW
+//                 window.display(); // NEW
+//             } else if (resetButton.getGlobalBounds().contains(mousePosition.x, mousePosition.y)) {
+//                 showInfo = !showInfo;
+//             }
+//         }
+//         return;
+//     } else if (event.type == sf::Event::MouseWheelScrolled) {
+//         if(isShiftPressed) {
+//             if (event.mouseWheelScroll.delta > 0) {
+//                 offset.x -= 20;
+//             } else if (event.mouseWheelScroll.delta < 0) {
+//                 offset.x += 20;
+//             }
+//             return;
+//         }
+//         else if(isCtrlPressed) {
+//             if (event.mouseWheelScroll.delta > 0) {
+//                 offset.y -= 20;
+//             } else if (event.mouseWheelScroll.delta < 0) {
+//                 offset.y += 20;
+//             }
+//             return;
+//         }
+//         else if (event.mouseWheelScroll.delta > 0) {
+//             int previousWidth = simulationWidth;
+//             int previousHeight = simulationHeight;
+//             simulationHeight /= scale;
+//             simulationWidth /= scale;
+//             scale += 1.0f;
+//             simulationHeight *= scale;
+//             simulationWidth *= scale;
+//             offset.x = offset.x - (simulationWidth - previousWidth) / 2;
+//             offset.y = offset.y - (simulationHeight - previousHeight) / 2;
+//             return;
+//         } 
+//         else if (event.mouseWheelScroll.delta < 0) {
+//             int previousWidth = simulationWidth;
+//             int previousHeight = simulationHeight;
+//             simulationHeight /= scale;
+//             simulationWidth /= scale;
+//             if(scale != 1.0f) scale -= 1.0f;
+//             simulationHeight *= scale;
+//             simulationWidth *= scale;
+//             offset.x = offset.x - (simulationWidth - previousWidth) / 2;
+//             offset.y = offset.y - (simulationHeight - previousHeight) / 2;
+//             return;
+//         }
+//     }
+// }
+
+// Function to handle events
+void Renderer::handleEvents() {
+
+    // Lambda to handle window close events.
+    const auto onClose = [this](const sf::Event::Closed&) {
         window.close();
         buffer.stop.store(true);
-        return;
-    }
-    else if (event.type == sf::Event::Resized) {
-        
-        // Resize the window
-        sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+    };
+
+    // Lambda to handle window resize events.
+    const auto onResized = [this](const sf::Event::Resized& resized) {
+        sf::FloatRect visibleArea({0, 0}, {static_cast<float>(resized.size.x), static_cast<float>(resized.size.y)});
         window.setView(sf::View(visibleArea));
         initializeGUI(); // Reinitialize UI elements
 
-        // Update the simulation offsets
-        windowWidth = event.size.width;
-        windowHeight = event.size.height;
-        offset = sf::Vector2f((windowWidth - simulationWidth) / 2, (windowHeight - simulationHeight) / 2);
-        return;
-    }
-    else if (event.type == sf::Event::KeyReleased) {
-        if(event.key.code == sf::Keyboard::LShift || event.key.code == sf::Keyboard::RShift) {
-            isShiftPressed = false;
-            DEBUG_MSG("Shift released");
-            return;
-        }
-        else if(event.key.code == sf::Keyboard::LControl || event.key.code == sf::Keyboard::RControl) {
-            isCtrlPressed = false;
-            DEBUG_MSG("Ctrl released");
-            return;
-        }
-    } 
-    else if (event.type == sf::Event::KeyPressed) {
-        if (event.key.code == sf::Keyboard::Space) {
+        // Update simulation dimensions and offset.
+        windowWidth  = static_cast<float>(resized.size.x);
+        windowHeight = static_cast<float>(resized.size.y);
+        offset = sf::Vector2f((windowWidth - simulationWidth) / 2,
+                              (windowHeight - simulationHeight) / 2);
+    };
+
+    // Lambda to handle key pressed events.
+    const auto onKeyPressed = [this](const sf::Event::KeyPressed& keyPressed) {
+        // Toggle pause with Space.
+        if (keyPressed.scancode == sf::Keyboard::Scancode::Space) {
             paused = !paused;
             pauseButtonText.setString(paused ? "  Play" : "Pause");
             pauseButton.setFillColor(paused ? sf::Color::Red : sf::Color::Green);
-            window.draw(pauseButton); // NEW
-            window.draw(pauseButtonText); // NEW
-            window.display(); // NEW
-            return;
+            window.draw(pauseButton);
+            window.draw(pauseButtonText);
+            window.display();
         }
-        else if (event.key.code == sf::Keyboard::LShift || event.key.code == sf::Keyboard::RShift) {
+        // Set modifier flags.
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::LShift ||
+                 keyPressed.scancode == sf::Keyboard::Scancode::RShift) {
             isShiftPressed = true;
-            DEBUG_MSG("Shift pressed");
-            return;
         }
-        else if (event.key.code == sf::Keyboard::LControl || event.key.code == sf::Keyboard::RControl) {
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::LControl ||
+                 keyPressed.scancode == sf::Keyboard::Scancode::RControl) {
             isCtrlPressed = true;
-            DEBUG_MSG("Ctrl pressed");
-            return;
         }
-        else if (event.key.code == sf::Keyboard::Left) {
+        // Adjust playback speed.
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::Left) {
             playbackSpeed -= 0.1f;
             DEBUG_MSG("Playback speed decreased to: " << playbackSpeed);
-            return;
         }
-        else if (event.key.code == sf::Keyboard::Right) {
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::Right) {
             playbackSpeed += 0.1f;
-            DEBUG_MSG("Playback speed increased to: " << playbackSpeed);
-            return;
+            DEBUG_MSG("Playback speed increaased to: " << playbackSpeed);
         }
-        else if (event.key.code == sf::Keyboard::A) {
+        
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::A) {
             showArrow = !showArrow;
-            return;
         }
-        else if (event.key.code == sf::Keyboard::B) {
+
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::B) {
             showBufferZones = !showBufferZones;
-            return;
         }
-        else if (event.key.code == sf::Keyboard::C) {
+
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::C) {
             showCollisionGrid = !showCollisionGrid;
-            return;
         }
-        else if (event.key.code == sf::Keyboard::O) {
+
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::O) {
             showObstacles = !showObstacles;
-            return;
         }
-        else if (event.key.code == sf::Keyboard::R) {
-            playbackSpeed = 1.0f;
-            DEBUG_MSG("Playback speed reset to: " << playbackSpeed);
-            return;
-        }
-        else if (event.key.code == sf::Keyboard::S) {
-            showSensors = !showSensors;
-            showSensorGrid = !showSensorGrid;
-            return;
-        }
-        else if (event.key.code == sf::Keyboard::T) {
-            showTrajectories = !showTrajectories;
-            return;
-        }
-        else if (event.key.code == sf::Keyboard::W) {
-            showWaypoints = !showWaypoints;
-            return;
-        }
-        else if (event.key.code == sf::Keyboard::Q) {
+        
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::Q) {
             window.close();
             buffer.stop.store(true);
-            return;
         }
-        else if (event.key.code == sf::Keyboard::Z) {
+
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::R) {
+            playbackSpeed = 1.0f;
+            DEBUG_MSG("Playback speed reset to: " << playbackSpeed);
+        }
+
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::S) {
+            showSensors = !showSensors;
+            showSensorGrid = !showSensorGrid;
+        }
+
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::T) {
+            showTrajectories = !showTrajectories;
+        }
+        
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::W) {
+            showWaypoints = !showWaypoints;
+        }
+
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::Z) {
             scale = initialScale;
             simulationHeight = initialSimulationHeight;
             simulationWidth = initialSimulationWidth;
             offset.x = (windowWidth - initialSimulationWidth) / 2;
             offset.y = (windowHeight - initialSimulationHeight) / 2;
-            return;
+            
         }
-        else if (event.key.code == sf::Keyboard::Escape) {
+
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::Escape) {
             window.close();
             buffer.stop.store(true);
-            return;
         }
-        else if (event.key.code == sf::Keyboard::Up) {
-            if (playbackSpeed >= 1.0f) {
-                playbackSpeed += 1.0f;
-                playbackSpeed = std::floor(playbackSpeed);
-            } else if (playbackSpeed < 1.0f && playbackSpeed > 0.1f) {
-                playbackSpeed += 0.1f;
-            } else {
-                playbackSpeed = 0.1f;
-            }
-            DEBUG_MSG("Playback speed increased to: " << playbackSpeed);
-            return;
+    };
+
+    // Lambda to handle key released events.
+    const auto onKeyReleased = [this](const sf::Event::KeyReleased& keyReleased) {
+        if (keyReleased.scancode == sf::Keyboard::Scancode::LShift ||
+            keyReleased.scancode == sf::Keyboard::Scancode::RShift) {
+            isShiftPressed = false;
         }
-        else if (event.key.code == sf::Keyboard::Down) {
-            if (playbackSpeed > 1.0f) {
-                playbackSpeed -= 1.0f;
-                playbackSpeed = std::ceil(playbackSpeed);
-            } else if (playbackSpeed <= 1.0f && playbackSpeed > 0.1f) {
-                playbackSpeed -= 0.1f;
-            } else {
-                playbackSpeed = 0.1f;
-            }
-            DEBUG_MSG("Playback speed decreased to: " << playbackSpeed);
-            return;
+        else if (keyReleased.scancode == sf::Keyboard::Scancode::LControl ||
+                 keyReleased.scancode == sf::Keyboard::Scancode::RControl) {
+            isCtrlPressed = false;
         }
-    } else if (event.type == sf::Event::MouseButtonPressed) {
-        if (event.mouseButton.button == sf::Mouse::Left) {
+    };
+
+    // Lambda to handle mouse button pressed events.
+    const auto onMouseButtonPressed = [this](const sf::Event::MouseButtonPressed& mouseButton) {
+        if (mouseButton.button == sf::Mouse::Button::Left) {
+            // Get mouse position relative to the window.
             sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
-            if (pauseButton.getGlobalBounds().contains(mousePosition.x, mousePosition.y)) {
-                paused = !paused;
-                pauseButtonText.setString(paused ? "  Play" : "Pause");
-                pauseButton.setFillColor(paused ? sf::Color::Red : sf::Color::Green);
-                window.draw(pauseButton); // NEW
-                window.draw(pauseButtonText); // NEW
-                window.display(); // NEW
-            } else if (resetButton.getGlobalBounds().contains(mousePosition.x, mousePosition.y)) {
-                showInfo = !showInfo;
+            if (!pauseButton.getGlobalBounds().contains({static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y)}) &&
+                !resetButton.getGlobalBounds().contains({static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y)})) {
+                isPanning = true;
+                lastMousePosition = {static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y)};
+            }
+            else { 
+                if (pauseButton.getGlobalBounds().contains({static_cast<float>(mousePosition.x),
+                    static_cast<float>(mousePosition.y)})) {
+                    paused = !paused;
+                    pauseButtonText.setString(paused ? "  Play" : "Pause");
+                    pauseButton.setFillColor(paused ? sf::Color::Red : sf::Color::Green);
+                    window.draw(pauseButton);
+                    window.draw(pauseButtonText);
+                    window.display();
+                }
+                else if (resetButton.getGlobalBounds().contains({static_cast<float>(mousePosition.x),
+                                                                static_cast<float>(mousePosition.y)})) {
+                    showInfo = !showInfo;
+                }
             }
         }
-        return;
-    } else if (event.type == sf::Event::MouseWheelScrolled) {
-        if(isShiftPressed) {
-            if (event.mouseWheelScroll.delta > 0) {
+    };
+
+    // Mouse released
+    const auto onMouseButtonReleased = [this](const sf::Event::MouseButtonReleased& mouseButton) {
+        if (mouseButton.button == sf::Mouse::Button::Left) {
+            isPanning = false; // Stop dragging
+        }
+    };
+
+    const auto onMouseMoved = [this](const sf::Event::MouseMoved& mouseMoved) {
+        if (isPanning) {
+            // Current mouse position
+            sf::Vector2f currentPosition(static_cast<float>(mouseMoved.position.x), static_cast<float>(mouseMoved.position.y));
+    
+            // Compute the difference
+            sf::Vector2f delta = currentPosition - lastMousePosition;
+    
+            // Update offset by that difference
+            offset += delta;
+    
+            // Update lastMousePos for next movement
+            lastMousePosition = currentPosition;
+        }
+    };
+
+    // Lambda to handle mouse wheel scroll events.
+    const auto onMouseWheelScrolled = [this](const sf::Event::MouseWheelScrolled& scroll) {
+        if (isShiftPressed) {
+            if (scroll.delta > 0) {
                 offset.x -= 20;
-            } else if (event.mouseWheelScroll.delta < 0) {
+            } else if (scroll.delta < 0) {
                 offset.x += 20;
             }
-            return;
         }
-        else if(isCtrlPressed) {
-            if (event.mouseWheelScroll.delta > 0) {
+        else if (isCtrlPressed) {
+            if (scroll.delta > 0) {
                 offset.y -= 20;
-            } else if (event.mouseWheelScroll.delta < 0) {
+            } else if (scroll.delta < 0) {
                 offset.y += 20;
             }
-            return;
         }
-        else if (event.mouseWheelScroll.delta > 0) {
+        else {
             int previousWidth = simulationWidth;
             int previousHeight = simulationHeight;
             simulationHeight /= scale;
             simulationWidth /= scale;
-            scale += 1.0f;
+            if (scroll.delta > 0) {
+                scale += 1.0f;
+            } else if (scroll.delta < 0) {
+                if (scale != 1.0f) scale -= 1.0f;
+            }
             simulationHeight *= scale;
             simulationWidth *= scale;
             offset.x = offset.x - (simulationWidth - previousWidth) / 2;
             offset.y = offset.y - (simulationHeight - previousHeight) / 2;
-            return;
-        } 
-        else if (event.mouseWheelScroll.delta < 0) {
-            int previousWidth = simulationWidth;
-            int previousHeight = simulationHeight;
-            simulationHeight /= scale;
-            simulationWidth /= scale;
-            if(scale != 1.0f) scale -= 1.0f;
-            simulationHeight *= scale;
-            simulationWidth *= scale;
-            offset.x = offset.x - (simulationWidth - previousWidth) / 2;
-            offset.y = offset.y - (simulationHeight - previousHeight) / 2;
-            return;
         }
-    }
+    };
+
+    // Now pass all these lambdas to the window's handleEvents function.
+    window.handleEvents(onClose,
+                        onResized,
+                        onKeyPressed,
+                        onKeyReleased,
+                        onMouseButtonPressed,
+                        onMouseButtonReleased,
+                        onMouseMoved,
+                        onMouseWheelScrolled);
 }
 
 // Main rendering loop
@@ -584,7 +813,7 @@ void Renderer::run() {
     targetFrameTime = sf::seconds(1.0f / targetFrameRate);
 
     // Initialize the event
-    sf::Event event;
+    // sf::Event event;
 
     // Timing variables
     sf::Clock rendererFrameClock;
@@ -615,8 +844,18 @@ void Renderer::run() {
         rendererFrameClock.restart();
 
         // Handle events
-        while (window.pollEvent(event)) {
-            handleEvents(event);
+        // while (const std::optional event = window.pollEvent()) {
+        //     handleEvents(event);
+        // }
+        handleEvents();
+
+        // Polling mouse position for panning when dragging mouse
+        if (isPanning){
+            sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
+            sf::Vector2f currentMousePosition(static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y));
+            sf::Vector2f delta = currentMousePosition - lastMousePosition;
+            offset += delta;
+            lastMousePosition = currentMousePosition;
         }
 
         // Get the time taken to handle events
@@ -745,19 +984,19 @@ void Renderer::render() {  // Input: meters, Output: pixels
                 // Draw vertical lines
                 for (int x = 0; x <= (simulationWidth / (collisionGridCellSize * scale)); x++) {
                     sf::Vertex line[] = {
-                        sf::Vertex(sf::Vector2f((x * collisionGridCellSize * scale), 0) + offset, sf::Color(220, 220, 220)),
-                        sf::Vertex(sf::Vector2f((x * collisionGridCellSize * scale), simulationHeight) + offset, sf::Color(220, 220, 220))
+                        sf::Vertex({sf::Vector2f((x * collisionGridCellSize * scale), 0) + offset, sf::Color(220, 220, 220)}),
+                        sf::Vertex({sf::Vector2f((x * collisionGridCellSize * scale), simulationHeight) + offset, sf::Color(220, 220, 220)})
                     };
-                    window.draw(line, 2, sf::Lines);
+                    window.draw(line, 2, sf::PrimitiveType::Lines);
                 }
 
                 // Draw horizontal lines
                 for (int x = 0; x <= (simulationHeight / (collisionGridCellSize * scale)); x++) {
                     sf::Vertex line[] = {
-                        sf::Vertex(sf::Vector2f(0, (x * collisionGridCellSize * scale)) + offset, sf::Color(220, 220, 220)),
-                        sf::Vertex(sf::Vector2f(simulationWidth, (x * collisionGridCellSize * scale)) + offset, sf::Color(220, 220, 220))
+                        sf::Vertex({sf::Vector2f(0, (x * collisionGridCellSize * scale)) + offset, sf::Color(220, 220, 220)}),
+                        sf::Vertex({sf::Vector2f(simulationWidth, (x * collisionGridCellSize * scale)) + offset, sf::Color(220, 220, 220)})
                     };
-                    window.draw(line, 2, sf::Lines);
+                    window.draw(line, 2, sf::PrimitiveType::Lines);
                 }
             }
 
@@ -771,29 +1010,30 @@ void Renderer::render() {  // Input: meters, Output: pixels
                     if(gridBasedSensor->showGrid && showSensors) {
 
                         // Draw outer rectangle
-                        sf::RectangleShape gridBoundaries(sf::Vector2f(gridBasedSensor->detectionArea.width * scale, gridBasedSensor->detectionArea.height * scale));
-                        gridBoundaries.setPosition(gridBasedSensor->detectionArea.left * scale + offset.x, gridBasedSensor->detectionArea.top * scale + offset.y); // Set position in pixels
-                        gridBoundaries.setFillColor(sf::Color::Transparent);
+                        sf::RectangleShape gridBoundaries(sf::Vector2f(gridBasedSensor->detectionArea.size.x * scale, gridBasedSensor->detectionArea.size.y * scale));
+                        gridBoundaries.setPosition({gridBasedSensor->detectionArea.position.x * scale + offset.x, gridBasedSensor->detectionArea.position.y * scale + offset.y}); // Set position in pixels
+                        // gridBoundaries.setFillColor(sf::Color::Transparent);
+                        gridBoundaries.setFillColor(gridBasedSensor->detectionAreaColor);
                         gridBoundaries.setOutlineColor(sf::Color::Black);
                         gridBoundaries.setOutlineThickness(1);
                         window.draw(gridBoundaries);
 
                         // Draw vertical lines
-                        for (int x = 0; x <= (gridBasedSensor->detectionArea.width / gridBasedSensor->cellSize); x++) {
+                        for (int x = 0; x <= (gridBasedSensor->detectionArea.size.x / gridBasedSensor->cellSize); x++) {
                             sf::Vertex line[] = {
-                                sf::Vertex(sf::Vector2f((gridBasedSensor->detectionArea.left + x * gridBasedSensor->cellSize) * scale, gridBasedSensor->detectionArea.top * scale) + offset, sf::Color(220, 220, 220)),
-                                sf::Vertex(sf::Vector2f((gridBasedSensor->detectionArea.left + x * gridBasedSensor->cellSize) * scale, (gridBasedSensor->detectionArea.height + gridBasedSensor->detectionArea.top) * scale) + offset, sf::Color(220, 220, 220))
+                                sf::Vertex({sf::Vector2f((gridBasedSensor->detectionArea.position.x + x * gridBasedSensor->cellSize) * scale, gridBasedSensor->detectionArea.position.y * scale) + offset, sf::Color(220, 220, 220)}),
+                                sf::Vertex({sf::Vector2f((gridBasedSensor->detectionArea.position.x + x * gridBasedSensor->cellSize) * scale, (gridBasedSensor->detectionArea.size.y + gridBasedSensor->detectionArea.position.y) * scale) + offset, sf::Color(220, 220, 220)})
                             };
-                            window.draw(line, 2, sf::Lines);
+                            window.draw(line, 2, sf::PrimitiveType::Lines);
                         }
 
                         // Draw horizontal lines
-                        for (int x = 0; x <= (gridBasedSensor->detectionArea.height / gridBasedSensor->cellSize); x++) {
+                        for (int x = 0; x <= (gridBasedSensor->detectionArea.size.y / gridBasedSensor->cellSize); x++) {
                             sf::Vertex line[] = {
-                                sf::Vertex(sf::Vector2f((gridBasedSensor->detectionArea.left) * scale, (gridBasedSensor->detectionArea.top + x * gridBasedSensor->cellSize) * scale) + offset, sf::Color(220, 220, 220)),
-                                sf::Vertex(sf::Vector2f((gridBasedSensor->detectionArea.left + gridBasedSensor->detectionArea.width) * scale, (gridBasedSensor->detectionArea.top + x * gridBasedSensor->cellSize) * scale) + offset, sf::Color(220, 220, 220))
+                                sf::Vertex({sf::Vector2f((gridBasedSensor->detectionArea.position.x) * scale, (gridBasedSensor->detectionArea.position.y + x * gridBasedSensor->cellSize) * scale) + offset, sf::Color(220, 220, 220)}),
+                                sf::Vertex({sf::Vector2f((gridBasedSensor->detectionArea.position.x + gridBasedSensor->detectionArea.size.x) * scale, (gridBasedSensor->detectionArea.position.y + x * gridBasedSensor->cellSize) * scale) + offset, sf::Color(220, 220, 220)})
                             };
-                            window.draw(line, 2, sf::Lines);
+                            window.draw(line, 2, sf::PrimitiveType::Lines);
                         }
                     }
                 }
@@ -804,8 +1044,8 @@ void Renderer::render() {  // Input: meters, Output: pixels
                     if(adaptiveGridBasedSensor->showGrid && showSensors) {
 
                         // Draw outer rectangle
-                        // sf::RectangleShape gridBoundaries(sf::Vector2f(adaptiveGridBasedSensor->detectionArea.width * scale, adaptiveGridBasedSensor->detectionArea.height * scale));
-                        // gridBoundaries.setPosition(adaptiveGridBasedSensor->detectionArea.left * scale + offset.x, adaptiveGridBasedSensor->detectionArea.top * scale + offset.y); // Set position in pixels
+                        // sf::RectangleShape gridBoundaries(sf::Vector2f(adaptiveGridBasedSensor->detectionArea.size.x * scale, adaptiveGridBasedSensor->detectionArea.height * scale));
+                        // gridBoundaries.setPosition(adaptiveGridBasedSensor->detectionArea.position.x * scale + offset.x, adaptiveGridBasedSensor->detectionArea.top * scale + offset.y); // Set position in pixels
                         // gridBoundaries.setFillColor(sf::Color::Transparent);
                         // gridBoundaries.setOutlineColor(sf::Color::Black);
                         // gridBoundaries.setOutlineThickness(1);
@@ -813,10 +1053,10 @@ void Renderer::render() {  // Input: meters, Output: pixels
 
                         // Draw the adaptive grid with scaling and offset
                         adaptiveGridBasedSensor->adaptiveGrid.draw(window, font, scale, offset);
-                        adaptiveGridBasedSensor->adaptiveGrid.printChildren(12);
-                        adaptiveGridBasedSensor->adaptiveGrid.printChildren(13);
-                        adaptiveGridBasedSensor->adaptiveGrid.printChildren(14);
-                        adaptiveGridBasedSensor->adaptiveGrid.printChildren(15);
+                        // adaptiveGridBasedSensor->adaptiveGrid.printChildren(12);
+                        // adaptiveGridBasedSensor->adaptiveGrid.printChildren(13);
+                        // adaptiveGridBasedSensor->adaptiveGrid.printChildren(14);
+                        // adaptiveGridBasedSensor->adaptiveGrid.printChildren(15);
 
                     }
                 }
@@ -828,10 +1068,9 @@ void Renderer::render() {  // Input: meters, Output: pixels
 
             // Draw obstacles
             for (const Obstacle& obstacle : obstacles) {
-
-                // Draw the obstacle as a rectangle
-                sf::RectangleShape obstacleShape(sf::Vector2f(obstacle.getBounds().width, obstacle.getBounds().height));
-                obstacleShape.setPosition((obstacle.getBounds().left) + offset.x, (obstacle.getBounds().top) + offset.y); // Scale only position here
+                
+                sf::RectangleShape obstacleShape(sf::Vector2f(obstacle.getBounds().size.x * scale, obstacle.getBounds().size.y * scale));
+                obstacleShape.setPosition({obstacle.getBounds().position.x * scale + offset.x, obstacle.getBounds().position.y * scale + offset.y}); // Scale only position here
                 obstacleShape.setFillColor(obstacle.getColor());
                 window.draw(obstacleShape);
             }
@@ -864,7 +1103,8 @@ void Renderer::render() {  // Input: meters, Output: pixels
             if(showWaypoints) {
                 
                 // Draw the trajectory waypoints ahead of the agent
-                sf::VertexArray waypoints(sf::Quads);
+                // sf::VertexArray waypoints(sf::Quads); // Note: SFML 2.6.2 or prior
+                sf::VertexArray waypoints(sf::PrimitiveType::Triangles, 6);
 
                 // Calculate the next waypoint
                 agent.getNextWaypoint();
@@ -882,10 +1122,21 @@ void Renderer::render() {  // Input: meters, Output: pixels
                         sf::Vector2f bottomLeft(center.x - waypointRadius + offset.x, center.y + waypointRadius + offset.y);
 
                         // Add vertices to the VertexArray
-                        waypoints.append(sf::Vertex(topLeft, color));
-                        waypoints.append(sf::Vertex(topRight, color));
-                        waypoints.append(sf::Vertex(bottomRight, color));
-                        waypoints.append(sf::Vertex(bottomLeft, color));
+                        // Note: SFML 2.6.2 or prior
+                        // waypoints.append(sf::Vertex(topLeft, color));
+                        // waypoints.append(sf::Vertex(topRight, color));
+                        // waypoints.append(sf::Vertex(bottomRight, color));
+                        // waypoints.append(sf::Vertex(bottomLeft, color));
+
+                        // First triangle
+                        waypoints.append(sf::Vertex({topLeft, color}));
+                        waypoints.append(sf::Vertex({bottomLeft, color}));
+                        waypoints.append(sf::Vertex({bottomRight, color}));
+
+                        // Second triangle
+                        waypoints.append(sf::Vertex({topLeft, color}));
+                        waypoints.append(sf::Vertex({topRight, color}));
+                        waypoints.append(sf::Vertex({bottomRight, color}));
                     }
                 }
 
@@ -897,15 +1148,15 @@ void Renderer::render() {  // Input: meters, Output: pixels
             if(showTrajectories) {
                 
                 sf::Vertex pastTrajectory[] = {
-                    sf::Vertex(agent.initialPosition + offset, sf::Color::Blue), 
-                    sf::Vertex(agent.position + offset, sf::Color::Blue)
+                    sf::Vertex({agent.initialPosition + offset, sf::Color::Blue}), 
+                    sf::Vertex({agent.position + offset, sf::Color::Blue})
                 };
                 sf::Vertex futureTrajectory[] = {
-                    sf::Vertex(agent.position + offset, sf::Color::Red),
-                    sf::Vertex(agent.targetPosition + offset, sf::Color::Red)
+                    sf::Vertex({agent.position + offset, sf::Color::Red}),
+                    sf::Vertex({agent.targetPosition + offset, sf::Color::Red})
                 };
-                window.draw(pastTrajectory, 2, sf::Lines);
-                window.draw(futureTrajectory, 2, sf::Lines);
+                window.draw(pastTrajectory, 2, sf::PrimitiveType::Lines);
+                window.draw(futureTrajectory, 2, sf::PrimitiveType::Lines);
 
             }
 
@@ -914,49 +1165,60 @@ void Renderer::render() {  // Input: meters, Output: pixels
 
                 sf::Vector2f direction = agent.velocity;  // Direction of the arrow from velocity vector
                 float theta = std::atan2(agent.heading.y, agent.heading.x) * 180.0f / M_PI; // Convert to degrees
+                sf::Angle thetaAngle = sf::degrees(theta);
                 float arrowLength = 5.0;
 
                 // Normalize the direction vector for consistent arrow length
-                sf::Vector2f normalizedDirection = direction / std::sqrt(direction.x * direction.x + direction.y * direction.y);
+                float magnitude = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+                sf::Vector2f normalizedDirection;
+                
+                // Normalize the direction vector if its magnitude is greater than a small threshold
+                if (magnitude > EPSILON) {
 
-                // Arrow shape factor
-                float arrowHeadLength = 0.4 * scale;
-                float arrowHeadWidth = 0.25 * scale;
-                int lineThickness = 4;
+                    // Normalize the direction vector
+                    normalizedDirection = direction / magnitude;
 
-                // Arrowhead (triangle) - Offset the tip by the agent's radius
-                sf::ConvexShape arrow(3);
-                arrow.setPoint(0, sf::Vector2f(0, 0)); // Tip of the arrow
-                arrow.setPoint(1, sf::Vector2f(-arrowHeadLength, arrowHeadWidth / 2));
-                arrow.setPoint(2, sf::Vector2f(-arrowHeadLength , -arrowHeadWidth / 2));
-                arrow.setFillColor(sf::Color::Black);
+                    // Arrow shape factor
+                    float arrowHeadLength = 0.4 * scale;
+                    float arrowHeadWidth = 0.25 * scale;
+                    int lineThickness = 4;
 
-                sf::Vertex line[] =
-                {
-                    sf::Vertex(agent.position + offset, sf::Color::Black),  // Offset start point
-                    sf::Vertex(line[0].position + normalizedDirection * (agent.bodyRadius + arrowHeadLength + agent.velocityMagnitude / arrowLength), sf::Color::Black) // Ending point (base of arrowhead)
-                };
+                    // Arrowhead (triangle) - Offset the tip by the agent's radius
+                    sf::ConvexShape arrow(3);
+                    arrow.setPoint(0, sf::Vector2f(0, 0)); // Tip of the arrow
+                    arrow.setPoint(1, sf::Vector2f(-arrowHeadLength, arrowHeadWidth / 2));
+                    arrow.setPoint(2, sf::Vector2f(-arrowHeadLength , -arrowHeadWidth / 2));
+                    arrow.setFillColor(sf::Color::Black);
 
-                // Append the arrow lines to the vertex array
-                agentArrowBodyVertexArray.append(line[0]);
-                agentArrowBodyVertexArray.append(line[1]);
+                    sf::Vertex line[] =
+                    {
+                        sf::Vertex({agent.position + offset, sf::Color::Black}),  // Offset start point
+                        sf::Vertex({line[0].position + normalizedDirection * (agent.bodyRadius + arrowHeadLength + agent.velocityMagnitude / arrowLength), sf::Color::Black}) // Ending point (base of arrowhead)
+                    };
 
-                // Create a triangle shape for the arrowhead
-                sf::Vertex triangle[] =
-                {
-                    sf::Vertex(line[1].position, sf::Color::Black),  // Tip of the arrowhead
-                    sf::Vertex(triangle[0].position + sf::Vector2f(-arrowHeadLength, arrowHeadWidth / 2), sf::Color::Black),  // Left point of the arrowhead
-                    sf::Vertex(triangle[0].position + sf::Vector2f(-arrowHeadLength, -arrowHeadWidth / 2), sf::Color::Black)  // Right point of the arrowhead
-                };
+                    // Append the arrow lines to the vertex array
+                    agentArrowBodyVertexArray.append(line[0]);
+                    agentArrowBodyVertexArray.append(line[1]);
 
-                // Rotate the triangle shape based on the agent's heading
-                sf::Transform transform;
-                transform.rotate(theta, triangle[0].position);
+                    // Create a triangle shape for the arrowhead
+                    sf::Vertex triangle[] =
+                    {
+                        sf::Vertex({line[1].position, sf::Color::Black}),  // Tip of the arrowhead
+                        sf::Vertex({triangle[0].position + sf::Vector2f(-arrowHeadLength, arrowHeadWidth / 2), sf::Color::Black}),  // Left point of the arrowhead
+                        sf::Vertex({triangle[0].position + sf::Vector2f(-arrowHeadLength, -arrowHeadWidth / 2), sf::Color::Black})  // Right point of the arrowhead
+                    };
 
-                // Apply the transformation to the triangle vertices and append them to the vertex array
-                for(int i = 0; i < 3; i++) {
-                    triangle[i].position = transform.transformPoint(triangle[i].position);
-                    agentArrowHeadVertexArray.append(triangle[i]);
+                    // Rotate the triangle shape based on the agent's heading
+                    sf::Transform transform;
+                    transform.rotate(thetaAngle, triangle[0].position);
+
+                    // Apply the transformation to the triangle vertices and append them to the vertex array
+                    for(int i = 0; i < 3; i++) {
+                        triangle[i].position = transform.transformPoint(triangle[i].position);
+                        agentArrowHeadVertexArray.append(triangle[i]);
+                    }
+                } else {
+                    normalizedDirection = sf::Vector2f(0, 0);
                 }
             }
             // Append the agent bodies and buffer zones to the vertex arrays
@@ -970,21 +1232,21 @@ void Renderer::render() {  // Input: meters, Output: pixels
         }
 
         // Draw the sensor detection areas
-        if(showSensors) {
+        // if(showSensors) {
 
-            // Draw sensor detection area of each sensor
-            for (const auto& sensorPtr : sensors) { // Iterate over all sensor pointers
+        //     // Draw sensor detection area of each sensor
+        //     for (const auto& sensorPtr : sensors) { // Iterate over all sensor pointers
 
-                // Dereference the sensor pointer
-                const Sensor& sensor = *sensorPtr;
+        //         // Dereference the sensor pointer
+        //         const Sensor& sensor = *sensorPtr;
 
-                // // Draw the detection area for each sensor
-                // sf::RectangleShape detectionAreaShape(sf::Vector2f(sensor.detectionArea.width * scale, sensor.detectionArea.height * scale));
-                // detectionAreaShape.setPosition(sensor.detectionArea.left * scale + offset.x, sensor.detectionArea.top * scale + offset.y);
-                // detectionAreaShape.setFillColor(sensor.detectionAreaColor); // Set the color with alpha
-                // window.draw(detectionAreaShape);
-            }
-        }
+        //         // Draw the detection area for each sensor
+        //         sf::RectangleShape detectionAreaShape(sf::Vector2f(sensor.detectionArea.size.x * scale, sensor.detectionArea.height * scale));
+        //         detectionAreaShape.setPosition(sensor.detectionArea.position.x * scale + offset.x, sensor.detectionArea.top * scale + offset.y);
+        //         detectionAreaShape.setFillColor(sensor.detectionAreaColor); // Set the color with alpha
+        //         window.draw(detectionAreaShape);
+        //     }
+        // }
 
         // Draw the vertex arrays
         window.draw(bufferZonesVertexArray);
@@ -1030,27 +1292,22 @@ void Renderer::appendBufferZones(sf::VertexArray& vertices, const Agent& agent) 
         float angle = 2 * M_PI * i / numSegments;
         sf::Vector2f radius(agent.bufferZoneRadius * std::cos(angle), agent.bufferZoneRadius * std::sin(angle));
         sf::Vector2f radius2((agent.bufferZoneRadius - 1) * std::cos(angle), agent.bufferZoneRadius * std::sin(angle));
-        vertices.append(sf::Vertex(agent.position + offset + radius, agent.bufferZoneColor));
-        vertices.append(sf::Vertex(agent.position + offset + radius2, agent.bufferZoneColor));
+        vertices.append(sf::Vertex({agent.position + offset + radius, agent.bufferZoneColor}));
+        vertices.append(sf::Vertex({agent.position + offset + radius2, agent.bufferZoneColor}));
     }
 }
 
 // Function to append agent bodies to the vertex array
-void Renderer::appendAgentBodies(sf::VertexArray& quads, const Agent& agent) {
+void Renderer::appendAgentBodies(sf::VertexArray& triangles, const Agent& agent) {
 
     // Extract the type of the agent
     std::stringstream ss(agent.type);
     std::string word1, word2;
     ss >> word1 >> word2;
 
-    // Quad vertices
-    sf::Vector2f topLeft;
-    sf::Vector2f topRight;
-    sf::Vector2f bottomRight;
-    sf::Vector2f bottomLeft;
-
     sf::Vector2f position = agent.position + offset;
     float theta = std::atan2(agent.heading.y, agent.heading.x) * 180.0f / M_PI; // Convert to degrees
+    sf::Angle thetaAngle = sf::degrees(theta);
     float minRadius = std::ceil(sin(M_PI/4) * agent.bodyRadius);
     float maxRadius = std::ceil(agent.bodyRadius);
     float divX, divY;
@@ -1074,24 +1331,38 @@ void Renderer::appendAgentBodies(sf::VertexArray& quads, const Agent& agent) {
     }
 
     // Calculate the positions of the quad vertices
-    topLeft = sf::Vector2f(position.x - minRadius, position.y - minRadius/divY);
-    topRight = sf::Vector2f(position.x + minRadius, position.y - minRadius/divY);
-    bottomRight = sf::Vector2f(position.x + minRadius, position.y + minRadius/divY);
-    bottomLeft = sf::Vector2f(position.x - minRadius, position.y + minRadius/divY);
+    sf::Vector2f topLeft = sf::Vector2f(position.x - minRadius, position.y - minRadius/divY);
+    sf::Vector2f topRight = sf::Vector2f(position.x + minRadius, position.y - minRadius/divY);
+    sf::Vector2f bottomRight = sf::Vector2f(position.x + minRadius, position.y + minRadius/divY);
+    sf::Vector2f bottomLeft = sf::Vector2f(position.x - minRadius, position.y + minRadius/divY);
 
     // Create the quad and transform it based on the agent's heading
-    sf::VertexArray body(sf::Quads, 4);
-    body[0] = sf::Vertex(topLeft, agent.color);
-    body[1] = sf::Vertex(topRight, agent.color);
-    body[2] = sf::Vertex(bottomRight, agent.color);
-    body[3] = sf::Vertex(bottomLeft, agent.color);
+    // SFML 2.6.1 and prior
+    // sf::VertexArray body(sf::Quads, 4);
+    // body[0] = sf::Vertex(topLeft, agent.color);
+    // body[1] = sf::Vertex(topRight, agent.color);
+    // body[2] = sf::Vertex(bottomRight, agent.color);
+    // body[3] = sf::Vertex(bottomLeft, agent.color);
+
+    sf::VertexArray body(sf::PrimitiveType::Triangles, 6);
+    // First triangle: topLeft, topRight, bottomRight
+    body[0] = sf::Vertex({topLeft, agent.color});
+    body[1] = sf::Vertex({bottomLeft, agent.color});
+    body[2] = sf::Vertex({bottomRight, agent.color});
+    
+    // Second triangle: bottomRight, bottomLeft, topLeft
+    body[3] = sf::Vertex({topLeft, agent.color});
+    body[4] = sf::Vertex({topRight, agent.color});
+    body[5] = sf::Vertex({bottomRight, agent.color});
+
 
     sf::Transform transform;
-    transform.rotate(theta, position);
+    // transform.rotate(theta, position); // Note: SFML 2.6.1 and prior
+    transform.rotate(thetaAngle, position);
 
     // Apply the transformation to the quad vertices and append them to the vertex array
-    for(int i = 0; i < 4; i++) {
+    for(int i = 0; i < 6; i++) {
         body[i].position = transform.transformPoint(body[i].position);
-        quads.append(body[i]);
+        triangles.append(body[i]);
     }
 }

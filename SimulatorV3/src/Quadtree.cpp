@@ -12,7 +12,7 @@
 // ========================
 
 Quadtree::Node::Node(float x, float y, float size, int id, int depth, Node* parent)
-    : bounds(x, y, size, size), id(id), depth(depth), parent(parent), isSplit(false)
+    : bounds({x, y}, {size, size}), id(id), depth(depth), parent(parent), isSplit(false)
 {
     // Initialize all child pointers to nullptr.
     children[0] = children[1] = children[2] = children[3] = nullptr;
@@ -22,12 +22,12 @@ void Quadtree::Node::split(std::unordered_map<int, Node*>& nodeMap) {
     if (isSplit)
         return;
 
-    float x = bounds.left;
-    float y = bounds.top;
-    float size = bounds.width / 2.0f;
+    float x = bounds.position.x;
+    float y = bounds.position.y;
+    float size = bounds.size.x / 2.0f;
 
-    std::cout << "Generated new parent node at position: (" << bounds.left << ", " << bounds.top << ")" << std::endl;
-    std::cout << "Parent size: " << bounds.width << ", " << bounds.height << std::endl;
+    std::cout << "Generated new parent node at position: (" << bounds.position.x << ", " << bounds.position.y << ")" << std::endl;
+    std::cout << "Parent size: " << bounds.size.x << ", " << bounds.size.y << std::endl;
     std::cout << "Parent id: " << id << std::endl;
 
     // Create 4 children; child indexes are computed via bit shifts.
@@ -38,8 +38,8 @@ void Quadtree::Node::split(std::unordered_map<int, Node*>& nodeMap) {
             Node* child = new Node(x + j * size, y + i * size, size, childId, depth + 1, this);
             children[childIndex] = child;
             nodeMap[childId] = child;
-            std::cout << "Generated new child node at position: (" << child->bounds.left << ", " << child->bounds.top << ")" << std::endl;
-            std::cout << "Child size: " << child->bounds.width << ", " << child->bounds.height << std::endl;
+            std::cout << "Generated new child node at position: (" << child->bounds.position.x << ", " << child->bounds.position.y << ")" << std::endl;
+            std::cout << "Child size: " << child->bounds.size.x << ", " << child->bounds.size.y << std::endl;
             std::cout << "Child id: " << childId << std::endl;
         }
     }
@@ -48,8 +48,8 @@ void Quadtree::Node::split(std::unordered_map<int, Node*>& nodeMap) {
 
 void Quadtree::Node::draw(sf::RenderWindow& window, sf::Font& font) {
     sf::RectangleShape shape;
-    shape.setSize(sf::Vector2f(bounds.width, bounds.height));
-    shape.setPosition(bounds.left, bounds.top);
+    shape.setSize(sf::Vector2f(bounds.size.x, bounds.size.y));
+    shape.setPosition({bounds.position.x, bounds.position.y});
     shape.setFillColor(sf::Color::Transparent);
     shape.setOutlineThickness(1);
     shape.setOutlineColor(sf::Color::Black);
@@ -57,17 +57,17 @@ void Quadtree::Node::draw(sf::RenderWindow& window, sf::Font& font) {
     window.draw(shape);
     bool drawText = true;
 
-    sf::Text text;
+    sf::Text text(font, "", 24);
     text.setFont(font);
     text.setString(std::to_string(id));
     text.setCharacterSize(9);
     text.setFillColor(sf::Color::Black);
 
     sf::FloatRect textBounds = text.getLocalBounds();
-    text.setPosition(
-        bounds.left + bounds.width / 2 - textBounds.width / 2,
-        bounds.top + bounds.height / 2 - textBounds.height / 2
-    );
+    text.setPosition({
+        bounds.position.x + bounds.size.x / 2 - textBounds.size.x / 2,
+        bounds.position.y + bounds.size.y / 2 - textBounds.size.y / 2
+    });
     window.draw(text);
 
     // **Recursively draw children if the node is split**
@@ -81,8 +81,8 @@ void Quadtree::Node::draw(sf::RenderWindow& window, sf::Font& font) {
 
 // void Quadtree::Node::draw(sf::RenderWindow& window, sf::Font& font) {
 //     sf::RectangleShape shape;
-//     shape.setSize(sf::Vector2f(bounds.width, bounds.height));
-//     shape.setPosition(bounds.left, bounds.top);
+//     shape.setSize(sf::Vector2f(bounds.size.x, bounds.size.y));
+//     shape.setPosition(bounds.position.x, bounds.position.y);
 //     shape.setFillColor(sf::Color::Transparent);
 //     shape.setOutlineThickness(1);
 //     shape.setOutlineColor(sf::Color::Black);
@@ -98,8 +98,8 @@ void Quadtree::Node::draw(sf::RenderWindow& window, sf::Font& font) {
 
 //     sf::FloatRect textBounds = text.getLocalBounds();
 //     text.setPosition(
-//         bounds.left + bounds.width / 2 - textBounds.width / 2,
-//         bounds.top + bounds.height / 2 - textBounds.height / 2
+//         bounds.position.x + bounds.size.x / 2 - textBounds.size.x / 2,
+//         bounds.position.y + bounds.size.y / 2 - textBounds.size.y / 2
 //     );
 //     window.draw(text);
 
@@ -115,24 +115,21 @@ void Quadtree::Node::draw(sf::RenderWindow& window, sf::Font& font) {
 void Quadtree::Node::draw(sf::RenderWindow& window, sf::Font& font, float scale, const sf::Vector2f& offset) {
     sf::RectangleShape shape;
     // Scale the size and offset the position
-    shape.setSize(sf::Vector2f(bounds.width * scale, bounds.height * scale));
-    shape.setPosition(bounds.left * scale + offset.x, bounds.top * scale + offset.y);
+    shape.setSize(sf::Vector2f(bounds.size.x * scale, bounds.size.y * scale));
+    shape.setPosition({bounds.position.x * scale + offset.x, bounds.position.y * scale + offset.y});
     shape.setFillColor(sf::Color::Transparent);
     shape.setOutlineThickness(1);
     shape.setOutlineColor(sf::Color::Black);
     window.draw(shape);
     
     // Draw the node id text (also apply scaling and offset)
-    sf::Text text;
-    text.setFont(font);
-    text.setString(std::to_string(id));
-    text.setCharacterSize(1.0 * scale);
+    sf::Text text(font, std::to_string(id), 1.0 * scale); // Initialize text with font, string and character size
     text.setFillColor(sf::Color::Black);
     sf::FloatRect textBounds = text.getLocalBounds();
-    text.setPosition(
-        bounds.left * scale + offset.y + (bounds.width * scale - textBounds.width) / 2,
-        bounds.top * scale + offset.y + (bounds.height * scale - textBounds.height) / 2
-    );
+    text.setPosition({
+        bounds.position.x * scale + offset.x + (bounds.size.x * scale - textBounds.size.x) / 2,
+        bounds.position.y * scale + offset.y + (bounds.size.y * scale - textBounds.size.y) / 2
+    });
     window.draw(text);
     
     // Recursively draw children nodes
@@ -152,8 +149,8 @@ void Quadtree::draw(sf::RenderWindow& window, sf::Font& font, float scale, const
 // void Quadtree::draw(sf::RenderWindow& window, sf::Font& font) {
 //     for (Node* n : baseNodes) {
 //         std::cout << "Drawing base node: " << n->id << std::endl;
-//         std::cout << "Base node position: " << n->bounds.left << ", " << n->bounds.top << std::endl;
-//         std::cout << "Base node size: " << n->bounds.width << ", " << n->bounds.height << std::endl;
+//         std::cout << "Base node position: " << n->bounds.position.x << ", " << n->bounds.position.y << std::endl;
+//         std::cout << "Base node size: " << n->bounds.size.x << ", " << n->bounds.size.y << std::endl;
 //         n->draw(window, font);
 //     }
 // }
@@ -299,9 +296,9 @@ sf::Vector2f Quadtree::getCellCenter(int id) const {
     if (it == nodeMap.end())
         throw std::runtime_error("Cell not found.");
     Node* currentNode = it->second;
-    float x = currentNode->bounds.left;
-    float y = currentNode->bounds.top;
-    float size = currentNode->bounds.width;
+    float x = currentNode->bounds.position.x;
+    float y = currentNode->bounds.position.y;
+    float size = currentNode->bounds.size.x;
     return sf::Vector2f(x + size / 2, y + size / 2);
 }
 
@@ -310,8 +307,8 @@ sf::Vector2f Quadtree::getCellPosition(int id) const {
     if (it == nodeMap.end())
         throw std::runtime_error("Cell not found.");
     Node* currentNode = it->second;
-    float x = currentNode->bounds.left;
-    float y = currentNode->bounds.top;
+    float x = currentNode->bounds.position.x;
+    float y = currentNode->bounds.position.y;
     return sf::Vector2f(x, y);
 }
 
@@ -402,8 +399,8 @@ int Quadtree::getNearestCell(sf::Vector2f position) {
     }
     // Traverse down the tree.
     while (currentNode->isSplit) {
-        float midX = currentNode->bounds.left + currentNode->bounds.width / 2;
-        float midY = currentNode->bounds.top + currentNode->bounds.height / 2;
+        float midX = currentNode->bounds.position.x + currentNode->bounds.size.x / 2;
+        float midY = currentNode->bounds.position.y + currentNode->bounds.size.y / 2;
         int childIndex = 0;
         if (position.y >= midY)
             childIndex |= 2;
@@ -512,13 +509,18 @@ void Quadtree::movePositionsRight(float x) {
     }
 }
 
+// void Quadtree::updateCell() {
+//     // Placeholder for update logic.
+//     for (sf::Vector2f position : positions) {
+//         int cellId = getNearestCell(position);
+//         Node* targetNode = getNodeById(cellId);
+//         // (Update logic can be added here.)
+//     }
+// }
+
+// Alternative to reset tree due to cell being aggregated
 void Quadtree::update() {
-    // Placeholder for update logic.
-    for (sf::Vector2f position : positions) {
-        int cellId = getNearestCell(position);
-        Node* targetNode = getNodeById(cellId);
-        // (Update logic can be added here.)
-    }
+    
 }
 
 void Quadtree::printChildren(int id) {

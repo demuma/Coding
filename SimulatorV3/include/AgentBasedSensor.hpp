@@ -30,7 +30,7 @@ public:
         sf::Color detectionAreaColor);
 
     ~AgentBasedSensor();
-    sf::Vector2f position = sf::Vector2f(detectionArea.left, detectionArea.top);
+    sf::Vector2f position = sf::Vector2f(detectionArea.position.x, detectionArea.position.y);
 
     void update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string datetime) override;
     void captureAgentData(std::vector<Agent>& agents);

@@ -5,6 +5,7 @@
 #include <atomic>
 
 #include "../include/SharedBuffer.hpp"
+#include "../include/QuadtreeSnapshot.hpp"
 #include "../include/Simulation.hpp"
 #include "../include/Renderer.hpp"
 #include "../include/Logging.hpp"
@@ -29,6 +30,7 @@ int main() {
     SharedBuffer<std::vector<Agent>> agentBuffer;
 
     // Shared buffers for sensor data
+    std::unordered_map<std::string,std::shared_ptr<SharedBuffer<std::shared_ptr<QuadtreeSnapshot::Node>>>> sensorBuffers;
 
     // Load global configuration data
     float timeStep = config["simulation"]["time_step"].as<float>();
@@ -37,12 +39,12 @@ int main() {
     // Shared variabes
     std::atomic<float> currentSimulationTimeStep{timeStep};
 
-    Simulation simulation(agentBuffer, currentSimulationTimeStep, config);
+    Simulation simulation(agentBuffer, sensorBuffers, currentSimulationTimeStep, config);
     std::thread simulationThread(&Simulation::run, &simulation);
 
     // Run the renderer if not in headless mode
     if (enableRendering) {
-        Renderer renderer(agentBuffer, currentSimulationTimeStep, config);
+        Renderer renderer(agentBuffer, sensorBuffers, currentSimulationTimeStep, config);
         renderer.run();
     }
 

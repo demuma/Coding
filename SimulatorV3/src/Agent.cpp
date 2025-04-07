@@ -40,11 +40,16 @@ void Agent::calculateVelocity(sf::Vector2f waypoint) {
 
 // Get the bounds of the agent's buffer zone
 sf::FloatRect Agent::getBufferZoneBounds() const {
+    // Note: SFML 2.6.2 and prior
+    // return sf::FloatRect({
+    //     position.x - bufferZoneRadius,
+    //     position.y - bufferZoneRadius,
+    //     2 * bufferZoneRadius,
+    //     2 * bufferZoneRadius}
+    // );
     return sf::FloatRect(
-        position.x - bufferZoneRadius,
-        position.y - bufferZoneRadius,
-        2 * bufferZoneRadius,
-        2 * bufferZoneRadius
+        {position.x - bufferZoneRadius, position.y - bufferZoneRadius},
+        {2 * bufferZoneRadius, 2 * bufferZoneRadius}
     );
 }
 

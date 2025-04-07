@@ -148,7 +148,7 @@
     "numbers": "cpp",
     "forward_list": "cpp"
   },
-  "C_Cpp.default.compilerPath": "",
+  "C_Cpp.default.compilerPath": "/usr/bin/clang++",
   "C_Cpp.default.includePath": [
     "/usr/local/include/bsoncxx/v_noabi/bsoncxx/",
     "/usr/local/include/mongocxx/v_noabi/mongocxx/"

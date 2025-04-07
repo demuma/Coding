@@ -18,6 +18,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/Obstacle.cpp" "CMakeFiles/Simulator.dir/src/Obstacle.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Obstacle.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/PerlinNoise.cpp" "CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/PerlinNoise.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/Quadtree.cpp" "CMakeFiles/Simulator.dir/src/Quadtree.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Quadtree.cpp.o.d"
+  "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/QuadtreeSnapshot.cpp" "CMakeFiles/Simulator.dir/src/QuadtreeSnapshot.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/QuadtreeSnapshot.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/Renderer.cpp" "CMakeFiles/Simulator.dir/src/Renderer.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Renderer.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/Sensor.cpp" "CMakeFiles/Simulator.dir/src/Sensor.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Sensor.cpp.o.d"
   "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/src/Simulation.cpp" "CMakeFiles/Simulator.dir/src/Simulation.cpp.o" "gcc" "CMakeFiles/Simulator.dir/src/Simulation.cpp.o.d"

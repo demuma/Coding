@@ -109,7 +109,7 @@ void AgentBasedSensor::postData() {
             // Append the fields to the document
             document << "timestamp" << agentData.timestamp
                      << "sensor_id" << agentData.sensorId
-                     << "data_type" << "agent_data"
+                     << "data_type" << "agent data"
                      << "agent_id" << agentData.agentId
                      << "type" << agentData.type
                      << "position" 
@@ -143,10 +143,10 @@ void AgentBasedSensor::postMetadata() {
     bsoncxx::builder::stream::document document{};
 
     bsoncxx::builder::stream::document positionDocument{}, detectionAreaDocument{};
-    positionDocument << "x" << detectionArea.left
-                      << "y" << detectionArea.top;
-    detectionAreaDocument << "width" << detectionArea.width
-                          << "height" << detectionArea.height;
+    positionDocument << "x" << detectionArea.position.x
+                      << "y" << detectionArea.position.y;
+    detectionAreaDocument << "width" << detectionArea.size.x
+                          << "height" << detectionArea.size.y;
 
     // Append the metadata fields to the document
     document << "timestamp" << timestamp

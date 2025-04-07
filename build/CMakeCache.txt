@@ -132,11 +132,11 @@ CMAKE_OSX_ARCHITECTURES:STRING=
 
 //Minimum OS X version to target for deployment (at runtime); newer
 // APIs weak linked. Set to empty string for default value.
-CMAKE_OSX_DEPLOYMENT_TARGET:STRING=
+CMAKE_OSX_DEPLOYMENT_TARGET:STRING=15.3
 
 //The product will be built against the headers and libraries located
 // inside the indicated SDK.
-CMAKE_OSX_SYSROOT:PATH=/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk
+CMAKE_OSX_SYSROOT:PATH=/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk
 
 //Value Computed by CMake
 CMAKE_PROJECT_DESCRIPTION:STATIC=
@@ -222,10 +222,10 @@ RoadUserSimulation_IS_TOP_LEVEL:STATIC=ON
 RoadUserSimulation_SOURCE_DIR:STATIC=/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Full Simulation Package
 
 //Header include-directory for Cyrus libsasl2
-SASL2_INCLUDE_DIR:PATH=/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/include
+SASL2_INCLUDE_DIR:PATH=/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk/usr/include
 
 //Library file for Cyrus libsasl2
-SASL2_LIBRARY:FILEPATH=/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/lib/libsasl2.tbd
+SASL2_LIBRARY:FILEPATH=/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk/usr/lib/libsasl2.tbd
 
 //The directory containing a CMake configuration file for SFML.
 SFML_DIR:PATH=/usr/local/lib/cmake/SFML
@@ -393,7 +393,7 @@ CMAKE_UNAME:INTERNAL=/usr/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //Details about finding SASL2
-FIND_PACKAGE_MESSAGE_DETAILS_SASL2:INTERNAL=[2.1.26][/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/include][/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/lib/libsasl2.tbd][v2.1.26(2.0)]
+FIND_PACKAGE_MESSAGE_DETAILS_SASL2:INTERNAL=[2.1.26][/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk/usr/include][/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk/usr/lib/libsasl2.tbd][v2.1.26(2.0)]
 //Details about finding Threads
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 

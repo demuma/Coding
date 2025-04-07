@@ -42,7 +42,7 @@ public:
     bool showGrid = false;
     int maxDepth;
     Quadtree adaptiveGrid;
-    sf::Vector2f position = sf::Vector2f(detectionArea.left, detectionArea.top);
+    sf::Vector2f position = sf::Vector2f(detectionArea.position.x, detectionArea.position.y);
 
     void update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string date) override;
     void postData() override;

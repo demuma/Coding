@@ -787,7 +787,7 @@
 				}
 			],
 			"type" : "STRING",
-			"value" : ""
+			"value" : "15.3"
 		},
 		{
 			"name" : "CMAKE_OSX_SYSROOT",
@@ -799,7 +799,7 @@
 				}
 			],
 			"type" : "PATH",
-			"value" : "/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk"
+			"value" : "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk"
 		},
 		{
 			"name" : "CMAKE_PLATFORM_INFO_INITIALIZED",
@@ -1155,7 +1155,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "[2.1.26][/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/include][/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/lib/libsasl2.tbd][v2.1.26(2.0)]"
+			"value" : "[2.1.26][/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk/usr/include][/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk/usr/lib/libsasl2.tbd][v2.1.26(2.0)]"
 		},
 		{
 			"name" : "FIND_PACKAGE_MESSAGE_DETAILS_Threads",
@@ -1215,7 +1215,7 @@
 				}
 			],
 			"type" : "PATH",
-			"value" : "/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/include"
+			"value" : "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk/usr/include"
 		},
 		{
 			"name" : "SASL2_LIBRARY",
@@ -1227,7 +1227,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/lib/libsasl2.tbd"
+			"value" : "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk/usr/lib/libsasl2.tbd"
 		},
 		{
 			"name" : "SFML_DIR",

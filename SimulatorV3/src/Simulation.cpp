@@ -5,8 +5,8 @@
 #include "../include/AdaptiveGridBasedSensor.hpp"
 
 // Simulation::Simulation(std::queue<std::vector<Agent>> (&buffers)[2], std::mutex &queueMutex, std::condition_variable &queueCond, std::atomic<float>& currentSimulationTimeStep, std::atomic<bool>& stop, std::atomic<int>& currentNumAgents, const YAML::Node& config, std::atomic<std::queue<std::vector<Agent>>*>& currentReadBuffer)
-Simulation::Simulation(SharedBuffer<std::vector<Agent>>& buffer, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config)
-: buffer(buffer), currentSimulationTimeStep(currentSimulationTimeStep), config(config), grid(0, 0, 0), instance {} {
+Simulation::Simulation(SharedBuffer<std::vector<Agent>>& buffer, std::unordered_map<std::string, std::shared_ptr<SharedBuffer<std::shared_ptr<QuadtreeSnapshot::Node>>>> snapshotBuffers, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config)
+: buffer(buffer), sensorBuffers(sensorBuffers), currentSimulationTimeStep(currentSimulationTimeStep), config(config), grid(0, 0, 0), instance {} {
     
     // Set the initial write buffer (second queue buffer) -> TODO: Make SharedBuffer class and move this logic there
     DEBUG_MSG("Simulation: write buffer: " << buffer.writeBufferIndex);
@@ -128,7 +128,7 @@ void Simulation::loadObstacles() {
                 std::vector<float> position = obstacleNode["position"].as<std::vector<float>>();
                 std::vector<float> size = obstacleNode["size"].as<std::vector<float>>();
                 obstacles.push_back(Obstacle(
-                    sf::FloatRect(position[0], position[1], size[0], size[1]), 
+                    sf::FloatRect({position[0], position[1]}, {size[0], size[1]}), 
                     stringToColor(obstacleNode["color"].as<std::string>())
                 ));
             } else {
@@ -302,10 +302,14 @@ void Simulation::initializeSensors() {
         // Define the detection area for the sensor
         sf::FloatRect detectionArea(
 
-            sensorNode["detection_area"]["left"].as<float>(),
-            sensorNode["detection_area"]["top"].as<float>(),
-            sensorNode["detection_area"]["width"].as<float>(),
-            sensorNode["detection_area"]["height"].as<float>()
+            {
+                sensorNode["detection_area"]["x"].as<float>(),
+                sensorNode["detection_area"]["y"].as<float>()
+            },
+            {
+                sensorNode["detection_area"]["width"].as<float>(),
+                sensorNode["detection_area"]["height"].as<float>()
+            }
         );
 
         // Create the agent-based sensor

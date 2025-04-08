@@ -63,6 +63,6 @@
 brew install sfml@3
 
 ## Build project
-- cd ./SimulatorV2
+- cd ./SimulatorV3
 - cmake -S . -B build
 - cmake --build build -j$(sysctl -n hw.ncpu)

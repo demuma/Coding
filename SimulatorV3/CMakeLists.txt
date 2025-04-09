@@ -11,7 +11,7 @@ else()
 endif()
 
 # Set the SFML_DIR to the path containing SFMLConfig.cmake
-set(SFML_DIR "${HOMEBREW_PREFIX}/sfml@3/lib/cmake/SFML")
+set(SFML_DIR "${HOMEBREW_PREFIX}/sfml/lib/cmake/SFML")
 
 # Find SFML libraries
 find_package(SFML 3.0.0 COMPONENTS Graphics Window System REQUIRED)

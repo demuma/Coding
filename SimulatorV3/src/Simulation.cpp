@@ -43,12 +43,12 @@ void Simulation::loadConfiguration() {
     waypointDistance = config["agents"]["waypoint_distance"].as<float>();
     numAgents = config["agents"]["num_agents"].as<int>();
 
-    // Load number of threads -> TODO: Use this to initialize the thread pool
-    if(config["simulation"]["num_threads"].as<int>()) {
-        numThreads = config["simulation"]["num_threads"].as<int>();
-    } else {
-        numThreads = std::thread::hardware_concurrency();
-    }
+    // Load number of threads -> TODO: Use this to initialize the thread pool (path finding)
+    // if(config["simulation"]["num_threads"].as<int>()) {
+    //     numThreads = config["simulation"]["num_threads"].as<int>();
+    // } else {
+    //     numThreads = std::thread::hardware_concurrency();
+    // }
 
     // If datetime is provided in the configuration, use it, otherwise use the current time
     if(config["simulation"]["datetime"]) {

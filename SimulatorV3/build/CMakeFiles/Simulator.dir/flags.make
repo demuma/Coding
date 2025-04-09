@@ -4,7 +4,7 @@
 # compile CXX with /Library/Developer/CommandLineTools/usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I"/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/include" -isystem /opt/homebrew/opt/sfml@3/include -isystem /opt/homebrew/include -isystem /opt/homebrew/include/mongocxx/v_noabi -isystem /opt/homebrew/include/bsoncxx/v_noabi
+CXX_INCLUDES = -I"/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/SimulatorV3/include" -isystem /opt/homebrew/opt/sfml/include -isystem /opt/homebrew/include -isystem /opt/homebrew/include/mongocxx/v_noabi -isystem /opt/homebrew/include/bsoncxx/v_noabi
 
 CXX_FLAGSarm64 = -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk -O3
 

@@ -21,13 +21,13 @@ renderer:
 simulation:
   width: 80
   height: 80
-  duration_seconds: 100
+  duration_seconds: 5
   maximum_frames: 100
   time_step: 0.05
   playback_speed: 1.0
-  num_threads: 8
+  # num_threads: 8
   # scenario: random # not used
-  datetime: '2025-02-03T10:30:00'
+  datetime: '2025-04-09T10:30:00'
 
 collision:
   grid:
@@ -196,12 +196,12 @@ sensors:
     detection_area:
       x: 0.0
       y: 0.0
-      width: 40.0 # default: 85.0
-      height: 40.0 # default: 72.0
+      width: 80.0 # default: 85.0
+      height: 80.0 # default: 72.0
       color: green
       alpha: 0.1
     grid:
-      cell_size: 20 # in meters // TO-DO: remove and use max(width, height) / 2
+      cell_size: 40 # in meters // TO-DO: remove and use max(width, height) / 2
       show_grid: true
       max_depth: 2
     database:

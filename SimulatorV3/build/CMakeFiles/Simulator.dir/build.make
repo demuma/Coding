@@ -335,9 +335,9 @@ Simulator: CMakeFiles/Simulator.dir/src/Simulation.cpp.o
 Simulator: CMakeFiles/Simulator.dir/src/ThreadPool.cpp.o
 Simulator: CMakeFiles/Simulator.dir/src/Utilities.cpp.o
 Simulator: CMakeFiles/Simulator.dir/build.make
-Simulator: /opt/homebrew/opt/sfml@3/lib/libsfml-graphics.3.0.0.dylib
-Simulator: /opt/homebrew/opt/sfml@3/lib/libsfml-window.3.0.0.dylib
-Simulator: /opt/homebrew/opt/sfml@3/lib/libsfml-system.3.0.0.dylib
+Simulator: /opt/homebrew/opt/sfml/lib/libsfml-graphics.3.0.0.dylib
+Simulator: /opt/homebrew/opt/sfml/lib/libsfml-window.3.0.0.dylib
+Simulator: /opt/homebrew/opt/sfml/lib/libsfml-system.3.0.0.dylib
 Simulator: /opt/homebrew/lib/libyaml-cpp.0.8.0.dylib
 Simulator: /opt/homebrew/lib/libmongocxx.4.0.0.dylib
 Simulator: /opt/homebrew/lib/libbsoncxx.4.0.0.dylib

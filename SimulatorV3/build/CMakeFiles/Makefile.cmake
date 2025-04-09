@@ -150,14 +150,14 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/opt/homebrew/lib/cmake/yaml-cpp/yaml-cpp-config.cmake"
   "/opt/homebrew/lib/cmake/yaml-cpp/yaml-cpp-targets-release.cmake"
   "/opt/homebrew/lib/cmake/yaml-cpp/yaml-cpp-targets.cmake"
-  "/opt/homebrew/opt/sfml@3/lib/cmake/SFML/SFMLConfig.cmake"
-  "/opt/homebrew/opt/sfml@3/lib/cmake/SFML/SFMLConfigVersion.cmake"
-  "/opt/homebrew/opt/sfml@3/lib/cmake/SFML/SFMLGraphicsSharedTargets-release.cmake"
-  "/opt/homebrew/opt/sfml@3/lib/cmake/SFML/SFMLGraphicsSharedTargets.cmake"
-  "/opt/homebrew/opt/sfml@3/lib/cmake/SFML/SFMLSystemSharedTargets-release.cmake"
-  "/opt/homebrew/opt/sfml@3/lib/cmake/SFML/SFMLSystemSharedTargets.cmake"
-  "/opt/homebrew/opt/sfml@3/lib/cmake/SFML/SFMLWindowSharedTargets-release.cmake"
-  "/opt/homebrew/opt/sfml@3/lib/cmake/SFML/SFMLWindowSharedTargets.cmake"
+  "/opt/homebrew/opt/sfml/lib/cmake/SFML/SFMLConfig.cmake"
+  "/opt/homebrew/opt/sfml/lib/cmake/SFML/SFMLConfigVersion.cmake"
+  "/opt/homebrew/opt/sfml/lib/cmake/SFML/SFMLGraphicsSharedTargets-release.cmake"
+  "/opt/homebrew/opt/sfml/lib/cmake/SFML/SFMLGraphicsSharedTargets.cmake"
+  "/opt/homebrew/opt/sfml/lib/cmake/SFML/SFMLSystemSharedTargets-release.cmake"
+  "/opt/homebrew/opt/sfml/lib/cmake/SFML/SFMLSystemSharedTargets.cmake"
+  "/opt/homebrew/opt/sfml/lib/cmake/SFML/SFMLWindowSharedTargets-release.cmake"
+  "/opt/homebrew/opt/sfml/lib/cmake/SFML/SFMLWindowSharedTargets.cmake"
   )
 
 # The corresponding makefile is:

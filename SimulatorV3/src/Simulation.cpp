@@ -3,6 +3,7 @@
 #include "../include/AgentBasedSensor.hpp"
 #include "../include/GridBasedSensor.hpp"
 #include "../include/AdaptiveGridBasedSensor.hpp"
+#include "../include/Region.hpp"
 
 // Simulation::Simulation(std::queue<std::vector<Agent>> (&buffers)[2], std::mutex &queueMutex, std::condition_variable &queueCond, std::atomic<float>& currentSimulationTimeStep, std::atomic<bool>& stop, std::atomic<int>& currentNumAgents, const YAML::Node& config, std::atomic<std::queue<std::vector<Agent>>*>& currentReadBuffer)
 Simulation::Simulation(SharedBuffer<std::vector<Agent>>& buffer, std::unordered_map<std::string, std::shared_ptr<SharedBuffer<std::shared_ptr<QuadtreeSnapshot::Node>>>> snapshotBuffers, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config)
@@ -13,10 +14,12 @@ Simulation::Simulation(SharedBuffer<std::vector<Agent>>& buffer, std::unordered_
     
     loadConfiguration();
     loadAgentsAttributes();
+    loadRegionsAttributes();
     loadObstacles();
     initializeDatabase();
     initializeGrid();
     initializeAgents();
+    initializeRegions();
     initializeSensors();
 }
 
@@ -75,28 +78,28 @@ void Simulation::loadConfiguration() {
 
 void Simulation::loadAgentsAttributes() {
 
-    // Extract agent data per type
+    // Extract agent attributes per type
     if (config["agents"] && config["agents"]["road_user_taxonomy"]) {
-        for (const auto& agent : config["agents"]["road_user_taxonomy"]) {
-            std::string type = agent["type"].as<std::string>();
+        for (const auto& agentType : config["agents"]["road_user_taxonomy"]) {
+            std::string type = agentType["type"].as<std::string>();
             Agent::AgentTypeAttributes attributes;
 
-            attributes.probability = agent["probability"].as<double>();
-            attributes.priority = agent["priority"].as<int>();
-            attributes.bodyRadius = agent["radius"].as<double>();
-            attributes.color = agent["color"].as<std::string>();
+            attributes.probability = agentType["probability"].as<double>();
+            attributes.priority = agentType["priority"].as<int>();
+            attributes.bodyRadius = agentType["radius"].as<double>();
+            attributes.color = agentType["color"].as<std::string>();
 
-            attributes.velocity.min = agent["velocity"]["min"].as<double>();
-            attributes.velocity.max = agent["velocity"]["max"].as<double>();
-            attributes.velocity.mu = agent["velocity"]["mu"].as<double>();
-            attributes.velocity.sigma = agent["velocity"]["sigma"].as<double>();
-            attributes.velocity.noiseScale = agent["velocity"]["noise_scale"].as<double>();
-            attributes.velocity.noiseFactor = agent["velocity"]["noise_factor"].as<double>();
+            attributes.velocity.min = agentType["velocity"]["min"].as<double>();
+            attributes.velocity.max = agentType["velocity"]["max"].as<double>();
+            attributes.velocity.mu = agentType["velocity"]["mu"].as<double>();
+            attributes.velocity.sigma = agentType["velocity"]["sigma"].as<double>();
+            attributes.velocity.noiseScale = agentType["velocity"]["noise_scale"].as<double>();
+            attributes.velocity.noiseFactor = agentType["velocity"]["noise_factor"].as<double>();
 
-            attributes.acceleration.min = agent["acceleration"]["min"].as<double>();
-            attributes.acceleration.max = agent["acceleration"]["max"].as<double>();
+            attributes.acceleration.min = agentType["acceleration"]["min"].as<double>();
+            attributes.acceleration.max = agentType["acceleration"]["max"].as<double>();
 
-            attributes.lookAheadTime = agent["look_ahead_time"].as<double>();
+            attributes.lookAheadTime = agentType["look_ahead_time"].as<double>();
 
             // Store in map
             agentTypeAttributes[type] = attributes;
@@ -104,6 +107,35 @@ void Simulation::loadAgentsAttributes() {
 
         // Set the number of agent types
         numAgentTypes = agentTypeAttributes.size();
+    }
+}
+
+void Simulation::loadRegionsAttributes() {
+
+    // Extract region atributes per type
+    if (config["region_taxonomy"]) {
+        for (const auto& regionType : config["region_taxonomy"]) {
+            Region::RegionTypeAttributes attributes;
+            std::string type = regionType["type"].as<std::string>();
+
+            // General attributes
+            attributes.color = regionType["color"].as<std::string>();
+            attributes.alpha = regionType["alpha"].as<float>();
+            // Granularities
+            attributes.granularities.spatial.min = regionType["granularities"]["spatial"]["min"].as<float>();
+            attributes.granularities.spatial.max = regionType["granularities"]["spatial"]["max"].as<float>();
+            attributes.granularities.temporal.min = regionType["granularities"]["temporal"]["min"].as<float>();
+            attributes.granularities.temporal.max = regionType["granularities"]["temporal"]["max"].as<float>();
+            // Privacy
+            attributes.privacy.k_anonymity.min = regionType["privacy"]["k_anonymity"]["min"].as<int>();
+            attributes.privacy.l_diversity.min = regionType["privacy"]["l_diversity"]["min"].as<int>();
+
+            // Store in map
+            regionTypeAttributes[type] = attributes;
+        }
+
+        // Set the number of agent types
+        numRegionTypes = regionTypeAttributes.size();
     }
 }
 
@@ -253,6 +285,34 @@ void Simulation::initializeAgents() {
     }    
 }
 
+void Simulation::initializeRegions() {
+
+    // Load regions from the configuration file
+    if(config["regions"]) {
+        for (const auto& regionNode: config["regions"]) {
+
+            Region region = Region(regionTypeAttributes[regionNode["type"].as<std::string>()]);
+
+            region.type = regionNode["type"].as<std::string>();
+            sf::FloatRect area(
+                {regionNode["area"]["x"].as<float>(), regionNode["area"]["y"].as<float>()},
+                {regionNode["area"]["width"].as<float>(), regionNode["area"]["height"].as<float>()}
+            );
+            region.area = area;
+            region.colorAlpha = sf::Color(
+                stringToColor(region.attributes.color).r,
+                stringToColor(region.attributes.color).g,
+                stringToColor(region.attributes.color).b,
+                region.attributes.alpha  * 255
+            );
+
+            // Create the region and add to regions vector
+            regions.push_back(region);
+            DEBUG_MSG("New " << region.type << " region created at (" << region.area.position.x << ", " << region.area.position.y << ") with area (" << region.area.size.x << ", " << region.area.size.y << ")");
+        }
+    }
+}
+
 // Initialize the database connection
 void Simulation::initializeDatabase() {
 
@@ -301,15 +361,8 @@ void Simulation::initializeSensors() {
 
         // Define the detection area for the sensor
         sf::FloatRect detectionArea(
-
-            {
-                sensorNode["detection_area"]["x"].as<float>(),
-                sensorNode["detection_area"]["y"].as<float>()
-            },
-            {
-                sensorNode["detection_area"]["width"].as<float>(),
-                sensorNode["detection_area"]["height"].as<float>()
-            }
+            {sensorNode["detection_area"]["x"].as<float>(), sensorNode["detection_area"]["y"].as<float>()},
+            {sensorNode["detection_area"]["width"].as<float>(), sensorNode["detection_area"]["height"].as<float>()}
         );
 
         // Create the agent-based sensor
@@ -508,13 +561,13 @@ void Simulation::update() {
         }
     }
 
-
     // Update sensors and store sensor data
     for (auto& sensor : sensors) {
 
         sensor->update(agents, timeStep, simulationTime, datetime);
         // sensor->printData();
         sensor->postData();
+        // sensor->postAggregatedData();
     }
 
     // Collision detection using grid
@@ -571,12 +624,12 @@ void Simulation::postData(const std::vector<Agent>& agents) {
                         << bsoncxx::builder::stream::open_array
                         << agent.position.x 
                         << agent.position.y
-                         << bsoncxx::builder::stream::close_array
+                        << bsoncxx::builder::stream::close_array
                      << "velocity" 
                         << bsoncxx::builder::stream::open_array
                         << agent.velocity.x 
                         << agent.velocity.y
-                         << bsoncxx::builder::stream::close_array;
+                        << bsoncxx::builder::stream::close_array;
 
             documents.push_back(document << bsoncxx::builder::stream::finalize);
         }

@@ -228,6 +228,61 @@ sensors:
 #     color: red
 #     alpha: 0.1
 
+region_taxonomy:
+  - type: commercial
+    color: red
+    alpha: 0.1
+    granularities:
+      spatial: # in meters
+        min: 0.0
+        max: 1000.0
+      temporal: # in seconds
+        min: 0.0
+        max: 10.0
+    privacy:
+      k_anonymity:
+        min: 1
+      l_diversity:
+        min: 1
+  - type: residential
+    color: blue
+    alpha: 0.1
+    granularities:
+      spatial: # in meters
+        min: 10.0
+        max: 1000.0
+      temporal: # in seconds
+        min: 1.0
+        max: 10.0
+    privacy:
+      k_anonymity:
+        min: 1
+      l_diversity:
+        min: 1
+  - type: traffic
+    color: yellow
+    alpha: 0.1
+    granularities:
+      spatial: # in meters
+        min: 0.1
+        max: 1000.0
+      temporal: # in seconds
+        min: 0.0
+        max: 10.0
+    privacy:
+      k_anonymity:
+        min: 1
+      l_diversity:
+        min: 1
+
+regions:
+  - type: traffic
+    area:
+      x: 0.0
+      y: 0.0
+      width: 80.0
+      height: 80.0
+
 location:
   latitude: 53.55703
   longitude: 10.02303

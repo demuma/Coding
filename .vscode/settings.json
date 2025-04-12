@@ -146,7 +146,8 @@
     "codecvt": "cpp",
     "fstream": "cpp",
     "numbers": "cpp",
-    "forward_list": "cpp"
+    "forward_list": "cpp",
+    "print": "cpp"
   },
   "C_Cpp.default.compilerPath": "/usr/bin/clang++",
   "C_Cpp.default.includePath": [

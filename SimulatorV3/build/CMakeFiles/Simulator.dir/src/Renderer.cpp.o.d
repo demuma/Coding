@@ -1010,6 +1010,33 @@ CMakeFiles/Simulator.dir/src/Renderer.cpp.o: \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/QuadtreeSnapshot.hpp \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/Obstacle.hpp \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/Utilities.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/types.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/types-fwd.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/config/prelude.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/config/util.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/config/compiler.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/config/config.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/config/export.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/config/version.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/config/postlude.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/array/view.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/array/view-fwd.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/types/bson_value/view-fwd.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/array/element.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/array/element-fwd.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/document/element.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/document/element-fwd.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/document/view-fwd.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/types/bson_value/value-fwd.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/stdx/optional.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/stdx/operators.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/stdx/type_traits.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/stdx/string_view.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/document/view.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/decimal128.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/decimal128-fwd.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/oid.hpp \
+  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/oid-fwd.hpp \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/Sensor.hpp \
   /opt/homebrew/include/mongocxx/v_noabi/mongocxx/client.hpp \
   /opt/homebrew/include/mongocxx/v_noabi/mongocxx/client-fwd.hpp \
@@ -1029,25 +1056,6 @@ CMakeFiles/Simulator.dir/src/Renderer.cpp.o: \
   /opt/homebrew/include/mongocxx/v_noabi/mongocxx/bulk_write-fwd.hpp \
   /opt/homebrew/include/mongocxx/v_noabi/mongocxx/index_view-fwd.hpp \
   /opt/homebrew/include/mongocxx/v_noabi/mongocxx/search_index_view-fwd.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/document/view.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/document/view-fwd.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/config/prelude.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/config/util.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/config/compiler.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/config/config.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/config/export.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/config/version.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/config/postlude.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/document/element.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/array/element-fwd.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/document/element-fwd.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/types-fwd.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/types/bson_value/value-fwd.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/types/bson_value/view-fwd.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/stdx/optional.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/stdx/operators.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/stdx/type_traits.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/stdx/string_view.hpp \
   /opt/homebrew/include/mongocxx/v_noabi/mongocxx/options/client_session.hpp \
   /opt/homebrew/include/mongocxx/v_noabi/mongocxx/options/client_session-fwd.hpp \
   /opt/homebrew/include/mongocxx/v_noabi/mongocxx/options/transaction.hpp \
@@ -1060,9 +1068,6 @@ CMakeFiles/Simulator.dir/src/Renderer.cpp.o: \
   /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/document/view_or_value.hpp \
   /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/document/value.hpp \
   /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/document/value-fwd.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/array/view.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/array/view-fwd.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/array/element.hpp \
   /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/view_or_value.hpp \
   /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/view_or_value-fwd.hpp \
   /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/string/view_or_value.hpp \
@@ -1081,11 +1086,6 @@ CMakeFiles/Simulator.dir/src/Renderer.cpp.o: \
   /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/array/view_or_value.hpp \
   /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/builder/core.hpp \
   /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/builder/core-fwd.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/types.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/decimal128.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/decimal128-fwd.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/oid.hpp \
-  /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/oid-fwd.hpp \
   /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/builder/basic/sub_document.hpp \
   /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/builder/basic/sub_document-fwd.hpp \
   /opt/homebrew/include/bsoncxx/v_noabi/bsoncxx/builder/basic/kvp.hpp \

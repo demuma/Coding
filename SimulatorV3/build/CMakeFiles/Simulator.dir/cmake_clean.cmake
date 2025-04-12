@@ -21,6 +21,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/Simulator.dir/src/Quadtree.cpp.o.d"
   "CMakeFiles/Simulator.dir/src/QuadtreeSnapshot.cpp.o"
   "CMakeFiles/Simulator.dir/src/QuadtreeSnapshot.cpp.o.d"
+  "CMakeFiles/Simulator.dir/src/Region.cpp.o"
+  "CMakeFiles/Simulator.dir/src/Region.cpp.o.d"
   "CMakeFiles/Simulator.dir/src/Renderer.cpp.o"
   "CMakeFiles/Simulator.dir/src/Renderer.cpp.o.d"
   "CMakeFiles/Simulator.dir/src/Sensor.cpp.o"

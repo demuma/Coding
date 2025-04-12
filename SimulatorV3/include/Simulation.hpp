@@ -17,6 +17,7 @@
 #include <mongocxx/exception/exception.hpp>
 
 #include "Agent.hpp"
+#include "Region.hpp"
 #include "ThreadPool.hpp"
 #include "SharedBuffer.hpp"
 #include "Obstacle.hpp"
@@ -34,6 +35,7 @@
 // Simulation class
 class Simulation {
 public:
+
     // Simulation(std::queue<std::vector<Agent>> (&buffer)[2], std::mutex &queueMutex, std::condition_variable &queueCond, std::atomic<float>& currentSimulationTimeStep, std::atomic<bool>& stop, std::atomic<int>& currentNumAgents, const YAML::Node& config, std::atomic<std::queue<std::vector<Agent>>*>& currentReadBuffer);
     Simulation(SharedBuffer<std::vector<Agent>>& buffer, 
         std::unordered_map<std::string, std::shared_ptr<SharedBuffer<std::shared_ptr<QuadtreeSnapshot::Node>>>> sensorBuffers,
@@ -43,11 +45,13 @@ public:
     float getCurrentFrameRate();
     void loadConfiguration();
     void loadAgentsAttributes();
+    void loadRegionsAttributes();
     void loadObstacles();
     void initializeGrid();
     void initializeAdaptiveGrid();
     void initializeDatabase();
     void initializeAgents();
+    void initializeRegions();
     void initializeSensors();
 
 private:
@@ -76,9 +80,14 @@ private:
     // Agent parameters
     int numAgentTypes;
     int numAgents;
+    int numRegionTypes;
+    int numRegions;
+    std::vector<Region> regions;
     std::vector<Agent> agents;
     float waypointDistance;
-    std::map<std::string, Agent::AgentTypeAttributes> agentTypeAttributes;
+    std::unordered_map<std::string, Agent::AgentTypeAttributes> agentTypeAttributes;
+    std::unordered_map<std::string, Region::RegionTypeAttributes> regionTypeAttributes;
+
 
     // Shared buffer reference
     SharedBuffer<std::vector<Agent>>& buffer;

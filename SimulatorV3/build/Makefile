@@ -393,6 +393,30 @@ src/QuadtreeSnapshot.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/QuadtreeSnapshot.cpp.s
 .PHONY : src/QuadtreeSnapshot.cpp.s
 
+src/Region.o: src/Region.cpp.o
+.PHONY : src/Region.o
+
+# target to build an object file
+src/Region.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Region.cpp.o
+.PHONY : src/Region.cpp.o
+
+src/Region.i: src/Region.cpp.i
+.PHONY : src/Region.i
+
+# target to preprocess a source file
+src/Region.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Region.cpp.i
+.PHONY : src/Region.cpp.i
+
+src/Region.s: src/Region.cpp.s
+.PHONY : src/Region.s
+
+# target to generate assembly for a file
+src/Region.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Simulator.dir/build.make CMakeFiles/Simulator.dir/src/Region.cpp.s
+.PHONY : src/Region.cpp.s
+
 src/Renderer.o: src/Renderer.cpp.o
 .PHONY : src/Renderer.o
 
@@ -555,6 +579,9 @@ help:
 	@echo "... src/QuadtreeSnapshot.o"
 	@echo "... src/QuadtreeSnapshot.i"
 	@echo "... src/QuadtreeSnapshot.s"
+	@echo "... src/Region.o"
+	@echo "... src/Region.i"
+	@echo "... src/Region.s"
 	@echo "... src/Renderer.o"
 	@echo "... src/Renderer.i"
 	@echo "... src/Renderer.s"

@@ -120,6 +120,63 @@ std::string generateISOTimestamp(sf::Time simulationWallTime, const std::string&
     return oss.str();
 }
 
+// Parses a string like "2025-04-09T11:30:01.123" into a bsoncxx::types::b_date.
+bsoncxx::types::b_date generateBsonDate(const std::string& timestamp) {
+    // Separate the main datetime portion from the fractional seconds
+    std::size_t dotPos = timestamp.find('.');
+    std::string mainPart = (dotPos == std::string::npos)
+                              ? timestamp
+                              : timestamp.substr(0, dotPos);
+
+    // If there's a fractional part, strip off trailing 'Z' if present
+    std::string fractionPart;
+    if (dotPos != std::string::npos) {
+        fractionPart = timestamp.substr(dotPos + 1);
+        // If the fraction part ends with 'Z', remove it:
+        std::size_t zPos = fractionPart.find('Z');
+        if (zPos != std::string::npos) {
+            fractionPart = fractionPart.substr(0, zPos);
+        }
+    }
+
+    // Parse the main date/time up to seconds using std::get_time with format "%Y-%m-%dT%H:%M:%S"
+    std::tm tm{};
+    std::istringstream iss(mainPart);
+    iss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%S");
+    if (iss.fail()) {
+        throw std::runtime_error("Failed to parse date/time: " + mainPart);
+    }
+
+    // Convert this struct tm to a time_t (local time).
+    std::time_t time_c = std::mktime(&tm);
+    if (time_c == -1) {
+        throw std::runtime_error("Invalid local time conversion.");
+    }
+    // Convert that to a std::chrono::system_clock::time_point
+    auto base_tp = std::chrono::system_clock::from_time_t(time_c);
+
+    // Parse fractional seconds as milliseconds (e.g. .123 => 123 ms).
+    long frac_ms = 0;
+    if (!fractionPart.empty()) {
+        // If fractionPart is more than 3 digits, truncate to 3 for milliseconds
+        if (fractionPart.size() > 3) {
+            fractionPart = fractionPart.substr(0, 3);  
+        }
+        // If it's fewer than 3 digits, pad with zeros on the right
+        while (fractionPart.size() < 3) {
+            fractionPart += '0';
+        }
+        frac_ms = std::stol(fractionPart);
+    }
+
+    // Add the parsed fractional milliseconds to our base time
+    auto total_tp = base_tp + std::chrono::milliseconds(frac_ms);
+
+    // Construct the BSON date )bsoncxx::types::b_date holds a std::chrono::milliseconds)
+    return bsoncxx::types::b_date(total_tp);
+}
+
+
 // Convert a string to an sf::Color object
 sf::Color stringToColor(std::string colorStr) {
 

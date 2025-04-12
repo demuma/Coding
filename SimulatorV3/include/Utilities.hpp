@@ -9,6 +9,7 @@
 #include <ctime>
 #include <uuid/uuid.h>
 #include <algorithm>
+#include <bsoncxx/types.hpp>
 #include <sstream>
 #include <cmath>
 
@@ -23,6 +24,7 @@ float generateRandomNumberFromTND(float mean, float stddev, float min, float max
 sf::Vector2f generateRandomVelocityVector(float mu, float sigma, float min, float max);
 std::string generateISOTimestamp(sf::Time simulationWallTime);
 std::string generateISOTimestamp(sf::Time simulationWallTime, const std::string& dateTimeString);
+bsoncxx::types::b_date generateBsonDate(const std::string& date_str);
 // Structure to hash a 2D vector for use in unordered_map
 struct Vector2iHash {
     std::size_t operator()(const sf::Vector2i& v) const {

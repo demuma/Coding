@@ -209,24 +209,6 @@ void AdaptiveGridBasedSensor::postData() {
     }
 }
 
-// Post aggregated data to the database
-// void AdaptiveGridBasedSensor::postAggregatedData() {
-
-//     std::string timestamp; // Convert to BSON date
-//     std::string aggregationStartTime;
-//     std::string aggregationEndTime;
-//     std::string aggregationDuration;
-//     std::string sensorId;
-//     std::string data_type; // Aggregated adaptive grid data
-//     int cellId;
-//     std::string region_type;
-//     std::vector<int> cell_position;
-//     std::unordered_map<std::string, int> agentTypeCounts;
-//     int totalAgents;
-//     float privacyLevel;
-//     std::unordered_map<std::string, float> privacyMetrics;
-// }
-
 // Print grid data -> TODO: Time stamp not accurate, use dataStorage instead
 void AdaptiveGridBasedSensor::printData() {
 

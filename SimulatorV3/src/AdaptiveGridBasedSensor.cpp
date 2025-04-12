@@ -61,6 +61,7 @@ void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep,
     // Clear data storage
     dataStorage.clear();
 
+    // Get the current timestamp as a string
     std::string currentTime = generateISOTimestamp(simulationTime, datetime);
 
     // Update the time since the last update
@@ -111,6 +112,36 @@ void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep,
     }
 }
 
+// Post metadata to the database
+void AdaptiveGridBasedSensor::postMetadata() {
+
+    // Prepare a BSON document for the metadata
+    bsoncxx::builder::stream::document document{};
+    bsoncxx::builder::stream::document positionDocument{}, detectionAreaDocument{};
+    positionDocument << "x" << detectionArea.position.x
+                      << "y" << detectionArea.position.y;
+    detectionAreaDocument << "width" << detectionArea.size.x
+                          << "height" << detectionArea.size.y;
+
+    // document << "timestamp" << timestamp
+    document << "timestamp" << generateBsonDate(timestamp)
+             << "sensor_id" << sensorId
+             << "sensor_type" << "adaptive-grid-based"
+             << "data_type" << "metadata"
+             << "position" << positionDocument
+             << "detection_area" << detectionAreaDocument
+             << "frame_rate" << frameRate
+             << "cell_size" << cellSize;
+
+    // Insert the metadata document into the collection
+    try {
+        collection.insert_one(document << bsoncxx::builder::stream::finalize);
+    } catch (const mongocxx::exception& e) {
+        // Handle errors
+        std::cerr << "Error inserting metadata: " << e.what() << std::endl;
+    }
+}
+
 // Post timestamped grid data to the database
 void AdaptiveGridBasedSensor::postData() {
 
@@ -128,7 +159,7 @@ void AdaptiveGridBasedSensor::postData() {
                 
                 // Document for the grid cell
                 bsoncxx::builder::stream::document document{}; 
-                document << "timestamp" << timestamp
+                document << "timestamp" << generateBsonDate(timestamp)
                          << "sensor_id" << sensorId
                          << "data_type" << "adaptive grid data"
                          << "cell_id" << cellId
@@ -178,53 +209,23 @@ void AdaptiveGridBasedSensor::postData() {
     }
 }
 
-// Post metadata to the database
-void AdaptiveGridBasedSensor::postMetadata() {
+// Post aggregated data to the database
+// void AdaptiveGridBasedSensor::postAggregatedData() {
 
-    // Prepare a BSON document for the metadata
-    bsoncxx::builder::stream::document document{};
-
-    // // Append the metadata fields to the document
-    // document << "timestamp" << timestamp
-    //          << "sensor_id" << sensor_id
-    //          << "data_type" << "metadata"
-    //          << "position"
-    //             << bsoncxx::builder::stream::open_array
-    //             << detectionArea.left
-    //             << detectionArea.top
-    //             << bsoncxx::builder::stream::close_array
-    //          << "detection_area" 
-    //             << bsoncxx::builder::stream::open_array
-    //             << detectionArea.width
-    //             << detectionArea.height
-    //             << bsoncxx::builder::stream::close_array
-    //          << "frame_rate" << frameRate
-    //          << "cell_size" << cellSize;
-    // Append the metadata fields to the document
-
-    bsoncxx::builder::stream::document positionDocument{}, detectionAreaDocument{};
-    positionDocument << "x" << detectionArea.position.x
-                      << "y" << detectionArea.position.y;
-    detectionAreaDocument << "width" << detectionArea.size.x
-                          << "height" << detectionArea.size.y;
-
-    document << "timestamp" << timestamp
-             << "sensor_id" << sensorId
-             << "sensor_type" << "adaptive-grid-based"
-             << "data_type" << "metadata"
-             << "position" << positionDocument
-             << "detection_area" << detectionAreaDocument
-             << "frame_rate" << frameRate
-             << "cell_size" << cellSize;
-
-    // Insert the metadata document into the collection
-    try {
-        collection.insert_one(document << bsoncxx::builder::stream::finalize);
-    } catch (const mongocxx::exception& e) {
-        // Handle errors
-        std::cerr << "Error inserting metadata: " << e.what() << std::endl;
-    }
-}
+//     std::string timestamp; // Convert to BSON date
+//     std::string aggregationStartTime;
+//     std::string aggregationEndTime;
+//     std::string aggregationDuration;
+//     std::string sensorId;
+//     std::string data_type; // Aggregated adaptive grid data
+//     int cellId;
+//     std::string region_type;
+//     std::vector<int> cell_position;
+//     std::unordered_map<std::string, int> agentTypeCounts;
+//     int totalAgents;
+//     float privacyLevel;
+//     std::unordered_map<std::string, float> privacyMetrics;
+// }
 
 // Print grid data -> TODO: Time stamp not accurate, use dataStorage instead
 void AdaptiveGridBasedSensor::printData() {

@@ -81,7 +81,7 @@ void Renderer::loadConfiguration() {
 
     // Resize vertex arrays
     bufferZonesVertexArray.resize(numAgents * 300);
-    agentBodyVertexArray.resize(numAgents * 4);
+    agentBodyVertexArray.resize(numAgents * 6);
     agentArrowHeadVertexArray.resize(numAgents * 3);
     agentArrowBodyVertexArray.resize(numAgents * 2);
 }
@@ -1104,6 +1104,7 @@ void Renderer::render() {  // Input: meters, Output: pixels
                 
                 // Draw the trajectory waypoints ahead of the agent
                 // sf::VertexArray waypoints(sf::Quads); // Note: SFML 2.6.2 or prior
+                // sf::VertexArray waypoints(sf::PrimitiveType::Triangles, 6);
                 sf::VertexArray waypoints(sf::PrimitiveType::Triangles, 6);
 
                 // Calculate the next waypoint
@@ -1128,12 +1129,12 @@ void Renderer::render() {  // Input: meters, Output: pixels
                         // waypoints.append(sf::Vertex(bottomRight, color));
                         // waypoints.append(sf::Vertex(bottomLeft, color));
 
-                        // First triangle
+                        // // First triangle
                         waypoints.append(sf::Vertex({topLeft, color}));
                         waypoints.append(sf::Vertex({bottomLeft, color}));
                         waypoints.append(sf::Vertex({bottomRight, color}));
 
-                        // Second triangle
+                        // // Second triangle
                         waypoints.append(sf::Vertex({topLeft, color}));
                         waypoints.append(sf::Vertex({topRight, color}));
                         waypoints.append(sf::Vertex({bottomRight, color}));
@@ -1354,7 +1355,6 @@ void Renderer::appendAgentBodies(sf::VertexArray& triangles, const Agent& agent)
     body[3] = sf::Vertex({topLeft, agent.color});
     body[4] = sf::Vertex({topRight, agent.color});
     body[5] = sf::Vertex({bottomRight, agent.color});
-
 
     sf::Transform transform;
     // transform.rotate(theta, position); // Note: SFML 2.6.1 and prior

@@ -107,6 +107,54 @@ void GridBasedSensor::update(std::vector<Agent>& agents, float timeStep, sf::Tim
     }
 }
 
+// Post metadata to the database
+void GridBasedSensor::postMetadata() {
+
+    // Prepare a BSON document for the metadata
+    bsoncxx::builder::stream::document document{};
+
+    // // Append the metadata fields to the document
+    // document << "timestamp" << timestamp
+    //          << "sensor_id" << sensor_id
+    //          << "data_type" << "metadata"
+    //          << "position"
+    //             << bsoncxx::builder::stream::open_array
+    //             << detectionArea.position.x
+    //             << detectionArea.position.y
+    //             << bsoncxx::builder::stream::close_array
+    //          << "detection_area" 
+    //             << bsoncxx::builder::stream::open_array
+    //             << detectionArea.size.x
+    //             << detectionArea.size.y
+    //             << bsoncxx::builder::stream::close_array
+    //          << "frame_rate" << frameRate
+    //          << "cell_size" << cellSize;
+    // Append the metadata fields to the document
+
+    bsoncxx::builder::stream::document positionDocument{}, detectionAreaDocument{};
+    positionDocument << "x" << detectionArea.position.x
+                      << "y" << detectionArea.position.y;
+    detectionAreaDocument << "width" << detectionArea.size.x
+                          << "height" << detectionArea.size.y;
+
+    document << "timestamp" << timestamp
+             << "sensor_id" << sensorId
+             << "sensor_type" << "grid-based"
+             << "data_type" << "metadata"
+             << "position" << positionDocument
+             << "detection_area" << detectionAreaDocument
+             << "frame_rate" << frameRate
+             << "cell_size" << cellSize;
+
+    // Insert the metadata document into the collection
+    try {
+        collection.insert_one(document << bsoncxx::builder::stream::finalize);
+    } catch (const mongocxx::exception& e) {
+        // Handle errors
+        std::cerr << "Error inserting metadata: " << e.what() << std::endl;
+    }
+}
+
 // Post timestamped grid data to the database
 void GridBasedSensor::postData() {
 
@@ -176,54 +224,6 @@ void GridBasedSensor::postData() {
             // Handle errors
             std::cerr << "Error inserting agent data: " << e.what() << std::endl;
         }
-    }
-}
-
-// Post metadata to the database
-void GridBasedSensor::postMetadata() {
-
-    // Prepare a BSON document for the metadata
-    bsoncxx::builder::stream::document document{};
-
-    // // Append the metadata fields to the document
-    // document << "timestamp" << timestamp
-    //          << "sensor_id" << sensor_id
-    //          << "data_type" << "metadata"
-    //          << "position"
-    //             << bsoncxx::builder::stream::open_array
-    //             << detectionArea.position.x
-    //             << detectionArea.position.y
-    //             << bsoncxx::builder::stream::close_array
-    //          << "detection_area" 
-    //             << bsoncxx::builder::stream::open_array
-    //             << detectionArea.size.x
-    //             << detectionArea.size.y
-    //             << bsoncxx::builder::stream::close_array
-    //          << "frame_rate" << frameRate
-    //          << "cell_size" << cellSize;
-    // Append the metadata fields to the document
-
-    bsoncxx::builder::stream::document positionDocument{}, detectionAreaDocument{};
-    positionDocument << "x" << detectionArea.position.x
-                      << "y" << detectionArea.position.y;
-    detectionAreaDocument << "width" << detectionArea.size.x
-                          << "height" << detectionArea.size.y;
-
-    document << "timestamp" << timestamp
-             << "sensor_id" << sensorId
-             << "sensor_type" << "grid-based"
-             << "data_type" << "metadata"
-             << "position" << positionDocument
-             << "detection_area" << detectionAreaDocument
-             << "frame_rate" << frameRate
-             << "cell_size" << cellSize;
-
-    // Insert the metadata document into the collection
-    try {
-        collection.insert_one(document << bsoncxx::builder::stream::finalize);
-    } catch (const mongocxx::exception& e) {
-        // Handle errors
-        std::cerr << "Error inserting metadata: " << e.what() << std::endl;
     }
 }
 

@@ -3,19 +3,11 @@
 #include "Sensor.hpp"
 #include "CollisionGrid.hpp"
 #include "Quadtree.hpp"
+// #include "AggregationManager.hpp"
 
 class AdaptiveGridBasedSensor : public Sensor {
 
 public:
-
-    struct AdaptiveGridBasedSensorData {
-
-        // Sensor data structure
-        std::string sensorId;
-        std::string timestamp;
-        sf::Vector2i cellIndex;
-        int count;
-    };
 
     // Base constructor for simulation
     AdaptiveGridBasedSensor(

@@ -3,7 +3,7 @@
 #include "Sensor.hpp"
 #include "CollisionGrid.hpp"
 #include "Quadtree.hpp"
-// #include "AggregationManager.hpp"
+#include "AggregationManager.hpp"
 
 class AdaptiveGridBasedSensor : public Sensor {
 

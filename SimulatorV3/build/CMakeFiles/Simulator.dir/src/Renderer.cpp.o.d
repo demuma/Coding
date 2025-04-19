@@ -1230,4 +1230,10 @@ CMakeFiles/Simulator.dir/src/Renderer.cpp.o: \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/CollisionGrid.hpp \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/AgentBasedSensor.hpp \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/AdaptiveGridBasedSensor.hpp \
-  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/Quadtree.hpp
+  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/Quadtree.hpp \
+  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/AggregationManager.hpp \
+  /opt/homebrew/include/mongocxx/v_noabi/mongocxx/exception/exception.hpp \
+  /opt/homebrew/include/mongocxx/v_noabi/mongocxx/exception/exception-fwd.hpp \
+  /opt/homebrew/include/mongocxx/v_noabi/mongocxx/instance.hpp \
+  /opt/homebrew/include/mongocxx/v_noabi/mongocxx/instance-fwd.hpp \
+  /opt/homebrew/include/mongocxx/v_noabi/mongocxx/logger-fwd.hpp

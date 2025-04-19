@@ -19,8 +19,8 @@ renderer:
   show_sensors: true
 
 simulation:
-  width: 80
-  height: 80
+  width: 40 # 80
+  height: 40 # 80
   duration_seconds: 5
   maximum_frames: 100
   time_step: 0.05
@@ -164,49 +164,49 @@ database:
   clear_database: true
 
 sensors:
-  # - type: agent-based
-  #   frame_rate: 10.0
-  #   detection_area:
-  #     x: 0.0
-  #     y: 0.0
-  #     width: 60.0 # default: 115.0
-  #     height: 30.0 # 120
-  #     color: blue
-  #     alpha: 0.1
-  #   database:
-  #     db_name: Simulation
-  #     collection_name: AB_Sensor_Data_V3
-  # - type: grid-based
-  #   frame_rate: 1.0
-  #   detection_area:
-  #     x: 0.0
-  #     y: 0.0
-  #     width: 40.0 # default: 85.0
-  #     height: 40.0 # default: 72.0
-  #     color: red
-  #     alpha: 0.1
-  #   grid:
-  #     cell_size: 10 # in meters
-  #     show_grid: true
-  #   database:
-  #     db_name: Simulation
-  #     collection_name: GB_Sensor_Data_V3
-  - type: adaptive-grid-based
+  - type: agent-based
     frame_rate: 1.0
     detection_area:
       x: 0.0
       y: 0.0
-      width: 80.0 # default: 85.0
-      height: 80.0 # default: 72.0
-      color: green
+      width: 40.0 # default: 115.0
+      height: 40.0 # 120
+      color: blue
       alpha: 0.1
-    grid:
-      cell_size: 40 # in meters // TO-DO: remove and use max(width, height) / 2
-      show_grid: true
-      max_depth: 2
     database:
       db_name: Simulation
-      collection_name: AGB_Sensor_Data_V3
+      collection_name: AB_Sensor_Data_V3
+  - type: grid-based
+    frame_rate: 1.0
+    detection_area:
+      x: 0.0
+      y: 0.0
+      width: 40.0 # default: 85.0
+      height: 40.0 # default: 72.0
+      color: red
+      alpha: 0.1
+    grid:
+      cell_size: 10 # in meters
+      show_grid: true
+    database:
+      db_name: Simulation
+      collection_name: GB_Sensor_Data_V3
+  # - type: adaptive-grid-based
+  #   frame_rate: 1.0
+  #   detection_area:
+  #     x: 0.0
+  #     y: 0.0
+  #     width: 80.0 # default: 85.0
+  #     height: 80.0 # default: 72.0
+  #     color: green
+  #     alpha: 0.1
+  #   grid:
+  #     cell_size: 40 # in meters // TO-DO: remove and use max(width, height) / 2
+  #     show_grid: true
+  #     max_depth: 2
+  #   database:
+  #     db_name: Simulation
+  #     collection_name: AGB_Sensor_Data_V3
 
 # obstacles:
 #   - type: rectangle

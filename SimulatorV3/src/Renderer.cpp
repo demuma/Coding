@@ -1345,7 +1345,9 @@ void Renderer::appendAgentBodies(sf::VertexArray& triangles, const Agent& agent)
     // body[2] = sf::Vertex(bottomRight, agent.color);
     // body[3] = sf::Vertex(bottomLeft, agent.color);
 
+    // Create the quad and transform it based on the agent's heading
     sf::VertexArray body(sf::PrimitiveType::Triangles, 6);
+
     // First triangle: topLeft, topRight, bottomRight
     body[0] = sf::Vertex({topLeft, agent.color});
     body[1] = sf::Vertex({bottomLeft, agent.color});

@@ -1251,4 +1251,5 @@ CMakeFiles/Simulator.dir/src/Simulation.cpp.o: \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/QuadtreeSnapshot.hpp \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/AgentBasedSensor.hpp \
   /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/GridBasedSensor.hpp \
-  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/AdaptiveGridBasedSensor.hpp
+  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/AdaptiveGridBasedSensor.hpp \
+  /Users/maxdemu/Documents/HAW\ Hamburg/Promotion/Coding/SimulatorV3/src/../include/AggregationManager.hpp

@@ -13,7 +13,6 @@ Visualizer::Visualizer()
     agentArrowBodyVertexArray(sf::PrimitiveType::Lines),
     agentArrowHeadVertexArray(sf::PrimitiveType::Triangles)
 {
-
     loadConfiguration();
     loadSensorAttributes();
     loadAgentsAttributes();
@@ -202,7 +201,7 @@ Agent Visualizer::createAgentFromDocument(bsoncxx::document::view document) {
     agent.type = std::string(document["type"].get_string().value.data());
     agent.position.x = document["position"].get_array().value[0].get_double();
     agent.position.y = document["position"].get_array().value[1].get_double();
-    agent.timestamp = std::string(document["timestamp"].get_string().value.data());
+    agent.timestamp = document["timestamp"].get_date();
     agent.velocity.x = document["estimated_velocity"].get_array().value[0].get_double();
     agent.velocity.y = document["estimated_velocity"].get_array().value[1].get_double();
     agent.velocityMagnitude = std::sqrt(std::pow(agent.velocity.x, 2) + std::pow(agent.velocity.y, 2));
@@ -249,7 +248,6 @@ void Visualizer::getMetadata() {
 
         sensors.push_back(sensor);
     }
-
 }
 
 // Get agent data from database
@@ -282,7 +280,7 @@ void Visualizer::getData() {
     // Iterate over the documents
     for(auto&& doc : cursor) {
         // Access the timestamps field (referrenced by "_id")
-        std::string timestamp = std::string(doc["_id"].get_string().value.data());
+        bsoncxx::types::b_date timestamp = doc["_id"].get_date();
 
         // Access the 'agents' array
         bsoncxx::array::view agents_array = doc["agents"].get_array().value;
@@ -640,7 +638,8 @@ void Visualizer::run() {
     // Create chrono high quality timer
     std::chrono::high_resolution_clock timer;
     std::chrono::time_point start = timer.now();
-    std::chrono::duration<float> timeStep(1.0f / sensors[0].frameRate);
+    // std::chrono::duration<float> timeStep(1.0f / sensors[0].frameRate);
+    std::chrono::duration<float> timeStep(1.0f / frameRate);
     std::chrono::duration<float> totalFrameTime(0.0f);
     int frameNumber = 0;
     
@@ -676,8 +675,8 @@ void Visualizer::run() {
             // Calculate remaining sleep time to meet the target frame rate
             auto remainingTime = std::max(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<float>(0)), std::chrono::duration_cast<std::chrono::milliseconds>(timeStep) - std::chrono::duration_cast<std::chrono::milliseconds>(renderTime));
             std::this_thread::sleep_for(remainingTime);
-            auto frameTime = timer.now();
-            totalFrameTime += std::chrono::duration<float>(frameTime - start);
+            auto frameTime = timer.now() - startTime;
+            totalFrameTime += std::chrono::duration<float>(frameTime);
         }
     }
 
@@ -692,5 +691,5 @@ void Visualizer::run() {
     }
 
     // Calculate the average frame time
-    std::cout << "Average frame time: " << totalFrameTime.count() / numFrames << " seconds" << std::endl;
+    STATS_MSG("Average frame time: " << totalFrameTime.count() / numFrames << " seconds for " << numFrames << " frames");
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>
 
 #include "Sensor.hpp"
 
@@ -10,7 +11,7 @@ public:
         // Sensor data structure
         std::string sensorId;
         std::string agentId;
-        std::string timestamp;
+        std::chrono::system_clock::time_point timestamp;
         std::string type;
         sf::Vector2f position;
         sf::Vector2f estimatedVelocity;
@@ -49,4 +50,5 @@ private:
     // Data storage structure
     //std::vector<std::pair<std::chrono::system_clock::time_point, std::unordered_map<std::string, sf::Vector2f>>> dataStorage;
     std::vector<AgentBasedSensorData> dataStorage;
+    std::vector<std::pair<std::chrono::system_clock::time_point, std::vector<AgentBasedSensorData>>> dataStorageEntry;
 };

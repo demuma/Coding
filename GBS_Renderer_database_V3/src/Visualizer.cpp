@@ -187,10 +187,10 @@ void Visualizer::getMetadata() {
     else {
         std::cerr << "Error: Invalid sensor type." << std::endl;
     }
-
 }
 
 void Visualizer::getData() {
+
     mongocxx::pipeline pipeline;
 
     // Filter out metadata entries
@@ -218,8 +218,7 @@ void Visualizer::getData() {
     // Iterate over the documents
     for (auto&& doc : cursor) {
         // Access the timestamp field (referenced by "_id")
-        // std::string timestamp = doc["_id"].get_string().value.to_string();
-        std::string timestamp = std::string(doc["_id"].get_string().value.data());
+        bsoncxx::types::b_date timestamp = doc["_id"].get_date();
 
         // Access the 'grid_cells' array
         bsoncxx::array::view gridCellsArray = doc["grid_cells"].get_array().value;
@@ -574,6 +573,6 @@ void Visualizer::run() {
         cleanupFrames(frameNumber);
     }
     
-        // Calculate the average frame time
-        STATS_MSG("Average frame time: " << totalFrameTime.count() / numFrames << " seconds");
+    // Calculate the average frame time
+    STATS_MSG("Average frame time: " << totalFrameTime.count() / numFrames << " seconds for " << numFrames << " frames");
 }

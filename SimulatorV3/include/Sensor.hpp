@@ -29,7 +29,8 @@ public:
     sf::FloatRect detectionArea;
     float frameRate;
     int scale;
-    std::string timestamp;
+    // std::string timestamp;
+    std::chrono::system_clock::time_point timestamp;
     std::unordered_map<std::string, sf::Vector2f> previousPositions;
     std::unordered_map<std::string, sf::Vector2f> currentPositions;
 

@@ -59,64 +59,43 @@ sf::Vector2f generateRandomVelocityVector(float mu, float sigma, float min, floa
     return velocity;
 }
 
-// Generate an ISO 8601 timestamp from total elapsed time
-std::string generateISOTimestamp(sf::Time totalElapsedTime) {
-
-    // Convert totalElapsedTime to seconds
-    auto totalSeconds = totalElapsedTime.asSeconds();
+// Generate a BSON Date (UTC) for the current simulation time.
+std::chrono::system_clock::time_point generateISOTimestamp(sf::Time simulationWallTime, const std::string& dateTimeString = "") {
     
-    // Convert seconds to a time_point since epoch
-    auto tp = std::chrono::system_clock::from_time_t(static_cast<std::time_t>(totalSeconds));
+    using namespace std::chrono;
 
-    // Get time_t from time_point
-    std::time_t tt = std::chrono::system_clock::to_time_t(tp);
-
-    // Format into ISO 8601 string
-    std::stringstream ss;
-    ss << std::put_time(std::gmtime(&tt), "%FT%TZ"); // Use gmtime for UTC timezone
-
-    return ss.str();
-}
-
-std::string generateISOTimestamp(sf::Time simulationWallTime, const std::string& dateTimeString = "") {
-    // Get current system time in milliseconds
-    auto now = std::chrono::system_clock::now();
-    auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
-    auto epoch = now_ms.time_since_epoch();
-    auto currentTimeMillis = epoch.count();
-
-    // Convert simulationWallTime to milliseconds
-    auto simulationTimeMillis = simulationWallTime.asMilliseconds();
-
-    // Calculate reference time_t (either current time or provided dateTimeString)
-    std::time_t referenceTime_t;
+    system_clock::time_point dateTime;
     if (dateTimeString.empty()) {
-        referenceTime_t = std::chrono::system_clock::to_time_t(now);
+        dateTime = system_clock::now();
     } else {
-        std::tm tm_start = {};
-        std::istringstream ss_start(dateTimeString);
-        ss_start >> std::get_time(&tm_start, "%Y-%m-%dT%H:%M:%S");
-        referenceTime_t = std::mktime(&tm_start);
+        std::tm dateTimeStart = {};
+        std::istringstream ss(dateTimeString);
+        ss >> std::get_time(&dateTimeStart, "%Y-%m-%dT%H:%M:%S");
+        auto tt = std::mktime(&dateTimeStart);
+        dateTime = system_clock::from_time_t(tt);
     }
 
-    // Calculate time_t values for current time and simulation time
-    std::time_t currentTime_t = referenceTime_t + (currentTimeMillis / 1000);
-    std::time_t simulationTime_t = referenceTime_t + (simulationTimeMillis / 1000);
+    auto millis = milliseconds{simulationWallTime.asMilliseconds()};
+    system_clock::time_point timestamp = dateTime + millis;
 
-    // Convert to tm structs for formatting
-    std::tm* currentTime_tm = std::localtime(&currentTime_t);
-    std::tm* simulationTime_tm = std::localtime(&simulationTime_t);
+    return timestamp;
+}
 
-    // Format timestamps with milliseconds
+std::string generateISOTimestampString(const std::chrono::system_clock::time_point& tp) {
+    // Separate whole seconds from sub‑seconds
+    auto dur       = tp.time_since_epoch();
+    auto secs      = std::chrono::duration_cast<std::chrono::seconds>(dur);
+    auto millis    = std::chrono::duration_cast<std::chrono::milliseconds>(dur - secs);
+
+    // Convert seconds→time_t→tm
+    std::time_t t  = secs.count();
+    std::tm utc    = *std::gmtime(&t);
+
+    // Format with fractional part
     std::ostringstream oss;
-
-    // Simulation Time (ISO 8601 with milliseconds)
-    oss << std::put_time(simulationTime_tm, "%FT%T");
-    // oss << '.' << std::setfill('0') << std::setw(3) << (simulationTimeMillis % 1000) << std::put_time(simulationTime_tm, "%z");
-    oss << '.' << std::setfill('0') << std::setw(3) << (simulationTimeMillis % 1000);
-
-    // DEBUG_MSG("Timestamp: " << oss.str());
-
+    oss << std::put_time(&utc, "%Y-%m-%dT%H:%M:%S")
+        << '.' << std::setw(3) << std::setfill('0') << millis.count()
+        << 'Z';
     return oss.str();
 }
 
@@ -175,7 +154,6 @@ bsoncxx::types::b_date generateBsonDate(const std::string& timestamp) {
     // Construct the BSON date )bsoncxx::types::b_date holds a std::chrono::milliseconds)
     return bsoncxx::types::b_date(total_tp);
 }
-
 
 // Convert a string to an sf::Color object
 sf::Color stringToColor(std::string colorStr) {

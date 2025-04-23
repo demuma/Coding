@@ -20,11 +20,12 @@
 
 std::string generateUUID();
 std::string generateISOTimestamp();
+std::string generateISOTimestampString(const std::chrono::system_clock::time_point& timestamp);
+bsoncxx::types::b_date generateBsonDate(const std::string& dateTimeString);
+std::chrono::system_clock::time_point generateISOTimestamp(sf::Time simulationWallTime, const std::string& dateTimeString);
 float generateRandomNumberFromTND(float mean, float stddev, float min, float max);
 sf::Vector2f generateRandomVelocityVector(float mu, float sigma, float min, float max);
-std::string generateISOTimestamp(sf::Time simulationWallTime);
-std::string generateISOTimestamp(sf::Time simulationWallTime, const std::string& dateTimeString);
-bsoncxx::types::b_date generateBsonDate(const std::string& date_str);
+// std::string generateISOTimestamp(sf::Time simulationWallTime);
 // Structure to hash a 2D vector for use in unordered_map
 struct Vector2iHash {
     std::size_t operator()(const sf::Vector2i& v) const {

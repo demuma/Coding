@@ -70,7 +70,8 @@ public:
     int priority;
     float bodyRadius;
     AgentTypeAttributes attributes;
-    std::string timestamp;
+    // std::string timestamp;
+    std::chrono::system_clock::time_point timestamp;
 
     // Positions
     sf::Vector2f position;

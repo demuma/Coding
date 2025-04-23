@@ -57,7 +57,7 @@ void GridBasedSensor::update(std::vector<Agent>& agents, float timeStep, sf::Tim
     // Clear data storage
     dataStorage.clear();
 
-    std::string currentTime = generateISOTimestamp(simulationTime, datetime);
+    auto currentTime = generateISOTimestamp(simulationTime, datetime);
 
     // Update the time since the last update
     timeSinceLastUpdate += timeStep;
@@ -137,7 +137,7 @@ void GridBasedSensor::postMetadata() {
     detectionAreaDocument << "width" << detectionArea.size.x
                           << "height" << detectionArea.size.y;
 
-    document << "timestamp" << timestamp
+    document << "timestamp" << bsoncxx::types::b_date{timestamp}
              << "sensor_id" << sensorId
              << "sensor_type" << "grid-based"
              << "data_type" << "metadata"
@@ -172,10 +172,10 @@ void GridBasedSensor::postData() {
                 
                 // Document for the grid cell
                 bsoncxx::builder::stream::document document{}; 
-                document << "timestamp" << timestamp
+                document << "timestamp" << bsoncxx::types::b_date{timestamp}
                          << "sensor_id" << sensorId
                          << "data_type" << "grid data"
-                         << "cell_index" // Vector2i as an array
+                         << "cell_index"
                             << bsoncxx::builder::stream::open_array 
                             << cellIndex.x 
                             << cellIndex.y

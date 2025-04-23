@@ -520,7 +520,7 @@ void Simulation::update() {
     grid.clear();
 
     // Get the current timestamp once per frame
-    std::string currentTimestamp = generateISOTimestamp(simulationTime, datetime);
+    auto currentTimestamp = generateISOTimestamp(simulationTime, datetime);
 
     // Loop through all agents and update their positions
     for(auto agent = agents.begin(); agent != agents.end();) {
@@ -576,6 +576,9 @@ void Simulation::update() {
 
 void Simulation::postMetadata() {
 
+    // Generate a timestamp for the metadata
+    auto timestamp = generateISOTimestamp(simulationTime, datetime);
+
     // Prepare a BSON document for the metadata
     bsoncxx::builder::stream::document document{};
 
@@ -584,7 +587,7 @@ void Simulation::postMetadata() {
                    << "height" << simulationHeight;
 
     // Append the metadata fields to the document
-    document << "timestamp" << generateISOTimestamp(simulationTime, datetime)
+    document << "timestamp" << bsoncxx::types::b_date{timestamp}
              << "data_type" << "metadata"
              << "simulation_area" << simulationArea
              << "frame_rate" << 1/timeStep
@@ -616,7 +619,7 @@ void Simulation::postData(const std::vector<Agent>& agents) {
             bsoncxx::builder::stream::document document{};
 
             // Append the agent data to the document
-            document << "timestamp" << agent.timestamp
+            document << "timestamp" << bsoncxx::types::b_date{agent.timestamp}
                      << "data_type" << "agent data"
                      << "agent_id" << agent.agentId
                      << "type" << agent.type

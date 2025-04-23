@@ -48,7 +48,8 @@ private:
     mongocxx::collection collection;
 
     std::unordered_map<int, std::unordered_map<std::string, int>> adaptiveGridData; // Adaptive Grid Data: map(cell id, map(agent type, count)
-    std::vector<std::pair<std::string, std::unordered_map<int, std::unordered_map<std::string, int>>>> dataStorage; // Data Storage: timestamp, map(cell id, map(agent type, count)
+    // std::vector<std::pair<std::string, std::unordered_map<int, std::unordered_map<std::string, int>>>> dataStorage; // Data Storage: timestamp, map(cell id, map(agent type, count)
+    std::vector<std::pair<std::chrono::system_clock::time_point, std::unordered_map<int, std::unordered_map<std::string, int>>>> dataStorage; // Data Storage: timestamp, map(cell id, map(agent type, count)
     
     sf::Vector2i getCellIndex(const sf::Vector2f& position) const;
     sf::Vector2f getCellPosition(const sf::Vector2i& cellIndex) const;

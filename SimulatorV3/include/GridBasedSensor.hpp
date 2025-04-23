@@ -13,7 +13,7 @@ public:
         std::string sensorId;
         std::string timestamp;
         sf::Vector2i cellIndex;
-        int count;
+        int totalAgents;
     };
 
     // Base constructor for simulation
@@ -54,7 +54,8 @@ private:
 
     std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash> gridData; // Grid Data: map(cell index, map(agent type, count) + hash function for sf::Vector2i)
     // std::vector<std::pair<std::chrono::system_clock::time_point, std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash>>> dataStorage;
-    std::vector<std::pair<std::string, std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash>>> dataStorage; // Data Storage: timestamp, map(cell index, map(agent type, count) + hash function for sf::Vector2i)
+    // std::vector<std::pair<std::string, std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash>>> dataStorage; // Data Storage: timestamp, map(cell index, map(agent type, count) + hash function for sf::Vector2i)
+    std::vector<std::pair<std::chrono::system_clock::time_point, std::unordered_map<sf::Vector2i, std::unordered_map<std::string, int>, Vector2iHash>>> dataStorage; // Data Storage: timestamp, map(cell index, map(agent type, count) + hash function for sf::Vector2i)
     
     sf::Vector2i getCellIndex(const sf::Vector2f& position) const;
     sf::Vector2f getCellPosition(const sf::Vector2i& cellIndex) const;

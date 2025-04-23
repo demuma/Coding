@@ -34,7 +34,7 @@ AgentBasedSensor::~AgentBasedSensor() {}
 
 // Update method for agent-based sensor, taking snapshot of agents in detection area
 void AgentBasedSensor::update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string datetime) {
-    
+
     // Clear the data storage
     dataStorage.clear();
 
@@ -45,7 +45,7 @@ void AgentBasedSensor::update(std::vector<Agent>& agents, float timeStep, sf::Ti
     // if (timeSinceLastUpdate >= 1.0f / frameRate || frameCount != 0) {
     if (timeSinceLastUpdate >= 1.0f / frameRate) {
 
-        // Capture agent data (Modified)
+        // Capture agent data
         captureAgentData(agents);
 
         // Estimate the velocities of the agents
@@ -107,7 +107,7 @@ void AgentBasedSensor::postData() {
             bsoncxx::builder::stream::document document{};
 
             // Append the fields to the document
-            document << "timestamp" << agentData.timestamp
+            document << "timestamp" << bsoncxx::types::b_date{agentData.timestamp}
                      << "sensor_id" << agentData.sensorId
                      << "data_type" << "agent data"
                      << "agent_id" << agentData.agentId
@@ -149,7 +149,8 @@ void AgentBasedSensor::postMetadata() {
                           << "height" << detectionArea.size.y;
 
     // Append the metadata fields to the document
-    document << "timestamp" << timestamp
+    // document << "timestamp" << generateBsonDate(timestamp)
+    document << "timestamp" << bsoncxx::types::b_date{timestamp}
              << "sensor_id" << sensorId
              << "sensor_type" << "agent-based"
              << "data_type" << "metadata"             
@@ -173,7 +174,7 @@ void AgentBasedSensor::printData() {
     // Print the stored data
     for (const AgentBasedSensorData& data : dataStorage) {
 
-        std::cout << "  Timestamp: " << data.timestamp << std::endl;
+        std::cout << "  Timestamp: " << generateISOTimestampString(data.timestamp) << std::endl;
         std::cout << "  Sensor ID: " << data.sensorId << std::endl;
         std::cout << "  Agent ID: " << data.agentId << std::endl;
         std::cout << "  Agent Type: " << data.type << std::endl;

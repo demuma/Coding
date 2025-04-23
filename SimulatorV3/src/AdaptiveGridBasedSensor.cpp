@@ -62,7 +62,7 @@ void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep,
     dataStorage.clear();
 
     // Get the current timestamp as a string
-    std::string currentTime = generateISOTimestamp(simulationTime, datetime);
+    auto currentTime = generateISOTimestamp(simulationTime, datetime);
 
     // Update the time since the last update
     timeSinceLastUpdate += timeStep;
@@ -124,7 +124,7 @@ void AdaptiveGridBasedSensor::postMetadata() {
                           << "height" << detectionArea.size.y;
 
     // document << "timestamp" << timestamp
-    document << "timestamp" << generateBsonDate(timestamp)
+    document << "timestamp" << bsoncxx::types::b_date{timestamp}
              << "sensor_id" << sensorId
              << "sensor_type" << "adaptive-grid-based"
              << "data_type" << "metadata"
@@ -159,7 +159,7 @@ void AdaptiveGridBasedSensor::postData() {
                 
                 // Document for the grid cell
                 bsoncxx::builder::stream::document document{}; 
-                document << "timestamp" << generateBsonDate(timestamp)
+                document << "timestamp" << bsoncxx::types::b_date{timestamp}
                          << "sensor_id" << sensorId
                          << "data_type" << "adaptive grid data"
                          << "cell_id" << cellId

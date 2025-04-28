@@ -58,11 +58,16 @@ void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep,
     // adaptiveGrid.printChildren(13);
     // adaptiveGrid.printChildren(14);
     // adaptiveGrid.printChildren(15);
+    
+    // Update current simulation time and datetime
+    this->simulationTime = simulationTime;
+    this->datetime = datetime;
+
     // Clear data storage
     dataStorage.clear();
 
     // Get the current timestamp as a string
-    auto currentTime = generateISOTimestamp(simulationTime, datetime);
+    auto currentTime = generateISOTimestamp(this->simulationTime, datetime);
 
     // Update the time since the last update
     timeSinceLastUpdate += timeStep;
@@ -71,6 +76,7 @@ void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep,
     if (timeSinceLastUpdate >= 1.0f / frameRate) {
 
         // Clear the grid data
+        // adaptiveGridData.clear();
         adaptiveGridData.clear();
         adaptiveGrid.agents.clear();
         adaptiveGrid.positions.clear();
@@ -78,7 +84,7 @@ void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep,
         // Reset boolean flag
         bool hasAgents = false;
 
-        // Declare a variable to store the cell index
+        // Declare a variable to store the cell index and dimensions
         int cellId;
 
         // Iterate through the agents
@@ -101,13 +107,16 @@ void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep,
                 // Add the agent to the adaptive grid
                 cellId = adaptiveGrid.addAgent(&agent);
 
-                // Increment the count of the agent type in the cell
-                adaptiveGridData[cellId][agent.type]++;
+                // Increment the count of the agent type and total agents in the cell
+                adaptiveGridData[cellId].agentTypeCount[agent.type]++;
+                adaptiveGridData[cellId].totalAgents++;
             }
 
             // Reset the time since the last update
             timeSinceLastUpdate = 0.0f;
-            dataStorage.push_back({currentTime, adaptiveGridData}); // Pushing exactly one entry to dataStorage
+
+            // Push timestamped adaptive grid data to the data storage
+            dataStorage.push_back({currentTime, adaptiveGridData});
         }
     }
 }
@@ -158,6 +167,7 @@ void AdaptiveGridBasedSensor::postData() {
             for (const auto& [cellId, cellData] : adaptiveGridData) {
                 
                 // Document for the grid cell
+                // TODO: Remove cell position and cell size from the document
                 bsoncxx::builder::stream::document document{}; 
                 document << "timestamp" << bsoncxx::types::b_date{timestamp}
                          << "sensor_id" << sensorId
@@ -167,7 +177,8 @@ void AdaptiveGridBasedSensor::postData() {
                             << bsoncxx::builder::stream::open_array
                             << adaptiveGrid.getCellPosition(cellId).x
                             << adaptiveGrid.getCellPosition(cellId).y
-                            << bsoncxx::builder::stream::close_array;
+                            << bsoncxx::builder::stream::close_array
+                        << "cell_size" << adaptiveGrid.getCellDimensions(cellId).x;
             
                 // Embed agent counts as a subdocument
                 int totalAgents = 0;
@@ -175,24 +186,21 @@ void AdaptiveGridBasedSensor::postData() {
                 // Open an array for the agent type count
                 auto agentTypeBuilder = document << "agent_type_count" << bsoncxx::builder::stream::open_array;
 
-                // Loop through the vector and add each element to the array
-                for (const auto& [agentType, count] : cellData) {
+                for (const auto& [agentType, count] : cellData.agentTypeCount) {
 
                     // Open a document for each agent type and count
-                    agentTypeBuilder << bsoncxx::builder::stream::open_document
-                                << "type" << agentType
-                                << "count" << count
-                                << bsoncxx::builder::stream::close_document;  // Close the document
-                    
-                    // Increment the total agent count
-                    totalAgents += count;
+                    agentTypeBuilder 
+                        << bsoncxx::builder::stream::open_document
+                        << "type" << agentType
+                        << "count" << count
+                        << bsoncxx::builder::stream::close_document;  // Close the document
                 }
 
                 // Close the array
                 agentTypeBuilder << bsoncxx::builder::stream::close_array;
 
                 // Add total agent count for the cell
-                document << "total_agents" << totalAgents;
+                document << "total_agents" << cellData.totalAgents;
                 
                 // Add the document to the vector for bulk insert
                 documents.push_back(document << bsoncxx::builder::stream::finalize);
@@ -222,12 +230,12 @@ void AdaptiveGridBasedSensor::printData() {
     for (const auto& kvp : adaptiveGridData) { // key-value pair
 
         const int& cellId = kvp.first;
-        const std::unordered_map<std::string, int>& cellData = kvp.second;
+        const AdaptiveGridDataPoint& cellData = kvp.second;
 
         std::cout << "Current time: " << ss.str() << " Cell ID(" << cellId << "): ";
 
         // Going through key-value pairs in the cell data
-        for (const auto& kvp : cellData) {
+        for (const auto& kvp : cellData.agentTypeCount) {
             
             // Print agent type and count
             const std::string& agentType = kvp.first;
@@ -235,6 +243,8 @@ void AdaptiveGridBasedSensor::printData() {
             std::cout << agentType << ": " << count << ", ";
         }
         std::cout << std::endl;
+        std::cout << "Total agents: " << cellData.totalAgents << std::endl;
+        std::cout << "------------------------" << std::endl;
     }
     adaptiveGridData.clear();
 }

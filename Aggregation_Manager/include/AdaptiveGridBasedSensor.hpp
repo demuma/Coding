@@ -9,6 +9,15 @@ class AdaptiveGridBasedSensor : public Sensor {
 
 public:
 
+    // Adaptive grid cell data with counts per agent type and a total agents
+    typedef struct AdaptiveGridDataPoint {
+        std::unordered_map<std::string, int> agentTypeCount;
+        int totalAgents;
+    } AdaptiveGridDataPoint;
+
+    // Every adaptive grid data stored with the cell id as key
+    typedef std::unordered_map<int, AdaptiveGridDataPoint> AdaptiveGridData;
+
     // Base constructor for simulation
     AdaptiveGridBasedSensor(
         float frameRate, 
@@ -35,7 +44,8 @@ public:
     int maxDepth;
     Quadtree adaptiveGrid;
     sf::Vector2f position = sf::Vector2f(detectionArea.position.x, detectionArea.position.y);
-
+    AggregationManager aggregationManager();
+    
     void update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string date) override;
     void postData() override;
     void postMetadata() override;
@@ -46,11 +56,8 @@ public:
 private:
     mongocxx::database db;
     mongocxx::collection collection;
-
-    std::unordered_map<int, std::unordered_map<std::string, int>> adaptiveGridData; // Adaptive Grid Data: map(cell id, map(agent type, count)
-    // std::vector<std::pair<std::string, std::unordered_map<int, std::unordered_map<std::string, int>>>> dataStorage; // Data Storage: timestamp, map(cell id, map(agent type, count)
-    std::vector<std::pair<std::chrono::system_clock::time_point, std::unordered_map<int, std::unordered_map<std::string, int>>>> dataStorage; // Data Storage: timestamp, map(cell id, map(agent type, count)
-    
-    sf::Vector2i getCellIndex(const sf::Vector2f& position) const;
-    sf::Vector2f getCellPosition(const sf::Vector2i& cellIndex) const;
+    sf::Time simulationTime;
+    std::string datetime;
+    AdaptiveGridData adaptiveGridData;
+    std::vector<std::pair<std::chrono::system_clock::time_point, AdaptiveGridData>> dataStorage; // Data Storage: timestamp, map(cell id, map(agent type, count)
 };

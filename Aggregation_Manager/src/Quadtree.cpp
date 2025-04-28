@@ -312,6 +312,14 @@ sf::Vector2f Quadtree::getCellPosition(int id) const {
     return sf::Vector2f(x, y);
 }
 
+sf::Vector2f Quadtree::getCellDimensions(int id) const {
+    auto it = nodeMap.find(id);
+    if (it == nodeMap.end())
+        throw std::runtime_error("Cell not found.");
+    Node* currentNode = it->second;
+    return currentNode->bounds.size;
+}
+
 std::vector<int> Quadtree::getNeighboringCells(int id) {
     std::vector<int> neighbors;
     Node* targetNode = getNodeById(id);

@@ -289,14 +289,14 @@ void Simulation::initializeRegions() {
 
     // Load regions from the configuration file
     if(config["regions"]) {
-        for (const auto& regionNode: config["regions"]) {
+        for (const auto& regionType: config["regions"]) {
 
-            Region region = Region(regionTypeAttributes[regionNode["type"].as<std::string>()]);
+            Region region = Region(regionTypeAttributes[regionType["type"].as<std::string>()]);
 
-            region.type = regionNode["type"].as<std::string>();
+            region.type = regionType["type"].as<std::string>();
             sf::FloatRect area(
-                {regionNode["area"]["x"].as<float>(), regionNode["area"]["y"].as<float>()},
-                {regionNode["area"]["width"].as<float>(), regionNode["area"]["height"].as<float>()}
+                {regionType["area"]["x"].as<float>(), regionType["area"]["y"].as<float>()},
+                {regionType["area"]["width"].as<float>(), regionType["area"]["height"].as<float>()}
             );
             region.area = area;
             region.colorAlpha = sf::Color(

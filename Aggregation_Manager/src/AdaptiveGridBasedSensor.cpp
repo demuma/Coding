@@ -53,11 +53,6 @@ AdaptiveGridBasedSensor::~AdaptiveGridBasedSensor() {
 
 // Update grid-based agent detection and output one gridData entry per frame
 void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string datetime) {
-
-    // adaptiveGrid.printChildren(12);
-    // adaptiveGrid.printChildren(13);
-    // adaptiveGrid.printChildren(14);
-    // adaptiveGrid.printChildren(15);
     
     // Update current simulation time and datetime
     this->simulationTime = simulationTime;
@@ -84,9 +79,6 @@ void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep,
         // Reset boolean flag
         bool hasAgents = false;
 
-        // Declare a variable to store the cell index and dimensions
-        int cellId;
-
         // Iterate through the agents
         for (Agent& agent : agents) {
             if (detectionArea.contains(agent.position)) {
@@ -105,7 +97,7 @@ void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep,
                 Agent& agent = *agentPtr;
 
                 // Add the agent to the adaptive grid
-                cellId = adaptiveGrid.addAgent(&agent);
+                int cellId = adaptiveGrid.addAgent(&agent);
 
                 // Increment the count of the agent type and total agents in the cell
                 adaptiveGridData[cellId].agentTypeCount[agent.type]++;
@@ -168,17 +160,18 @@ void AdaptiveGridBasedSensor::postData() {
                 
                 // Document for the grid cell
                 // TODO: Remove cell position and cell size from the document
-                bsoncxx::builder::stream::document document{}; 
+                bsoncxx::builder::stream::document document{};
+                bsoncxx::builder::stream::document cellPositionDocument{};
+
+                cellPositionDocument << "x" << adaptiveGrid.getCellPosition(cellId).x
+                                     << "y" << adaptiveGrid.getCellPosition(cellId).y;
+
                 document << "timestamp" << bsoncxx::types::b_date{timestamp}
                          << "sensor_id" << sensorId
                          << "data_type" << "adaptive grid data"
                          << "cell_id" << cellId
-                         << "cell_position"
-                            << bsoncxx::builder::stream::open_array
-                            << adaptiveGrid.getCellPosition(cellId).x
-                            << adaptiveGrid.getCellPosition(cellId).y
-                            << bsoncxx::builder::stream::close_array
-                        << "cell_size" << adaptiveGrid.getCellDimensions(cellId).x;
+                         << "cell_position" << cellPositionDocument
+                         << "cell_size" << adaptiveGrid.getCellDimensions(cellId).x;
             
                 // Embed agent counts as a subdocument
                 int totalAgents = 0;

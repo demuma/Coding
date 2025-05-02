@@ -3,7 +3,7 @@ version: 1.0
 display:
   width: 800 # 2400
   height: 800 # 1200
-  pixels_per_meter: 20
+  pixels_per_meter: 10
   title: 'Urban Mobility Simulator'
 
 renderer:

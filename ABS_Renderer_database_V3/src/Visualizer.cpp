@@ -199,11 +199,11 @@ Agent Visualizer::createAgentFromDocument(bsoncxx::document::view document) {
     agent.uuid = std::string(document["agent_id"].get_string().value.data());
     agent.sensorID = std::string(document["sensor_id"].get_string().value.data());
     agent.type = std::string(document["type"].get_string().value.data());
-    agent.position.x = document["position"].get_array().value[0].get_double();
-    agent.position.y = document["position"].get_array().value[1].get_double();
+    agent.position.x = document["position"].get_document().value["x"].get_double();
+    agent.position.y = document["position"].get_document().value["y"].get_double();
     agent.timestamp = document["timestamp"].get_date();
-    agent.velocity.x = document["estimated_velocity"].get_array().value[0].get_double();
-    agent.velocity.y = document["estimated_velocity"].get_array().value[1].get_double();
+    agent.velocity.x = document["estimated_velocity"].get_document().value["x"].get_double();
+    agent.velocity.y = document["estimated_velocity"].get_document().value["y"].get_double();
     agent.velocityMagnitude = std::sqrt(std::pow(agent.velocity.x, 2) + std::pow(agent.velocity.y, 2));
     agent.bodyRadius = agentTypeAttributes[agent.type].bodyRadius;
     agent.color = stringToColor(agentTypeAttributes[agent.type].color);

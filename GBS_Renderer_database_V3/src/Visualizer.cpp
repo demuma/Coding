@@ -213,7 +213,6 @@ void Visualizer::getData() {
         std::cerr << "Error: " << e.what() << std::endl;
         return;
     }
-    
 
     // Iterate over the documents
     for (auto&& doc : cursor) {
@@ -231,10 +230,10 @@ void Visualizer::getData() {
             // Get the grid cell document
             auto gridCellView = gridCellDoc.get_document().value;
 
-            // Extract the cell_index
-            auto cellIndexArray = gridCellView["cell_index"].get_array().value;
-            int x = cellIndexArray[0].get_int32();
-            int y = cellIndexArray[1].get_int32();
+            // Extract the cell_index as document
+            auto cellIndexView = gridCellView["cell_index"].get_document().value;
+            int x = cellIndexView["x"].get_int32();
+            int y = cellIndexView["y"].get_int32();
             sf::Vector2i cellIndex(x, y);
 
             // Extract the agent_type_count
@@ -260,7 +259,6 @@ void Visualizer::getData() {
     // Save the number of frames
     numFrames = frameStorage.size();
 }
-
 
 void Visualizer::update() {
     // Get the current grid data

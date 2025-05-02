@@ -33,7 +33,6 @@ public:
     ~AgentBasedSensor();
     sf::Vector2f position = sf::Vector2f(detectionArea.position.x, detectionArea.position.y);
 
-    // void update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string datetime) override;
     void update(std::vector<Agent>& agents, float timeStep, std::chrono::system_clock::time_point timestamp) override;
     void captureAgentData(std::vector<Agent>& agents);
     void postData() override;
@@ -50,6 +49,5 @@ private:
 
     // Data storage structure
     std::vector<AgentData> agentData;
-    //std::vector<std::pair<std::chrono::system_clock::time_point, std::unordered_map<std::string, sf::Vector2f>>> dataStorage;
     std::pair<std::chrono::system_clock::time_point, std::vector<AgentData>> dataStorage;
 };

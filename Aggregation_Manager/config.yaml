@@ -270,33 +270,33 @@ database:
   clear_database: true
 
 sensors:
-  # - type: agent-based
-  #   frame_rate: 1.0
-  #   detection_area:
-  #     x: 0.0
-  #     y: 0.0
-  #     width: 40.0 # default: 115.0
-  #     height: 40.0 # 120
-  #     color: blue
-  #     alpha: 0.1
-  #   database:
-  #     db_name: Simulation
-  #     collection_name: AB_Sensor_Data_V3
-  # - type: grid-based
-  #   frame_rate: 1.0
-  #   detection_area:
-  #     x: 0.0
-  #     y: 0.0
-  #     width: 40.0 # default: 85.0
-  #     height: 40.0 # default: 72.0
-  #     color: red
-  #     alpha: 0.1
-  #   grid:
-  #     cell_size: 10 # in meters
-  #     show_grid: true
-  #   database:
-  #     db_name: Simulation
-  #     collection_name: GB_Sensor_Data_V3
+  - type: agent-based
+    frame_rate: 1.0
+    detection_area:
+      x: 0.0
+      y: 0.0
+      width: 80.0 # default: 115.0
+      height: 80.0 # 120
+      color: blue
+      alpha: 0.1
+    database:
+      db_name: Simulation
+      collection_name: AB_Sensor_Data_V3
+  - type: grid-based
+    frame_rate: 1.0
+    detection_area:
+      x: 0.0
+      y: 0.0
+      width: 80.0 # default: 85.0
+      height: 80.0 # default: 72.0
+      color: red
+      alpha: 0.1
+    grid:
+      cell_size: 40 # in meters
+      show_grid: true
+    database:
+      db_name: Simulation
+      collection_name: GB_Sensor_Data_V3
   - type: adaptive-grid-based
     frame_rate: 1.0
     detection_area:

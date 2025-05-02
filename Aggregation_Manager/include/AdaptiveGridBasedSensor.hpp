@@ -57,9 +57,6 @@ private:
     mongocxx::database db;
     mongocxx::collection collection;
     AggregationManager aggregationManager;
-    // sf::Time simulationTime;
-    // std::string datetime;
-    // std::chrono::system_clock::time_point timestamp;
     AdaptiveGridData adaptiveGridData;
     std::vector<std::pair<std::chrono::system_clock::time_point, AdaptiveGridData>> dataStorage; // Data Storage: timestamp, map(cell id, map(agent type, count)
 };

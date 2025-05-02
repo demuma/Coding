@@ -12,10 +12,12 @@ Grid::Grid(float cellSize, int width, int height)
     }
 
 // Add agent to the grid
-void Grid::addAgent(Agent* agent) {
+sf::Vector2i Grid::addAgent(Agent* agent) {
 
     sf::Vector2i cellIndex = getGridCellIndex(agent->position);
     cells[cellIndex].agents.push_back(agent);
+
+    return cellIndex;
 }
 
 // Clear the grid

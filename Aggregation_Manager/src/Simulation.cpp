@@ -23,6 +23,19 @@ Simulation::Simulation(SharedBuffer<std::vector<Agent>>& buffer, std::unordered_
     initializeSensors();
 }
 
+Simulation::~Simulation() {
+    
+    // Clean up resources
+    sensors.clear();
+    obstacles.clear();
+    regions.clear();
+    agents.clear();
+    grid.clear();
+    documentBuffer.clear();
+    agentTypeAttributes.clear();
+    regionTypeAttributes.clear();
+}
+
 void Simulation::loadConfiguration() {
 
     // Load simulation parameters
@@ -63,6 +76,9 @@ void Simulation::loadConfiguration() {
         // Set current time
         datetime = generateISOTimestamp();
     }
+
+    // Set simulation timestamp
+    timestamp = generateISOTimestamp(simulationTime, datetime);
 
     // Collision
     collisionGridCellSize = config["collision"]["grid"]["cell_size"].as<float>();
@@ -371,7 +387,7 @@ void Simulation::initializeSensors() {
             // Create the agent-based sensor and add to sensors vector
             sensors.push_back(std::make_unique<AgentBasedSensor>(frameRate, detectionArea, databaseName, collectionName, client));
             sensors.back()->scale = scale;
-            sensors.back()->timestamp = generateISOTimestamp(simulationTime, datetime);
+            sensors.back()->timestamp = timestamp;
 
             // Clear the database if specified
             if(clearDatabase) {
@@ -410,7 +426,7 @@ void Simulation::initializeSensors() {
             // Create the grid-based sensor and add to sensors vector
             sensors.push_back(std::make_unique<GridBasedSensor>(frameRate, detectionArea, cellSize, databaseName, collectionName, client));
             sensors.back()->scale = scale;
-            sensors.back()->timestamp = generateISOTimestamp(simulationTime, datetime);
+            sensors.back()->timestamp = timestamp;
 
             // Clear the database if specified
             if(clearDatabase) {
@@ -431,8 +447,8 @@ void Simulation::initializeSensors() {
             // Create the grid-based sensor and add to sensors vector
             sensors.push_back(std::make_unique<AdaptiveGridBasedSensor>(frameRate, detectionArea, cellSize, maxDepth, databaseName, collectionName, client));
             sensors.back()->scale = scale;
-            sensors.back()->timestamp = generateISOTimestamp(simulationTime, datetime);
-
+            sensors.back()->timestamp = timestamp;
+            
             // Clear the database if specified
             if(clearDatabase) {
                 sensors.back()->clearDatabase();
@@ -480,6 +496,9 @@ void Simulation::run() {
         // Increment the time step
         simulationTime += sf::seconds(timeStep);
 
+        // Get the current timestamp once per frame
+        timestamp = generateISOTimestamp(simulationTime, datetime);
+
         // Update the agents
         update();
 
@@ -519,9 +538,6 @@ void Simulation::update() {
     // Clear the grid
     grid.clear();
 
-    // Get the current timestamp once per frame
-    auto currentTimestamp = generateISOTimestamp(simulationTime, datetime);
-
     // Loop through all agents and update their positions
     for(auto agent = agents.begin(); agent != agents.end();) {
 
@@ -541,7 +557,7 @@ void Simulation::update() {
             agent->resetCollisionState();
 
             // Update the agent timestamp
-            agent->timestamp = currentTimestamp;
+            agent->timestamp = timestamp;
 
             // Update the agent position
             agent->updatePosition(timeStep);
@@ -556,7 +572,6 @@ void Simulation::update() {
                 // agent->updateVelocity(timeStep, simulationRealTime);
                 }
             }
-
             ++agent;
         }
     }
@@ -564,7 +579,8 @@ void Simulation::update() {
     // Update sensors and store sensor data
     for (auto& sensor : sensors) {
 
-        sensor->update(agents, timeStep, simulationTime, datetime);
+        // sensor->update(agents, timeStep, simulationTime, datetime);
+        sensor->update(agents, timeStep, timestamp);
         // sensor->printData();
         sensor->postData();
         // sensor->postAggregatedData();
@@ -576,8 +592,8 @@ void Simulation::update() {
 
 void Simulation::postMetadata() {
 
-    // Generate a timestamp for the metadata
-    auto timestamp = generateISOTimestamp(simulationTime, datetime);
+    // Get the current timestamp
+    timestamp = generateISOTimestamp(simulationTime, datetime);
 
     // Prepare a BSON document for the metadata
     bsoncxx::builder::stream::document document{};

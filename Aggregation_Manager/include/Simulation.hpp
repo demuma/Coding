@@ -40,6 +40,7 @@ public:
     Simulation(SharedBuffer<std::vector<Agent>>& buffer, 
         std::unordered_map<std::string, std::shared_ptr<SharedBuffer<std::shared_ptr<QuadtreeSnapshot::Node>>>> sensorBuffers,
         std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config);
+    ~Simulation();
     void run();
     void update();
     float getCurrentFrameRate();
@@ -70,6 +71,7 @@ private:
     sf::Time simulationRealTime = sf::Time::Zero;
     sf::Time simulationTime = sf::Time::Zero;
     std::string datetime;
+    std::chrono::system_clock::time_point timestamp;
 
     // Window parameters
     float simulationWidth; // Meters

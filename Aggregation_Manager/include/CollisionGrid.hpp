@@ -16,7 +16,7 @@ struct GridCell {
 class Grid {
 public:
     Grid(float cellSize, int width, int height); // in cells
-    void addAgent(Agent* agent);
+    sf::Vector2i addAgent(Agent* agent);
     void clear();
     void calculateDensity(); // Calculate agent density in each cell
     void checkCollisions(); // Handle collision checks within the grid

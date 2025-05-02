@@ -9,34 +9,38 @@
 
 // Constructor
 AgentBasedSensor::AgentBasedSensor(
-    float frameRate, 
-    sf::FloatRect detectionArea, 
-    const std::string& databaseName,
-    const std::string& collectionName,
-    std::shared_ptr<mongocxx::client> client)
-    : Sensor(frameRate, detectionArea, client), 
-    db(client->database(databaseName)), // Initialize db in initializer list
-    collection(db[collectionName]){
-        this->detectionArea = detectionArea;
-    }
+    float frameRate,
+    sf::FloatRect detectionArea,
+    const std::string &databaseName,
+    const std::string &collectionName,
+    std::shared_ptr<mongocxx::client> client) : Sensor(frameRate, detectionArea, client),
+                                                db(client->database(databaseName)), // Initialize db in initializer list
+                                                collection(db[collectionName])
+{
+    this->detectionArea = detectionArea;
+}
 
 // Alternative constructor for rendering
-AgentBasedSensor::AgentBasedSensor( 
-    sf::FloatRect detectionArea, 
-    sf::Color detectionAreaColor)
-    : Sensor(detectionArea, detectionAreaColor) {
-        this->detectionArea = detectionArea;
-        this->detectionAreaColor = detectionAreaColor;
-    };
+AgentBasedSensor::AgentBasedSensor(
+    sf::FloatRect detectionArea,
+    sf::Color detectionAreaColor): 
+    Sensor(detectionArea, detectionAreaColor) {
+    this->detectionArea = detectionArea;
+    this->detectionAreaColor = detectionAreaColor;
+};
 
 // Destructor
 AgentBasedSensor::~AgentBasedSensor() {}
 
 // Update method for agent-based sensor, taking snapshot of agents in detection area
-void AgentBasedSensor::update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string datetime) {
+// void AgentBasedSensor::update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string datetime) {
+void AgentBasedSensor::update(std::vector<Agent>& agents, float timeStep, std::chrono::system_clock::time_point timestamp) {
+
+    // Update current timestamp
+    this->timestamp = timestamp;
 
     // Clear the data storage
-    dataStorage.clear();
+    agentData.clear();
 
     // Update the time since the last update
     timeSinceLastUpdate += timeStep;
@@ -68,72 +72,28 @@ void AgentBasedSensor::captureAgentData(std::vector<Agent>& agents) {
         if (detectionArea.contains(agent.position)) {
 
             // Prepare SensorData object for the agent
-            AgentBasedSensorData agentData;
-            agentData.sensorId = sensorId;
-            agentData.agentId = agent.agentId;
-            agentData.timestamp = agent.timestamp; // Use the agent timestamp
-            agentData.type = agent.type;
-            agentData.position = agent.position;
+            AgentData agentDataPoint;
+            agentDataPoint.sensorId = sensorId;
+            agentDataPoint.agentId = agent.agentId;
+            agentDataPoint.timestamp = timestamp;
+            agentDataPoint.type = agent.type;
+            agentDataPoint.position = agent.position;
 
             // Estimate and store the velocity of the agent TODO: Only save with velocity
             if (previousPositions.find(agent.agentId) != previousPositions.end()) {
                 sf::Vector2f prevPos = previousPositions[agent.agentId];
-                agentData.estimatedVelocity = (agent.position - previousPositions[agent.agentId]) * frameRate;
+                agentDataPoint.estimatedVelocity = (agent.position - previousPositions[agent.agentId]) * frameRate;
             }
 
             // Store the agent data
-            dataStorage.push_back(agentData);
-
+            agentData.emplace_back(agentDataPoint);
+            
             // Store the current position of a specific agent using its UUID 
             currentPositions[agent.agentId] = agent.position;
         }
     }
-}
-
-// Post data method for agent-based sensor
-void AgentBasedSensor::postData() {
-
-    // Check if there is data to post
-    if (!dataStorage.empty()) {
-
-        // Prepare a vector of BSON documents to insert in bulk
-        std::vector<bsoncxx::document::value> documents;
-        documents.reserve(dataStorage.size());
-
-        // Iterate through the stored data
-        for (const auto& agentData : dataStorage) {
-
-            // Construct a BSON document for each agent data object
-            bsoncxx::builder::stream::document document{};
-
-            // Append the fields to the document
-            document << "timestamp" << bsoncxx::types::b_date{agentData.timestamp}
-                     << "sensor_id" << agentData.sensorId
-                     << "data_type" << "agent data"
-                     << "agent_id" << agentData.agentId
-                     << "type" << agentData.type
-                     << "position" 
-                        << bsoncxx::builder::stream::open_array
-                        << agentData.position.x 
-                        << agentData.position.y
-                        << bsoncxx::builder::stream::close_array
-                     << "estimated_velocity"
-                        << bsoncxx::builder::stream::open_array
-                        << agentData.estimatedVelocity.x 
-                        << agentData.estimatedVelocity.y
-                        << bsoncxx::builder::stream::close_array;
-
-            documents.push_back(document << bsoncxx::builder::stream::finalize);
-        }
-
-        try {
-            // Bulk insert the documents into the collection
-            collection.insert_many(documents);
-        } catch (const mongocxx::exception& e) {
-            // Handle errors
-            std::cerr << "Error inserting agent data: " << e.what() << std::endl;
-        }
-    }
+    // Store the timestamped data in the data storage
+    dataStorage = {timestamp, std::move(agentData)};
 }
 
 // Post metadata method for agent-based sensor (position, detection area, frame rate)
@@ -167,19 +127,69 @@ void AgentBasedSensor::postMetadata() {
     }
 }
 
+// Post data method for agent-based sensor
+void AgentBasedSensor::postData() {
+
+    // Get the agent data from the data storage
+    const auto& timestamp = dataStorage.first;
+    const auto& agentData = dataStorage.second;
+
+    // Check if there is data to post
+    if (!agentData.empty()) {
+
+        // Prepare a vector of BSON documents to insert in bulk
+        std::vector<bsoncxx::document::value> documents;
+        documents.reserve(agentData.size());
+
+        // Iterate through the stored data
+        for (const auto& agentDataPoint : agentData) {
+
+            // Construct a BSON document for each agent data object
+            bsoncxx::builder::stream::document document{}, 
+                                               positionDocument{}, 
+                                               estimatedVelocityDocument{};
+
+            // Prepare the position and estimated velocity documents
+            positionDocument << "x" << agentDataPoint.position.x
+                             << "y" << agentDataPoint.position.y;
+                             
+            estimatedVelocityDocument << "x" << agentDataPoint.estimatedVelocity.x
+                                      << "y" << agentDataPoint.estimatedVelocity.y;
+
+            // Append the fields to the document
+            document << "timestamp" << bsoncxx::types::b_date{timestamp}
+                     << "sensor_id" << agentDataPoint.sensorId
+                     << "data_type" << "agent data"
+                     << "agent_id" << agentDataPoint.agentId
+                     << "type" << agentDataPoint.type
+                     << "position" << positionDocument
+                     << "estimated_velocity" << estimatedVelocityDocument;
+
+            documents.push_back(document << bsoncxx::builder::stream::finalize);
+        }
+
+        try {
+            // Bulk insert the documents into the collection
+            collection.insert_many(documents);
+        } catch (const mongocxx::exception& e) {
+            // Handle errors
+            std::cerr << "Error inserting agent data: " << e.what() << std::endl;
+        }
+    }
+}
 
 // Print the stored data
 void AgentBasedSensor::printData() {
 
     // Print the stored data
-    for (const AgentBasedSensorData& data : dataStorage) {
+    for (const AgentData& agentDataPoint : agentData) {
 
-        std::cout << "  Timestamp: " << generateISOTimestampString(data.timestamp) << std::endl;
-        std::cout << "  Sensor ID: " << data.sensorId << std::endl;
-        std::cout << "  Agent ID: " << data.agentId << std::endl;
-        std::cout << "  Agent Type: " << data.type << std::endl;
-        std::cout << "  Position: (" << data.position.x << ", " << data.position.y << ")" << std::endl;
-        std::cout << "  Estimated Velocity: (" << data.estimatedVelocity.x << ", " << data.estimatedVelocity.y << ")" << std::endl;
+        std::cout << "  Timestamp: " << generateISOTimestampString(agentDataPoint.timestamp) << std::endl;
+        std::cout << "  Sensor ID: " << agentDataPoint.sensorId << std::endl;
+        std::cout << "  Agent ID: " << agentDataPoint.agentId << std::endl;
+        std::cout << "  Agent Type: " << agentDataPoint.type << std::endl;
+        std::cout << "  Position: (" << agentDataPoint.position.x << ", " << agentDataPoint.position.y << ")" << std::endl;
+        std::cout << "  Estimated Velocity: (" << agentDataPoint.estimatedVelocity.x << ", " << agentDataPoint.estimatedVelocity.y << ")" << std::endl;
         std::cout << std::endl;
     }
 }

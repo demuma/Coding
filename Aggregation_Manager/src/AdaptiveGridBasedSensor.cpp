@@ -9,23 +9,22 @@
 
 // Constructor
 AdaptiveGridBasedSensor::AdaptiveGridBasedSensor(
-    float frameRate, 
-    sf::FloatRect detectionArea, 
-    float cellSize, 
+    float frameRate,
+    sf::FloatRect detectionArea,
+    float cellSize,
     int maxDepth,
-    const std::string& databaseName, 
-    const std::string& collectionName,
-    std::shared_ptr<mongocxx::client> client
-)
-
-    : Sensor(frameRate, detectionArea, client), 
-    cellSize(cellSize), // Half the longest side of the detection area
-    maxDepth(maxDepth),
-    db(client->database(databaseName)),
-    collection(db[collectionName]), 
-    adaptiveGrid(detectionArea.position.x, detectionArea.position.y, cellSize, maxDepth) {
-        this->detectionArea = detectionArea;
-    }
+    const std::string &databaseName,
+    const std::string &collectionName,
+    std::shared_ptr<mongocxx::client> client) : Sensor(frameRate, detectionArea, client),
+                                                cellSize(cellSize), // Half the longest side of the detection area
+                                                maxDepth(maxDepth),
+                                                db(client->database(databaseName)),
+                                                collection(db[collectionName]),
+                                                adaptiveGrid(detectionArea.position.x, detectionArea.position.y, cellSize, maxDepth),
+                                                aggregationManager(collection, sensorId, timestamp)
+{
+    this->detectionArea = detectionArea;
+}
 
 // Alternative constructor for rendering
 AdaptiveGridBasedSensor::AdaptiveGridBasedSensor(
@@ -36,7 +35,9 @@ AdaptiveGridBasedSensor::AdaptiveGridBasedSensor(
     bool showGrid
 )
     : Sensor(detectionArea, detectionAreaColor), 
-    cellSize(cellSize), adaptiveGrid(detectionArea.position.x, detectionArea.position.y, cellSize, maxDepth), maxDepth(maxDepth) {
+    cellSize(cellSize), 
+    adaptiveGrid(detectionArea.position.x, detectionArea.position.y, cellSize, maxDepth), maxDepth(maxDepth), 
+    aggregationManager(collection, sensorId, timestamp) {
         this->detectionArea = detectionArea;
         this->detectionAreaColor = detectionAreaColor;
         this->showGrid = showGrid;
@@ -52,17 +53,16 @@ AdaptiveGridBasedSensor::~AdaptiveGridBasedSensor() {
 }
 
 // Update grid-based agent detection and output one gridData entry per frame
-void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string datetime) {
+void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep, std::chrono::system_clock::time_point timestamp) {
     
-    // Update current simulation time and datetime
-    this->simulationTime = simulationTime;
-    this->datetime = datetime;
-
+    // Update current timestamp
+    this->timestamp = timestamp;
+    
     // Clear data storage
     dataStorage.clear();
 
-    // Get the current timestamp as a string
-    auto currentTime = generateISOTimestamp(this->simulationTime, datetime);
+    // // Get the current timestamp as a string
+    // auto currentTime = timestamp;
 
     // Update the time since the last update
     timeSinceLastUpdate += timeStep;
@@ -108,7 +108,7 @@ void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep,
             timeSinceLastUpdate = 0.0f;
 
             // Push timestamped adaptive grid data to the data storage
-            dataStorage.push_back({currentTime, adaptiveGridData});
+            dataStorage.push_back({this->timestamp, adaptiveGridData});
         }
     }
 }
@@ -117,8 +117,10 @@ void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep,
 void AdaptiveGridBasedSensor::postMetadata() {
 
     // Prepare a BSON document for the metadata
-    bsoncxx::builder::stream::document document{};
-    bsoncxx::builder::stream::document positionDocument{}, detectionAreaDocument{};
+    bsoncxx::builder::stream::document document{}, 
+                                       positionDocument{}, 
+                                       detectionAreaDocument{};
+    
     positionDocument << "x" << detectionArea.position.x
                       << "y" << detectionArea.position.y;
     detectionAreaDocument << "width" << detectionArea.size.x
@@ -160,8 +162,8 @@ void AdaptiveGridBasedSensor::postData() {
                 
                 // Document for the grid cell
                 // TODO: Remove cell position and cell size from the document
-                bsoncxx::builder::stream::document document{};
-                bsoncxx::builder::stream::document cellPositionDocument{};
+                bsoncxx::builder::stream::document document{},
+                                                   cellPositionDocument{};
 
                 cellPositionDocument << "x" << adaptiveGrid.getCellPosition(cellId).x
                                      << "y" << adaptiveGrid.getCellPosition(cellId).y;
@@ -172,9 +174,6 @@ void AdaptiveGridBasedSensor::postData() {
                          << "cell_id" << cellId
                          << "cell_position" << cellPositionDocument
                          << "cell_size" << adaptiveGrid.getCellDimensions(cellId).x;
-            
-                // Embed agent counts as a subdocument
-                int totalAgents = 0;
 
                 // Open an array for the agent type count
                 auto agentTypeBuilder = document << "agent_type_count" << bsoncxx::builder::stream::open_array;
@@ -210,12 +209,12 @@ void AdaptiveGridBasedSensor::postData() {
     }
 }
 
-// Print grid data -> TODO: Time stamp not accurate, use dataStorage instead
+// Print grid data
 void AdaptiveGridBasedSensor::printData() {
 
-    auto currentTime = std::chrono::system_clock::now();
+    // auto currentTime = std::chrono::system_clock::now();
 
-    std::time_t now = std::chrono::system_clock::to_time_t(currentTime);
+    std::time_t now = std::chrono::system_clock::to_time_t(timestamp);
     std::stringstream ss;
     ss << std::put_time(std::localtime(&now), "%FT%TZ");
     
@@ -225,7 +224,7 @@ void AdaptiveGridBasedSensor::printData() {
         const int& cellId = kvp.first;
         const AdaptiveGridDataPoint& cellData = kvp.second;
 
-        std::cout << "Current time: " << ss.str() << " Cell ID(" << cellId << "): ";
+        std::cout << "Timestamp: " << ss.str() << " Cell ID(" << cellId << "): ";
 
         // Going through key-value pairs in the cell data
         for (const auto& kvp : cellData.agentTypeCount) {

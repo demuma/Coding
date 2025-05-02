@@ -44,9 +44,9 @@ public:
     int maxDepth;
     Quadtree adaptiveGrid;
     sf::Vector2f position = sf::Vector2f(detectionArea.position.x, detectionArea.position.y);
-    AggregationManager aggregationManager();
     
-    void update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string date) override;
+    // void update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string date) override;
+    void update(std::vector<Agent>& agents, float timeStep, std::chrono::system_clock::time_point timestamp) override;
     void postData() override;
     void postMetadata() override;
     void printData() override;
@@ -56,8 +56,10 @@ public:
 private:
     mongocxx::database db;
     mongocxx::collection collection;
-    sf::Time simulationTime;
-    std::string datetime;
+    AggregationManager aggregationManager;
+    // sf::Time simulationTime;
+    // std::string datetime;
+    // std::chrono::system_clock::time_point timestamp;
     AdaptiveGridData adaptiveGridData;
     std::vector<std::pair<std::chrono::system_clock::time_point, AdaptiveGridData>> dataStorage; // Data Storage: timestamp, map(cell id, map(agent type, count)
 };

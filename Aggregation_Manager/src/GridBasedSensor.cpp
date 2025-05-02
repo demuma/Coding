@@ -9,22 +9,20 @@
 
 // Constructor
 GridBasedSensor::GridBasedSensor(
-    float frameRate, 
-    sf::FloatRect detectionArea, 
-    float cellSize, 
-    const std::string& databaseName, 
-    const std::string& collectionName,
-    std::shared_ptr<mongocxx::client> client
-)
-
-    : Sensor(frameRate, detectionArea, client), 
-    cellSize(cellSize), 
-    db(client->database(databaseName)),
-    collection(db[collectionName]), 
-    currentGrid(cellSize, detectionArea.size.x, detectionArea.size.y), 
-    previousGrid(cellSize, detectionArea.size.x, detectionArea.size.y) {
-        this->detectionArea = detectionArea;
-    }
+    float frameRate,
+    sf::FloatRect detectionArea,
+    float cellSize,
+    const std::string &databaseName,
+    const std::string &collectionName,
+    std::shared_ptr<mongocxx::client> client) : Sensor(frameRate, detectionArea, client),
+                                                cellSize(cellSize),
+                                                db(client->database(databaseName)),
+                                                collection(db[collectionName]),
+                                                currentGrid(cellSize, detectionArea.size.x, detectionArea.size.y),
+                                                previousGrid(cellSize, detectionArea.size.x, detectionArea.size.y)
+{
+    this->detectionArea = detectionArea;
+}
 
 // Alternative constructor for rendering
 GridBasedSensor::GridBasedSensor(
@@ -52,12 +50,13 @@ GridBasedSensor::~GridBasedSensor() {
 }
 
 // Update grid-based agent detection and output one gridData entry per frame
-void GridBasedSensor::update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string datetime) {
+void GridBasedSensor::update(std::vector<Agent>& agents, float timeStep, std::chrono::system_clock::time_point timestamp) {
+
+    // Update current timestamp
+    this->timestamp = timestamp;
 
     // Clear data storage
     dataStorage.clear();
-
-    auto currentTime = generateISOTimestamp(simulationTime, datetime);
 
     // Update the time since the last update
     timeSinceLastUpdate += timeStep;
@@ -87,14 +86,12 @@ void GridBasedSensor::update(std::vector<Agent>& agents, float timeStep, sf::Tim
                 // Set the flag to true
                 hasAgents = true;
 
-                // Get the cell index of the agent's position
-                cellIndex = getCellIndex(agent.position);
-
-                // Add the agent to the current grid
-                currentGrid.addAgent(&agent);
+                // Add the agent to the current grid and get the cell index
+                cellIndex = currentGrid.addAgent(&agent);
 
                 // Increment the count of the agent type in the cell
-                gridData[cellIndex][agent.type]++;
+                gridData[cellIndex].agentTypeCount[agent.type]++;
+                gridData[cellIndex].totalAgents++;
             }
         }
 
@@ -102,7 +99,7 @@ void GridBasedSensor::update(std::vector<Agent>& agents, float timeStep, sf::Tim
         if(hasAgents) {
 
             timeSinceLastUpdate = 0.0f;
-            dataStorage.push_back({currentTime, gridData}); // Pushing exactly one entry to dataStorage
+            dataStorage.push_back({timestamp, gridData}); // Pushing exactly one entry to dataStorage
         }
     }
 }
@@ -112,26 +109,8 @@ void GridBasedSensor::postMetadata() {
 
     // Prepare a BSON document for the metadata
     bsoncxx::builder::stream::document document{};
-
-    // // Append the metadata fields to the document
-    // document << "timestamp" << timestamp
-    //          << "sensor_id" << sensor_id
-    //          << "data_type" << "metadata"
-    //          << "position"
-    //             << bsoncxx::builder::stream::open_array
-    //             << detectionArea.position.x
-    //             << detectionArea.position.y
-    //             << bsoncxx::builder::stream::close_array
-    //          << "detection_area" 
-    //             << bsoncxx::builder::stream::open_array
-    //             << detectionArea.size.x
-    //             << detectionArea.size.y
-    //             << bsoncxx::builder::stream::close_array
-    //          << "frame_rate" << frameRate
-    //          << "cell_size" << cellSize;
-    // Append the metadata fields to the document
-
     bsoncxx::builder::stream::document positionDocument{}, detectionAreaDocument{};
+
     positionDocument << "x" << detectionArea.position.x
                       << "y" << detectionArea.position.y;
     detectionAreaDocument << "width" << detectionArea.size.x
@@ -171,46 +150,40 @@ void GridBasedSensor::postData() {
             for (const auto& [cellIndex, cellData] : gridData) {
                 
                 // Document for the grid cell
-                bsoncxx::builder::stream::document document{}; 
+                bsoncxx::builder::stream::document document{}, 
+                                                   cellPositionDocument{},
+                                                   cellIndexDocument{};
+
+                cellPositionDocument << "x" << getCellPosition(cellIndex).x
+                                     << "y" << getCellPosition(cellIndex).y;
+
+                cellIndexDocument << "x" << cellIndex.x
+                                  << "y" << cellIndex.y;
+
                 document << "timestamp" << bsoncxx::types::b_date{timestamp}
                          << "sensor_id" << sensorId
                          << "data_type" << "grid data"
-                         << "cell_index"
-                            << bsoncxx::builder::stream::open_array 
-                            << cellIndex.x 
-                            << cellIndex.y
-                            << bsoncxx::builder::stream::close_array
-                         << "cell_position"
-                            << bsoncxx::builder::stream::open_array
-                            << getCellPosition(cellIndex).x
-                            << getCellPosition(cellIndex).y
-                            << bsoncxx::builder::stream::close_array;
-            
-                // Embed agent counts as a subdocument
-                int totalAgents = 0;
-                std::vector<int> numbers = {1, 2, 3, 4, 5};
+                         << "cell_index" << cellIndexDocument
+                         << "cell_position" << cellPositionDocument;
 
                 // Open an array for the agent type count
                 auto agentTypeBuilder = document << "agent_type_count" << bsoncxx::builder::stream::open_array;
 
                 // Loop through the vector and add each element to the array
-                for (const auto& [agentType, count] : cellData) {
+                for (const auto& [agentType, count] : cellData.agentTypeCount) {
 
                     // Open a document for each agent type and count
                     agentTypeBuilder << bsoncxx::builder::stream::open_document
                                 << "type" << agentType
                                 << "count" << count
                                 << bsoncxx::builder::stream::close_document;  // Close the document
-                    
-                    // Increment the total agent count
-                    totalAgents += count;
                 }
 
                 // Close the array
                 agentTypeBuilder << bsoncxx::builder::stream::close_array;
 
                 // Add total agent count for the cell
-                document << "total_agents" << totalAgents;
+                document << "total_agents" << cellData.totalAgents;
                 
                 // Add the document to the vector for bulk insert
                 documents.push_back(document << bsoncxx::builder::stream::finalize);
@@ -227,12 +200,12 @@ void GridBasedSensor::postData() {
     }
 }
 
-// Print grid data -> TODO: Time stamp not accurate, use dataStorage instead
+// Print grid data
 void GridBasedSensor::printData() {
 
-    auto currentTime = std::chrono::system_clock::now();
+    // auto currentTime = std::chrono::system_clock::now();
 
-    std::time_t now = std::chrono::system_clock::to_time_t(currentTime);
+    std::time_t now = std::chrono::system_clock::to_time_t(timestamp);
     std::stringstream ss;
     ss << std::put_time(std::localtime(&now), "%FT%TZ");
     
@@ -240,12 +213,12 @@ void GridBasedSensor::printData() {
     for (const auto& kvp : gridData) { // key-value pair
 
         const sf::Vector2i& cellIndex = kvp.first;
-        const std::unordered_map<std::string, int>& cellData = kvp.second;
+        const GridDataPoint& cellData = kvp.second;
 
-        std::cout << "Current time: " << ss.str() << " Cell (" << cellIndex.x << ", " << cellIndex.y << "): ";
+        std::cout << "Timestamp: " << ss.str() << " Cell (" << cellIndex.x << ", " << cellIndex.y << "): ";
 
         // Going through key-value pairs in the cell data
-        for (const auto& kvp : cellData) {
+        for (const auto& kvp : cellData.agentTypeCount) {
             
             // Print agent type and count
             const std::string& agentType = kvp.first;
@@ -273,10 +246,18 @@ sf::Vector2i GridBasedSensor::getCellIndex(const sf::Vector2f& position) const {
     return sf::Vector2i(x, y);
 }
 
+// sf::Vector2f GridBasedSensor::getCellPosition(const sf::Vector2i& cellIndex) const {
+
+//     float x = (cellIndex.x * cellSize + detectionArea.position.x + cellSize / 2);
+//     float y = (cellIndex.y * cellSize + detectionArea.position.y + cellSize / 2);
+
+//     return sf::Vector2f(x, y);
+// }
+
 sf::Vector2f GridBasedSensor::getCellPosition(const sf::Vector2i& cellIndex) const {
 
-    float x = (cellIndex.x * cellSize + detectionArea.position.x + cellSize / 2) / scale;
-    float y = (cellIndex.y * cellSize + detectionArea.position.y + cellSize / 2) / scale;
+    float x = cellIndex.x * cellSize + detectionArea.position.x;
+    float y = cellIndex.y * cellSize + detectionArea.position.y;
 
     return sf::Vector2f(x, y);
 }

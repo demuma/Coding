@@ -15,10 +15,14 @@
 
 class Sensor {
 public:
-
-    Sensor(float frameRate, sf::FloatRect detectionArea, std::shared_ptr<mongocxx::client> client);
+    Sensor(
+        float frameRate, 
+        sf::FloatRect detectionArea, 
+        std::shared_ptr<mongocxx::client> client
+    );
     Sensor(const sf::FloatRect& detectionArea, const sf::Color& detectionAreaColor);
-    virtual void update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string datetime) = 0;
+    // virtual void update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string datetime) = 0;
+    virtual void update(std::vector<Agent>& agents, float timeStep, std::chrono::system_clock::time_point timestamp) = 0;
     virtual void printData() = 0;
     virtual void postData() = 0;
     virtual void postMetadata() = 0;
@@ -31,6 +35,8 @@ public:
     int scale;
     // std::string timestamp;
     std::chrono::system_clock::time_point timestamp;
+    // sf::Time simulationTime;
+    // std::string datetime;
     std::unordered_map<std::string, sf::Vector2f> previousPositions;
     std::unordered_map<std::string, sf::Vector2f> currentPositions;
 

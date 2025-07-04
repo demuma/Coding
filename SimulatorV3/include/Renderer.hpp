@@ -16,6 +16,7 @@
 #include "Obstacle.hpp"
 #include "Utilities.hpp"
 #include "Sensor.hpp"
+#include "Region.hpp"
 
 /************************************/
 /********** RENDERER CLASS **********/
@@ -30,8 +31,10 @@ public:
     void run();
     void loadConfiguration();
     void loadAgentsAttributes();
+    void loadRegionsAttributes();
     void loadObstacles();
     void initializeSensors();
+    void initializeRegions();
     void initializeWindow();
     void initializeGUI();
     void updateFrameCountText();
@@ -82,6 +85,7 @@ private:
     bool live_mode;
     int numAgents;
     bool showGrids = false;
+    bool showRegions = true;
     bool showBufferZones = false;
     float EPSILON = 1e-6f;
 
@@ -152,6 +156,12 @@ private:
     bool showTrajectories = false;
     bool showWaypoints = false;
     bool showArrow = false;
+
+    // Regions
+    int numRegionTypes;
+    int numRegions;
+    std::vector<Region> regions;
+    std::unordered_map<std::string, Region::RegionTypeAttributes> regionTypeAttributes;
 
     // Collision
     bool showCollisionGrid = false;

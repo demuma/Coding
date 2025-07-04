@@ -19,7 +19,10 @@ Renderer::Renderer(SharedBuffer<std::vector<Agent>>& buffer,
     DEBUG_MSG("Renderer: read buffer: " << buffer.currentReadFrameIndex);
     loadConfiguration();
     loadObstacles();
+    loadRegionsAttributes();
+    loadAgentsAttributes();
     initializeSensors();
+    initializeRegions();
     initializeWindow();
     initializeGUI();
 }
@@ -66,6 +69,7 @@ void Renderer::loadConfiguration() {
     showSensors = config["renderer"]["show_sensors"].as<bool>();
     showBufferZones = config["renderer"]["show_buffer"].as<bool>();
     showArrow = config["renderer"]["show_arrow"].as<bool>();
+    showRegions = config["renderer"]["show_regions"].as<bool>();
 
     // Load collision parameters
     showCollisionGrid = config["collision"]["grid"]["show_grid"].as<bool>();
@@ -116,6 +120,36 @@ void Renderer::loadAgentsAttributes() {
     }
 }
 
+// Load region attributes from the YAML configuration file
+void Renderer::loadRegionsAttributes() {
+
+    // Extract region atributes per type
+    if (config["region_taxonomy"]) {
+        for (const auto& regionType : config["region_taxonomy"]) {
+            Region::RegionTypeAttributes attributes;
+            std::string type = regionType["type"].as<std::string>();
+
+            // General attributes
+            attributes.color = regionType["color"].as<std::string>();
+            attributes.alpha = regionType["alpha"].as<float>();
+            // Granularities
+            attributes.granularities.spatial.min = regionType["granularities"]["spatial"]["min"].as<float>();
+            attributes.granularities.spatial.max = regionType["granularities"]["spatial"]["max"].as<float>();
+            attributes.granularities.temporal.min = regionType["granularities"]["temporal"]["min"].as<float>();
+            attributes.granularities.temporal.max = regionType["granularities"]["temporal"]["max"].as<float>();
+            // Privacy
+            attributes.privacy.k_anonymity.min = regionType["privacy"]["k_anonymity"]["min"].as<int>();
+            attributes.privacy.l_diversity.min = regionType["privacy"]["l_diversity"]["min"].as<int>();
+
+            // Store in map
+            regionTypeAttributes[type] = attributes;
+        }
+
+        // Set the number of agent types
+        numRegionTypes = regionTypeAttributes.size();
+    }
+}
+
 // Function to load obstacles from the YAML configuration file
 void Renderer::loadObstacles() {
 
@@ -141,6 +175,36 @@ void Renderer::loadObstacles() {
         }
     } else {
         ERROR_MSG("Error: Could not find 'obstacles' key in config file or it is not a sequence");
+    }
+}
+
+// Initialize regions with YAML configuration
+void Renderer::initializeRegions() {
+
+    // Load regions from the configuration file
+    if(config["regions"]) {
+        for (const auto& regionNode: config["regions"]) {
+
+            Region region = Region(regionTypeAttributes[regionNode["type"].as<std::string>()]);
+
+            region.type = regionNode["type"].as<std::string>();
+            sf::FloatRect area(
+                {regionNode["area"]["x"].as<float>(), regionNode["area"]["y"].as<float>()},
+                {regionNode["area"]["width"].as<float>(), regionNode["area"]["height"].as<float>()}
+            );
+            region.area = area;
+
+            region.colorAlpha = sf::Color(
+                stringToColor(region.attributes.color).r,
+                stringToColor(region.attributes.color).g,
+                stringToColor(region.attributes.color).b,
+                region.attributes.alpha  * 255
+            );
+
+            // Create the region and add to regions vector
+            regions.push_back(region);
+            DEBUG_MSG("New " << region.type << " region created at (" << region.area.position.x << ", " << region.area.position.y << ") with area (" << region.area.size.x << ", " << region.area.size.y << ")");
+        }
     }
 }
 
@@ -666,21 +730,25 @@ void Renderer::handleEvents() {
         }
 
         else if (keyPressed.scancode == sf::Keyboard::Scancode::R) {
-            playbackSpeed = 1.0f;
-            DEBUG_MSG("Playback speed reset to: " << playbackSpeed);
+            showRegions = !showRegions;
         }
 
         else if (keyPressed.scancode == sf::Keyboard::Scancode::S) {
             showSensors = !showSensors;
             showSensorGrid = !showSensorGrid;
         }
-
+        
         else if (keyPressed.scancode == sf::Keyboard::Scancode::T) {
             showTrajectories = !showTrajectories;
         }
         
         else if (keyPressed.scancode == sf::Keyboard::Scancode::W) {
             showWaypoints = !showWaypoints;
+        }
+
+        else if (keyPressed.scancode == sf::Keyboard::Scancode::X) {
+            playbackSpeed = 1.0f;
+            DEBUG_MSG("Playback speed reset to: " << playbackSpeed);
         }
 
         else if (keyPressed.scancode == sf::Keyboard::Scancode::Z) {
@@ -967,6 +1035,17 @@ void Renderer::render() {  // Input: meters, Output: pixels
     // Loop through all agents and render them
     if (currentNumAgents != 0 || buffer.currentReadFrameIndex != maxFrames) {
 
+        if(showRegions) {
+
+            // Draw regions
+            for (const auto& region : regions) {
+                sf::RectangleShape regionShape(sf::Vector2f(region.area.size.x * scale, region.area.size.y * scale));
+                regionShape.setPosition({region.area.position.x * scale + offset.x, region.area.position.y * scale + offset.y});
+                regionShape.setFillColor(region.colorAlpha);
+                window.draw(regionShape);
+            }
+        }
+
         // Draw the grid if enabled
         if(showGrids) {
             
@@ -1058,6 +1137,22 @@ void Renderer::render() {  // Input: meters, Output: pixels
                         // adaptiveGridBasedSensor->adaptiveGrid.printChildren(14);
                         // adaptiveGridBasedSensor->adaptiveGrid.printChildren(15);
 
+                    }
+                }
+
+                if(auto agentBasedSensor = dynamic_cast<AgentBasedSensor*>(sensor.get())) {
+
+                    // Draw the grid if enabled
+                    if(showSensors) {
+
+                        // Draw outer rectangle
+                        sf::RectangleShape gridBoundaries(sf::Vector2f(agentBasedSensor->detectionArea.size.x * scale, agentBasedSensor->detectionArea.size.y * scale));
+                        gridBoundaries.setPosition({agentBasedSensor->detectionArea.position.x * scale + offset.x, agentBasedSensor->detectionArea.position.y * scale + offset.y}); // Set position in pixels
+                        // gridBoundaries.setFillColor(sf::Color::Transparent);
+                        gridBoundaries.setFillColor(agentBasedSensor->detectionAreaColor);
+                        gridBoundaries.setOutlineColor(sf::Color::Black);
+                        gridBoundaries.setOutlineThickness(1);
+                        window.draw(gridBoundaries);
                     }
                 }
             }

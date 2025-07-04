@@ -11,10 +11,10 @@ else()
 endif()
 
 # Set the SFML_DIR to the path containing SFMLConfig.cmake
-set(SFML_DIR "${HOMEBREW_PREFIX}/sfml/lib/cmake/SFML")
+set(SFML_DIR "${HOMEBREW_PREFIX}/sfml@3/lib/cmake/SFML")
 
 # Find SFML libraries
-find_package(SFML 3.0.0 COMPONENTS Graphics Window System REQUIRED)
+find_package(SFML COMPONENTS Graphics Window System REQUIRED)
 # find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 
 # Find the libraries for yaml-cpp and MongoDB C++ driver

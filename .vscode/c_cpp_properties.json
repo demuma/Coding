@@ -8,7 +8,7 @@
                 "/usr/local/include/mongocxx/v_noabi",
                 "/usr/local/include/bsoncxx/v_noabi",
                 // "/opt/homebrew/opt/sfml@2/include", // MacBook (M4)
-                "/opt/homebrew/opt/sfml/include", // MacBook (M4)
+                "/opt/homebrew/opt/sfml@3/include", // MacBook (M4)
                 "/opt/homebrew/opt/yaml-cpp/include" // MacBook (M4)
                 // The following is for the MacBook (Intel)
                 // "/usr/local/include/bsoncxx/v_noabi/bsoncxx/third_party/mnmlstc",

@@ -77,17 +77,18 @@ private:
     float scale;
     double tolerance = 1e-7;
 
-    // Agent parameters
-    int numAgentTypes;
-    int numAgents;
+    // Region parameters
     int numRegionTypes;
     int numRegions;
     std::vector<Region> regions;
+    std::unordered_map<std::string, Region::RegionTypeAttributes> regionTypeAttributes;
+
+    // Agent parameters
+    int numAgentTypes;
+    int numAgents;
     std::vector<Agent> agents;
     float waypointDistance;
     std::unordered_map<std::string, Agent::AgentTypeAttributes> agentTypeAttributes;
-    std::unordered_map<std::string, Region::RegionTypeAttributes> regionTypeAttributes;
-
 
     // Shared buffer reference
     SharedBuffer<std::vector<Agent>>& buffer;

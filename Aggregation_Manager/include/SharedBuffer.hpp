@@ -28,7 +28,7 @@ Template class for different types:
 template<typename T>
 class SharedBuffer {
 public:
-    SharedBuffer();
+    SharedBuffer(std::string name);
     void write(const T& frame);
     T read();
     void swap();
@@ -40,6 +40,7 @@ public:
     std::atomic<size_t> currentReadFrameIndex;
     std::atomic<size_t> currentWriteFrameIndex;
     std::atomic<bool> stop = false;
+    std::string name;
 
 private:
     std::queue<T> buffers[2];

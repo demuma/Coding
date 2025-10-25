@@ -14,12 +14,15 @@ GridBasedSensor::GridBasedSensor(
     float cellSize,
     const std::string& databaseName,
     const std::string& collectionName,
-    std::shared_ptr<mongocxx::client> client) : Sensor(frameRate, detectionArea, client),
-                                                cellSize(cellSize),
-                                                db(client->database(databaseName)),
-                                                collection(db[collectionName]),
-                                                currentGrid(cellSize, detectionArea.size.x, detectionArea.size.y),
-                                                previousGrid(cellSize, detectionArea.size.x, detectionArea.size.y)
+    std::shared_ptr<mongocxx::client> client,
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer
+) : Sensor(frameRate, detectionArea, client, sensorBuffer),
+    cellSize(cellSize),
+    db(client->database(databaseName)),
+    collection(db[collectionName]),
+    sensorBuffer(sensorBuffer),
+    currentGrid(cellSize, detectionArea.size.x, detectionArea.size.y),
+    previousGrid(cellSize, detectionArea.size.x, detectionArea.size.y)
 {
     this->detectionArea = detectionArea;
 }
@@ -29,10 +32,11 @@ GridBasedSensor::GridBasedSensor(
     sf::FloatRect detectionArea, 
     sf::Color detectionAreaColor, 
     float cellSize, 
-    bool showGrid
-)
-    : Sensor(detectionArea, detectionAreaColor), 
+    bool showGrid,
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer
+) : Sensor(detectionArea, detectionAreaColor, sensorBuffer), 
     cellSize(cellSize), currentGrid(cellSize, detectionArea.size.x, detectionArea.size.y), 
+    sensorBuffer(sensorBuffer),
     previousGrid(cellSize, detectionArea.size.x, detectionArea.size.y) {
         this->detectionArea = detectionArea;
         this->detectionAreaColor = detectionAreaColor;

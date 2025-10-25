@@ -23,12 +23,16 @@ public:
         sf::FloatRect detectionArea, 
         const std::string& databaseName,
         const std::string& collectionName,
-        std::shared_ptr<mongocxx::client> client);
+        std::shared_ptr<mongocxx::client> client,
+        SharedBuffer<sensorBufferFrameType>& sensorBuffer
+    );
 
     // Alternative constructor for rendering
     AgentBasedSensor( 
         sf::FloatRect detectionArea, 
-        sf::Color detectionAreaColor);
+        sf::Color detectionAreaColor,
+        SharedBuffer<sensorBufferFrameType>& sensorBuffer
+    );
 
     ~AgentBasedSensor();
     sf::Vector2f position = sf::Vector2f(detectionArea.position.x, detectionArea.position.y);
@@ -49,5 +53,6 @@ private:
 
     // Data storage structure
     std::vector<AgentData> agentData;
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer;
     std::pair<std::chrono::system_clock::time_point, std::vector<AgentData>> dataStorage;
 };

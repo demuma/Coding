@@ -26,7 +26,8 @@ public:
         int maxDepth, 
         const std::string& databaseName, 
         const std::string& collectionName, 
-        std::shared_ptr<mongocxx::client> client
+        std::shared_ptr<mongocxx::client> client,
+        SharedBuffer<sensorBufferFrameType>& sensorBuffer
     );
 
     // Alternative constructor for rendering
@@ -35,7 +36,8 @@ public:
         sf::Color detectionAreaColor, 
         float cellSize,
         int maxDepth,
-        bool showGrid
+        bool showGrid,
+        SharedBuffer<sensorBufferFrameType>& sensorBuffer
     );
 
     ~AdaptiveGridBasedSensor();
@@ -58,5 +60,7 @@ private:
     mongocxx::collection collection;
     AggregationManager aggregationManager;
     AdaptiveGridData adaptiveGridData;
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer;
+    sensorFrame currentCellIds;
     std::vector<std::pair<std::chrono::system_clock::time_point, AdaptiveGridData>> dataStorage; // Data Storage: timestamp, map(cell id, map(agent type, count)
 };

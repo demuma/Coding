@@ -7,7 +7,7 @@
 
 #include "../include/AdaptiveGridBasedSensor.hpp"
 
-// Constructor
+// Base constructor for simulation
 AdaptiveGridBasedSensor::AdaptiveGridBasedSensor(
     float frameRate,
     sf::FloatRect detectionArea,
@@ -15,13 +15,16 @@ AdaptiveGridBasedSensor::AdaptiveGridBasedSensor(
     int maxDepth,
     const std::string &databaseName,
     const std::string &collectionName,
-    std::shared_ptr<mongocxx::client> client) : Sensor(frameRate, detectionArea, client),
-                                                cellSize(cellSize), // Half the longest side of the detection area
-                                                maxDepth(maxDepth),
-                                                db(client->database(databaseName)),
-                                                collection(db[collectionName]),
-                                                adaptiveGrid(detectionArea.position.x, detectionArea.position.y, cellSize, maxDepth),
-                                                aggregationManager(collection, sensorId, timestamp)
+    std::shared_ptr<mongocxx::client> client,
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer
+) : Sensor(frameRate, detectionArea, client, sensorBuffer),
+    cellSize(cellSize), // Half the longest side of the detection area
+    maxDepth(maxDepth),
+    db(client->database(databaseName)),
+    collection(db[collectionName]),
+    adaptiveGrid(detectionArea.position.x, detectionArea.position.y, cellSize, maxDepth),
+    aggregationManager(collection, sensorId, timestamp),
+    sensorBuffer(sensorBuffer)
 {
     this->detectionArea = detectionArea;
 }
@@ -32,12 +35,14 @@ AdaptiveGridBasedSensor::AdaptiveGridBasedSensor(
     sf::Color detectionAreaColor, 
     float cellSize, 
     int maxDepth,
-    bool showGrid
+    bool showGrid,
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer
 )
-    : Sensor(detectionArea, detectionAreaColor), 
+    : Sensor(detectionArea, detectionAreaColor, sensorBuffer), 
     cellSize(cellSize), 
     adaptiveGrid(detectionArea.position.x, detectionArea.position.y, cellSize, maxDepth), maxDepth(maxDepth), 
-    aggregationManager(collection, sensorId, timestamp) {
+    aggregationManager(collection, sensorId, timestamp), sensorBuffer(sensorBuffer) 
+    {
         this->detectionArea = detectionArea;
         this->detectionAreaColor = detectionAreaColor;
         this->showGrid = showGrid;
@@ -60,6 +65,7 @@ void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep,
     
     // Clear data storage
     dataStorage.clear();
+    currentCellIds.clear();
 
     // // Get the current timestamp as a string
     // auto currentTime = timestamp;
@@ -92,23 +98,37 @@ void AdaptiveGridBasedSensor::update(std::vector<Agent>& agents, float timeStep,
 
             // Generate split sequence
             adaptiveGrid.splitFromPositions();
-
+            
             for (Agent* agentPtr : adaptiveGrid.agents) {
                 Agent& agent = *agentPtr;
-
+                
                 // Add the agent to the adaptive grid
                 int cellId = adaptiveGrid.addAgent(&agent);
-
+                
+                // Add cell id to sensor buffer for snapshotting
+                currentCellIds[sensorId].insert(cellId); // unordered set
+                
                 // Increment the count of the agent type and total agents in the cell
                 adaptiveGridData[cellId].agentTypeCount[agent.type]++;
                 adaptiveGridData[cellId].totalAgents++;
             }
+            
+            // Create a shared pointer to the timestamped current cell ids
+            auto currentCellIdsPtr = std::make_shared<sensorFrameType>(this->timestamp, std::move(currentCellIds));
+            
+            // Write the current cell ids to the sensor buffer
+            sensorBuffer.write(currentCellIdsPtr);
 
             // Reset the time since the last update
             timeSinceLastUpdate = 0.0f;
 
             // Push timestamped adaptive grid data to the data storage
             dataStorage.push_back({this->timestamp, adaptiveGridData});
+        }
+        else {
+            // If no agents detected, write empty data to the sensor buffer
+            auto emptyCellIdsPtr = std::make_shared<sensorFrameType>(this->timestamp, std::move(sensorFrame{}));
+            sensorBuffer.write(emptyCellIdsPtr);
         }
     }
 }

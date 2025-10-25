@@ -92,7 +92,7 @@ public:
     // Trajectory
     std::vector<sf::Vector2f>(trajectory);
     float waypointDistance;
-    sf::Color waypointColor;
+    // sf::Color waypointColor;
     int nextWaypointIndex = -1;
 
     // Visuals

@@ -5,27 +5,29 @@
       "label": "Configure Debug",
       "type": "shell",
       "command": "cmake",
-      "args": ["-S", ".", "-B", "build", "-DCMAKE_BUILD_TYPE=Debug"]
+      "args": [
+        "-S", ".", "-B", "build",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DCMAKE_PREFIX_PATH=/opt/homebrew/opt"
+      ]
     },
     {
       "label": "Build Debug",
       "type": "shell",
       "dependsOn": "Configure Debug",
       "command": "cmake",
-      "args": [
-        "--build", "build",
-        "--parallel"
-      ],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
+      "args": ["--build", "build", "--parallel"],
+      "group": { "kind": "build", "isDefault": true }
     },
     {
       "label": "Configure Release",
       "type": "shell",
       "command": "cmake",
-      "args": ["-S", ".", "-B", "build", "-DCMAKE_BUILD_TYPE=Release"]
+      "args": [
+        "-S", ".", "-B", "build",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_PREFIX_PATH=/opt/homebrew/opt"
+      ]
     },
     {
       "label": "Build Release",

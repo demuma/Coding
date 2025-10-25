@@ -11,7 +11,7 @@
 
 #include "Agent.hpp"
 #include "SharedBuffer.hpp"
-#include "QuadtreeSnapshot.hpp"
+// #include "QuadtreeSnapshot.hpp"
 #include "Logging.hpp"
 #include "Obstacle.hpp"
 #include "Utilities.hpp"
@@ -24,8 +24,9 @@
 // Renderer class
 class Renderer {
 public:
-    Renderer(SharedBuffer<std::vector<Agent>>& buffer, 
-        std::unordered_map<std::string, std::shared_ptr<SharedBuffer<std::shared_ptr<QuadtreeSnapshot::Node>>>> sensorBuffers,
+    Renderer(
+        SharedBuffer<agentBufferFrameType>& agentBuffer,
+        SharedBuffer<sensorBufferFrameType>& sensorBuffer,
         std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config);
     void run();
     void loadConfiguration();
@@ -42,11 +43,39 @@ public:
     // void handleEvents(sf::Event& event); // Note: SFML 2.6.2 or prior
     void handleEvents();
     sf::Time calculateSleepTime();
+    void printSensorBuffer();
+    void printAgentBuffer();
+    void readAgentBufferFrame();
+    void readSensorBufferFrame();
+    void readLocalSensorBufferFrame();
 
 private:
+// Struct for rendering agents
+    struct RenderAgent {
+        sf::Vector2f position;
+        sf::Vector2f initialPosition;
+        sf::Vector2f targetPosition;
+        sf::Vector2f velocity;
+        sf::Vector2f heading;
+        float velocityMagnitude;
+        std::vector<sf::Vector2f> trajectory;
+        float bodyRadius;
+        float bufferZoneRadius;
+        sf::Color color;
+        int nextWaypointIndex = -1;
+        sf::Color waypointColor;
+        float waypointRadius;
+        float waypointDistance;
+        std::string type;
+        sf::Color bufferZoneColor;
+    };
+
     void render();
-    void appendBufferZones(sf::VertexArray& vertices, const Agent& agent);
-    void appendAgentBodies(sf::VertexArray& triangles, const Agent& agent);
+    void appendBufferZones(sf::VertexArray& vertices, const RenderAgent& agent);
+    void appendAgentBodies(sf::VertexArray& triangles, const RenderAgent& agent);
+
+    // Current frame agents for rendering
+    std::vector<RenderAgent> renderAgents;
 
     // Renderer parameters
     sf::RenderWindow window;
@@ -120,18 +149,26 @@ private:
     sf::Time rendererFrameTime;
     sf::Time targetFrameTime;
     sf::Time currentSimulationFrameTime;
+    std::chrono::system_clock::time_point timestamp;
     std::atomic<float>& currentSimulationTimeStep;
+    
 
-    // Temporary frame
-    std::vector<Agent> pauseFrame;
+    // Temporary agent frame
+    std::shared_ptr<const agentFrame> pauseAgentFrame;
     sf::Time pauseSleepTime;
 
     // Helper
     int frameEmptyCount = 0;
 
-    // Shared buffer
-    SharedBuffer<std::vector<Agent>>& buffer;
-    std::unordered_map<std::string, std::shared_ptr<SharedBuffer<std::shared_ptr<QuadtreeSnapshot::Node>>>> sensorBuffers;
+    // Shared buffers
+    // SharedBuffer<std::vector<Agent>>& agentBuffer;
+    bool sensorBufferDrained = false;
+    SharedBuffer<agentBufferFrameType>& agentBuffer;
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer;
+    sensorBufferFrameType currentSensorBufferFrame;
+    agentBufferFrameType currentAgentBufferFrame;
+    std::deque<sensorBufferFrameType> localSensorBuffer;
+    std::chrono::system_clock::time_point agentFrameTimestamp;
 
     // Sensors
     std::vector<std::unique_ptr<Sensor>> sensors;
@@ -145,8 +182,12 @@ private:
     // Corridors
     bool showCorridors = false;
 
-    // Agents
-    std::vector<Agent> currentFrame;
+    // Agents and sensors
+    std::shared_ptr<const agentFrame> currentAgentFrame;
+    std::shared_ptr<const sensorFrame> currentSensorFrame;
+    sensorBufferFrameType currentCellIds;
+    
+    // Sensor buffer frame: timestamp, map (sensorID -> set of cell IDs)
     int currentNumAgents;
     float waypointRadius;
     bool showTrajectories = false;

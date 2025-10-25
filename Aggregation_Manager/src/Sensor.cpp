@@ -12,17 +12,24 @@
 Sensor::Sensor(
     float frameRate,
     sf::FloatRect detectionArea,
-    std::shared_ptr<mongocxx::client> client) : frameRate(frameRate),
-                                                timeSinceLastUpdate(0.0f),
-                                                client(std::move(client)),
-                                                sensorId(generateUUID())
+    std::shared_ptr<mongocxx::client> client,
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer
+) : frameRate(frameRate),
+    timeSinceLastUpdate(0.0f),
+    client(std::move(client)),
+    sensorId(generateUUID()),
+    sensorBuffer(sensorBuffer)
 {}
 
 // Base Sensor constructor for rendering
 Sensor::Sensor(
     const sf::FloatRect& detectionArea, 
-    const sf::Color& detectionAreaColor)
-    : detectionArea(detectionArea), detectionAreaColor(detectionAreaColor) {}
+    const sf::Color& detectionAreaColor,
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer
+):  detectionArea(detectionArea), 
+    detectionAreaColor(detectionAreaColor), 
+    sensorBuffer(sensorBuffer) 
+{}
 
 // Base Sensor velocity estimation
 void Sensor::estimateVelocities(std::unordered_map<std::string, sf::Vector2f>& estimatedVelocities) {

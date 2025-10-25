@@ -9,18 +9,34 @@
 #include <mongocxx/client.hpp>
 #include <mongocxx/database.hpp>
 #include <mongocxx/collection.hpp>
+#include <unordered_set>
 
 #include "Agent.hpp"
 #include "Utilities.hpp"
+#include "SharedBuffer.hpp"
+
+// using agentFrameType = const std::vector<Agent>; // only for renderer
+// using sensorFrameType = const std::unordered_map<std::string, std::unordered_set<int>>; // only for renderer
+using agentFrame = std::vector<Agent>;
+using sensorFrame = std::unordered_map<std::string, std::unordered_set<int>>;
+using agentFrameType = std::pair<std::chrono::system_clock::time_point, const agentFrame>; // only for renderer
+using sensorFrameType = std::pair<std::chrono::system_clock::time_point, const sensorFrame>;
+using agentBufferFrameType = std::shared_ptr<agentFrameType>;
+using sensorBufferFrameType = std::shared_ptr<sensorFrameType>;
 
 class Sensor {
 public:
     Sensor(
         float frameRate, 
         sf::FloatRect detectionArea, 
-        std::shared_ptr<mongocxx::client> client
+        std::shared_ptr<mongocxx::client> client,
+        SharedBuffer<sensorBufferFrameType>& sensorBuffer
     );
-    Sensor(const sf::FloatRect& detectionArea, const sf::Color& detectionAreaColor);
+    Sensor(
+        const sf::FloatRect& detectionArea, 
+        const sf::Color& detectionAreaColor,
+        SharedBuffer<sensorBufferFrameType>& sensorBuffer
+    );
     // virtual void update(std::vector<Agent>& agents, float timeStep, sf::Time simulationTime, std::string datetime) = 0;
     virtual void update(std::vector<Agent>& agents, float timeStep, std::chrono::system_clock::time_point timestamp) = 0;
     virtual void printData() = 0;
@@ -33,15 +49,13 @@ public:
     sf::FloatRect detectionArea;
     float frameRate;
     int scale;
-    // std::string timestamp;
     std::chrono::system_clock::time_point timestamp;
-    // sf::Time simulationTime;
-    // std::string datetime;
     std::unordered_map<std::string, sf::Vector2f> previousPositions;
     std::unordered_map<std::string, sf::Vector2f> currentPositions;
 
 protected:
     std::shared_ptr<mongocxx::client> client;
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer;
     std::string sensorId;
     float timeSinceLastUpdate = 0.0f;
 

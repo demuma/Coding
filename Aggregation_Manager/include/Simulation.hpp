@@ -26,7 +26,7 @@
 #include "CollisionGrid.hpp"
 #include "Sensor.hpp"
 #include "Quadtree.hpp"
-#include "QuadtreeSnapshot.hpp"
+// #include "QuadtreeSnapshot.hpp"
 
 /**************************************/
 /********** SIMULATION CLASS **********/
@@ -36,9 +36,12 @@
 class Simulation {
 public:
 
-    // Simulation(std::queue<std::vector<Agent>> (&buffer)[2], std::mutex &queueMutex, std::condition_variable &queueCond, std::atomic<float>& currentSimulationTimeStep, std::atomic<bool>& stop, std::atomic<int>& currentNumAgents, const YAML::Node& config, std::atomic<std::queue<std::vector<Agent>>*>& currentReadBuffer);
-    Simulation(SharedBuffer<std::vector<Agent>>& buffer, 
-        std::unordered_map<std::string, std::shared_ptr<SharedBuffer<std::shared_ptr<QuadtreeSnapshot::Node>>>> sensorBuffers,
+    // Simulation(std::queue<std::vector<Agent>> (&agentBuffer)[2], std::mutex &queueMutex, std::condition_variable &queueCond, std::atomic<float>& currentSimulationTimeStep, std::atomic<bool>& stop, std::atomic<int>& currentNumAgents, const YAML::Node& config, std::atomic<std::queue<std::vector<Agent>>*>& currentReadBuffer);
+    Simulation(
+        // SharedBuffer<std::vector<Agent>>& agentBuffer, 
+        SharedBuffer<agentBufferFrameType>& agentBuffer,
+        SharedBuffer<sensorBufferFrameType>& sensorBuffer,
+        // std::unordered_map<std::string, std::shared_ptr<SharedBuffer<std::shared_ptr<QuadtreeSnapshot::Node>>>> sensorBuffers,
         std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config);
     ~Simulation();
     void run();
@@ -92,14 +95,15 @@ private:
 
 
     // Shared buffer reference
-    SharedBuffer<std::vector<Agent>>& buffer;
-    std::unordered_map<std::string, std::shared_ptr<SharedBuffer<std::shared_ptr<QuadtreeSnapshot::Node>>>> sensorBuffers;
+    // SharedBuffer<std::vector<Agent>>& agentBuffer;
+    SharedBuffer<agentBufferFrameType>& agentBuffer;
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer;
 
     // Obstacles
     std::vector<Obstacle> obstacles;
 
     // Grid
-    Grid grid;
+    Grid collisionGrid;
     float collisionGridCellSize = 100.0f;
 
     // Scenario

@@ -23,7 +23,8 @@ public:
         float cellSize, 
         const std::string& databaseName, 
         const std::string& collectionName, 
-        std::shared_ptr<mongocxx::client> client
+        std::shared_ptr<mongocxx::client> client,
+        SharedBuffer<sensorBufferFrameType>& sensorBuffer
     );
 
     // Alternative constructor for rendering
@@ -31,7 +32,8 @@ public:
         sf::FloatRect detectionArea, 
         sf::Color detectionAreaColor, 
         float cellSize, 
-        bool showGrid
+        bool showGrid,
+        SharedBuffer<sensorBufferFrameType>& sensorBuffer
     );
 
     ~GridBasedSensor();
@@ -53,6 +55,7 @@ private:
     mongocxx::database db;
     mongocxx::collection collection;
     GridData gridData;
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer;
     std::vector<std::pair<std::chrono::system_clock::time_point, GridData>> dataStorage;
     
     sf::Vector2i getCellIndex(const sf::Vector2f& position) const;

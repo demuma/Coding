@@ -26,9 +26,9 @@ void Quadtree::Node::split(std::unordered_map<int, Node*>& nodeMap) {
     float y = bounds.position.y;
     float size = bounds.size.x / 2.0f;
 
-    std::cout << "Generated new parent node at position: (" << bounds.position.x << ", " << bounds.position.y << ")" << std::endl;
-    std::cout << "Parent size: " << bounds.size.x << ", " << bounds.size.y << std::endl;
-    std::cout << "Parent id: " << id << std::endl;
+    DEBUG_MSG("Generated new parent node at position: (" << bounds.position.x << ", " << bounds.position.y << ")");
+    DEBUG_MSG("Parent size: " << bounds.size.x << ", " << bounds.size.y);
+    DEBUG_MSG("Parent id: " << id);
 
     // Create 4 children; child indexes are computed via bit shifts.
     for (int i = 0; i < 2; ++i) {
@@ -38,9 +38,9 @@ void Quadtree::Node::split(std::unordered_map<int, Node*>& nodeMap) {
             Node* child = new Node(x + j * size, y + i * size, size, childId, depth + 1, this);
             children[childIndex] = child;
             nodeMap[childId] = child;
-            std::cout << "Generated new child node at position: (" << child->bounds.position.x << ", " << child->bounds.position.y << ")" << std::endl;
-            std::cout << "Child size: " << child->bounds.size.x << ", " << child->bounds.size.y << std::endl;
-            std::cout << "Child id: " << childId << std::endl;
+            DEBUG_MSG("Generated new child node at position: (" << child->bounds.position.x << ", " << child->bounds.position.y << ")");
+            DEBUG_MSG("Child size: " << child->bounds.size.x << ", " << child->bounds.size.y);
+            DEBUG_MSG("Child id: " << childId);
         }
     }
     isSplit = true;

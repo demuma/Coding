@@ -5,13 +5,17 @@
 #include "../include/AdaptiveGridBasedSensor.hpp"
 #include "../include/Region.hpp"
 
-// Simulation::Simulation(std::queue<std::vector<Agent>> (&buffers)[2], std::mutex &queueMutex, std::condition_variable &queueCond, std::atomic<float>& currentSimulationTimeStep, std::atomic<bool>& stop, std::atomic<int>& currentNumAgents, const YAML::Node& config, std::atomic<std::queue<std::vector<Agent>>*>& currentReadBuffer)
-Simulation::Simulation(SharedBuffer<std::vector<Agent>>& buffer, std::unordered_map<std::string, std::shared_ptr<SharedBuffer<std::shared_ptr<QuadtreeSnapshot::Node>>>> snapshotBuffers, std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config)
-: buffer(buffer), sensorBuffers(sensorBuffers), currentSimulationTimeStep(currentSimulationTimeStep), config(config), grid(0, 0, 0), instance {} {
+// Simulation constructor
+Simulation::Simulation(
+    SharedBuffer<agentBufferFrameType>& agentBuffer,
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer,
+    std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config)
+: agentBuffer(agentBuffer), sensorBuffer(sensorBuffer), currentSimulationTimeStep(currentSimulationTimeStep), config(config), collisionGrid(0, 0, 0), instance {} {
     
-    // Set the initial write buffer (second queue buffer) -> TODO: Make SharedBuffer class and move this logic there
-    DEBUG_MSG("Simulation: write buffer: " << buffer.writeBufferIndex);
-    
+    // Set the initial write agentBuffer (second queue agentBuffer) -> TODO: Make SharedBuffer class and move this logic there
+    DEBUG_MSG("Simulation: " << agentBuffer.name << " write buffer " << agentBuffer.writeBufferIndex);
+    DEBUG_MSG("Simulation: " << sensorBuffer.name << " write buffer " << sensorBuffer.writeBufferIndex);
+
     loadConfiguration();
     loadAgentsAttributes();
     loadRegionsAttributes();
@@ -30,7 +34,7 @@ Simulation::~Simulation() {
     obstacles.clear();
     regions.clear();
     agents.clear();
-    grid.clear();
+    collisionGrid.clear();
     documentBuffer.clear();
     agentTypeAttributes.clear();
     regionTypeAttributes.clear();
@@ -159,7 +163,7 @@ void Simulation::loadRegionsAttributes() {
 void Simulation::initializeGrid() {
 
     // Initialize the grid
-    grid = Grid(collisionGridCellSize, simulationWidth / collisionGridCellSize, simulationHeight / collisionGridCellSize);
+    collisionGrid = Grid(collisionGridCellSize, simulationWidth / collisionGridCellSize, simulationHeight / collisionGridCellSize);
 }
 
 // Function to load obstacles from the YAML configuration file
@@ -180,11 +184,11 @@ void Simulation::loadObstacles() {
                     stringToColor(obstacleNode["color"].as<std::string>())
                 ));
             } else {
-                std::cerr << "Error: Unknown obstacle type '" << type << "' in config file." << std::endl;
+                ERROR_MSG("Error: Unknown obstacle type '" << type << "' in config file.");
             }
         }
     } else {
-        std::cerr << "Error: Could not find 'obstacles' key in config file or it is not a sequence." << std::endl;
+        ERROR_MSG("Error: Could not find 'obstacles' key in config file or it is not a sequence.");
     }
 }
 
@@ -216,9 +220,9 @@ void Simulation::initializeAgents() {
             agent.targetPosition = sf::Vector2f(disPosX(gen), disPosY(gen));
             agent.position = agent.initialPosition;
             agent.waypointDistance = waypointDistance; // -> TODO: Use taxonomy for waypoint distance
-            agent.waypointColor = sf::Color::Red;
+            // agent.waypointColor = sf::Color::Red;
             agent.calculateTrajectory(agent.waypointDistance);
-            agent.timestamp = generateISOTimestamp(simulationTime, datetime);
+            agent.timestamp = timestamp; // Use simulation timestamp from initialization
 
             agent.velocityMagnitude = generateRandomNumberFromTND(
                 agent.attributes.velocity.mu, agent.attributes.velocity.sigma, 
@@ -278,9 +282,9 @@ void Simulation::initializeAgents() {
                 agent.targetPosition = sf::Vector2f(disPosX(gen), disPosY(gen));
                 agent.position = agent.initialPosition;
                 agent.waypointDistance = waypointDistance; // -> TODO: Use taxonomy for waypoint distance
-                agent.waypointColor = sf::Color::Red;
+                // agent.waypointColor = sf::Color::Red;
                 agent.calculateTrajectory(agent.waypointDistance);
-                agent.timestamp = generateISOTimestamp(simulationTime, datetime);
+                agent.timestamp = timestamp; // Use simulation timestamp from initialization
 
                 agent.velocityMagnitude = generateRandomNumberFromTND(
                     agentType.second.velocity.mu, agentType.second.velocity.sigma, 
@@ -385,7 +389,7 @@ void Simulation::initializeSensors() {
         if (type == "agent-based") {
             
             // Create the agent-based sensor and add to sensors vector
-            sensors.push_back(std::make_unique<AgentBasedSensor>(frameRate, detectionArea, databaseName, collectionName, client));
+            sensors.push_back(std::make_unique<AgentBasedSensor>(frameRate, detectionArea, databaseName, collectionName, client, sensorBuffer));
             sensors.back()->scale = scale;
             sensors.back()->timestamp = timestamp;
 
@@ -424,7 +428,7 @@ void Simulation::initializeSensors() {
             bool showGrid = sensorNode["grid"]["show_grid"].as<bool>();
 
             // Create the grid-based sensor and add to sensors vector
-            sensors.push_back(std::make_unique<GridBasedSensor>(frameRate, detectionArea, cellSize, databaseName, collectionName, client));
+            sensors.push_back(std::make_unique<GridBasedSensor>(frameRate, detectionArea, cellSize, databaseName, collectionName, client, sensorBuffer));
             sensors.back()->scale = scale;
             sensors.back()->timestamp = timestamp;
 
@@ -445,7 +449,7 @@ void Simulation::initializeSensors() {
             int maxDepth = sensorNode["grid"]["max_depth"].as<int>();
 
             // Create the grid-based sensor and add to sensors vector
-            sensors.push_back(std::make_unique<AdaptiveGridBasedSensor>(frameRate, detectionArea, cellSize, maxDepth, databaseName, collectionName, client));
+            sensors.push_back(std::make_unique<AdaptiveGridBasedSensor>(frameRate, detectionArea, cellSize, maxDepth, databaseName, collectionName, client, sensorBuffer));
             sensors.back()->scale = scale;
             sensors.back()->timestamp = timestamp;
             
@@ -478,65 +482,85 @@ void Simulation::run() {
     simulationRealTime += simulationClock.getElapsedTime();
 
     // Main simulation loop
-    while ((buffer.currentWriteFrameIndex < maxFrames && !buffer.stop.load())) {
+    while ((agentBuffer.currentWriteFrameIndex < maxFrames && !agentBuffer.stop.load())) {
 
         // Restart the clock
         simulationClock.restart();
-
-        // Write the current frame to the buffer
-        buffer.write(agents);
-
-        // Swap the read and write buffers if the read buffer is empty
-        buffer.swap();
-
-        // Update the buffer write time
+        
+        // Write the agent current frame to the agent buffer
+        auto currentFramePtr = std::make_shared<agentFrameType>(timestamp, agents);
+        agentBuffer.write(currentFramePtr);
+        
+        // Swap the read and write buffers if the read agentBuffer is empty
+        agentBuffer.swap();
+        
+        // Update the agentBuffer write time
         writeBufferTime = simulationClock.getElapsedTime();
         totalWriteBufferTime += writeBufferTime;
+        
+        // Store current ground truth agent data in MongoDB
+        postData(agents);
 
         // Increment the time step
         simulationTime += sf::seconds(timeStep);
 
-        // Get the current timestamp once per frame
-        timestamp = generateISOTimestamp(simulationTime, datetime);
-
         // Update the agents
         update();
 
+        // Update timestamp
+        timestamp = generateISOTimestamp(simulationTime, datetime);
+        
+        // Swap the sensor agentBuffer
+        sensorBuffer.swap();
+        
         // Update the simulation update time
         simulationUpdateTime += simulationClock.getElapsedTime() - writeBufferTime;
-
+        
         // Calculate the time step for the simulation
         simulationStepTime = simulationClock.getElapsedTime();
         currentSimulationTimeStep = simulationStepTime.asSeconds();
-
+        
         // Calculate the simulation time
         simulationRealTime += simulationStepTime;
     }
 
     // Signalize the simulation has finished so that the renderer can swap buffers if needed
-    buffer.stop.store(true);
+    agentBuffer.stop.store(true);
+    sensorBuffer.stop.store(true);
 
     // End the simulation
-    buffer.end();
+    agentBuffer.end();
+    sensorBuffer.end();
+    
     DEBUG_MSG("Simulation: finished");
 
     // Print simulation statistics
-    STATS_MSG("Total simulation wall time: " << simulationRealTime.asSeconds() << " seconds for " << buffer.currentWriteFrameIndex << " frames");
+    STATS_MSG("Total simulation wall time: " << simulationRealTime.asSeconds() << " seconds for " << agentBuffer.currentWriteFrameIndex << " frames");
     STATS_MSG("Total simulation time: " << simulationTime.asSeconds() << " seconds" << " for " << numAgents << " agents");
     STATS_MSG("Simulation speedup: " << (maxFrames * timeStep) / simulationRealTime.asSeconds());
-    STATS_MSG("Frame rate: " << 1/(simulationRealTime.asSeconds() / buffer.currentWriteFrameIndex));
-    STATS_MSG("Average simulation update time: " << simulationUpdateTime.asSeconds() / buffer.currentWriteFrameIndex);
-    STATS_MSG("Average simulation time step: " << simulationRealTime.asSeconds() / buffer.currentWriteFrameIndex);
-    STATS_MSG("Average write buffer time: " << totalWriteBufferTime.asSeconds() / buffer.currentWriteFrameIndex);
+    STATS_MSG("Frame rate: " << 1/(simulationRealTime.asSeconds() / agentBuffer.currentWriteFrameIndex));
+    STATS_MSG("Average simulation update time: " << simulationUpdateTime.asSeconds() / agentBuffer.currentWriteFrameIndex);
+    STATS_MSG("Average simulation time step: " << simulationRealTime.asSeconds() / agentBuffer.currentWriteFrameIndex);
+    STATS_MSG("Average write buffer time: " << totalWriteBufferTime.asSeconds() / agentBuffer.currentWriteFrameIndex);
 }
 
 void Simulation::update() {
 
-    // Store ground truth data in MongoDB
-    postData(agents);
+    // Update sensors and store sensor data
+    for (auto& sensor : sensors) {
 
+        // sensor->update(agents, timeStep, simulationTime, datetime);
+        sensor->update(agents, timeStep, timestamp);
+        // sensor->printData();
+        sensor->postData();
+        // sensor->postAggregatedData();
+    }
+
+    // Update timestamp
+    timestamp = generateISOTimestamp(simulationTime, datetime);
+    
     // Clear the grid
-    grid.clear();
+    collisionGrid.clear();
 
     // Loop through all agents and update their positions
     for(auto agent = agents.begin(); agent != agents.end();) {
@@ -551,16 +575,16 @@ void Simulation::update() {
         else {
 
             // Assign the agent to the correct grid cell
-            grid.addAgent(&(*agent));
+            collisionGrid.addAgent(&(*agent));
 
             // Reset collision state at the start of each frame for each agent
             agent->resetCollisionState();
-
-            // Update the agent timestamp
-            agent->timestamp = timestamp;
-
+            
             // Update the agent position
             agent->updatePosition(timeStep);
+
+            // Update the agent timestamp to new timestamp
+            agent->timestamp = timestamp;
 
             // Only update velocity if the agent is not stopped
             if(!agent->stopped) {
@@ -576,18 +600,8 @@ void Simulation::update() {
         }
     }
 
-    // Update sensors and store sensor data
-    for (auto& sensor : sensors) {
-
-        // sensor->update(agents, timeStep, simulationTime, datetime);
-        sensor->update(agents, timeStep, timestamp);
-        // sensor->printData();
-        sensor->postData();
-        // sensor->postAggregatedData();
-    }
-
     // Collision detection using grid
-    grid.checkCollisions();
+    collisionGrid.checkCollisions();
 }
 
 void Simulation::postMetadata() {
@@ -635,7 +649,7 @@ void Simulation::postData(const std::vector<Agent>& agents) {
             bsoncxx::builder::stream::document document{};
 
             // Append the agent data to the document
-            document << "timestamp" << bsoncxx::types::b_date{agent.timestamp}
+            document << "timestamp" << bsoncxx::types::b_date{timestamp}
                      << "data_type" << "agent data"
                      << "agent_id" << agent.agentId
                      << "type" << agent.type

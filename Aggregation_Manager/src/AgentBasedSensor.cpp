@@ -13,9 +13,12 @@ AgentBasedSensor::AgentBasedSensor(
     sf::FloatRect detectionArea,
     const std::string &databaseName,
     const std::string &collectionName,
-    std::shared_ptr<mongocxx::client> client) : Sensor(frameRate, detectionArea, client),
-                                                db(client->database(databaseName)), // Initialize db in initializer list
-                                                collection(db[collectionName])
+    std::shared_ptr<mongocxx::client> client,
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer
+) : Sensor(frameRate, detectionArea, client, sensorBuffer),
+    db(client->database(databaseName)), // Initialize db in initializer list
+    collection(db[collectionName]),
+    sensorBuffer(sensorBuffer)
 {
     this->detectionArea = detectionArea;
 }
@@ -23,11 +26,13 @@ AgentBasedSensor::AgentBasedSensor(
 // Alternative constructor for rendering
 AgentBasedSensor::AgentBasedSensor(
     sf::FloatRect detectionArea,
-    sf::Color detectionAreaColor): 
-    Sensor(detectionArea, detectionAreaColor) {
+    sf::Color detectionAreaColor,
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer
+) : Sensor(detectionArea, detectionAreaColor, sensorBuffer), 
+    sensorBuffer(sensorBuffer) {
     this->detectionArea = detectionArea;
     this->detectionAreaColor = detectionAreaColor;
-};
+}
 
 // Destructor
 AgentBasedSensor::~AgentBasedSensor() {}

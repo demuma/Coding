@@ -4,10 +4,11 @@
 #include "../include/AdaptiveGridBasedSensor.hpp"
 
 // Renderer member functions
-Renderer::Renderer(SharedBuffer<std::vector<Agent>>& buffer, 
-    std::unordered_map<std::string, std::shared_ptr<SharedBuffer<std::shared_ptr<QuadtreeSnapshot::Node>>>> sensorBuffers, 
+Renderer::Renderer(
+    SharedBuffer<agentBufferFrameType>& agentBuffer,
+    SharedBuffer<sensorBufferFrameType>& sensorBuffer,
     std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config)
-:   buffer(buffer), sensorBuffers(sensorBuffers),
+:   agentBuffer(agentBuffer), sensorBuffer(sensorBuffer),
     currentSimulationTimeStep(currentSimulationTimeStep), config(config), // Reserve VRAM for the vertex arrays depending on the number of agents
     bufferZonesVertexArray(sf::PrimitiveType::Points), 
     agentBodyVertexArray(sf::PrimitiveType::Triangles, 6), // Note: SFML 2.6.2 or prior -> (Quads, 4)
@@ -16,7 +17,9 @@ Renderer::Renderer(SharedBuffer<std::vector<Agent>>& buffer,
     font(), frameText(font,"", 20), frameRateText(font, "", 24), agentCountText(font, "",  24), timeText(font, "", 24), 
     playbackSpeedText(font, "", 24), pauseButton(), pauseButtonText(font, "", 20), resetButton(), resetButtonText(font, "", 20) {
 
-    DEBUG_MSG("Renderer: read buffer: " << buffer.currentReadFrameIndex);
+    DEBUG_MSG("Renderer: " << agentBuffer.name << " read buffer " << agentBuffer.currentReadFrameIndex);
+    DEBUG_MSG("Renderer: " << sensorBuffer.name << " read buffer " << sensorBuffer.currentReadFrameIndex);
+
     loadConfiguration();
     loadObstacles();
     initializeSensors();
@@ -76,7 +79,7 @@ void Renderer::loadConfiguration() {
         ERROR_MSG("Error loading font\n");
     }
 
-    // Set the frame rate buffer size
+    // Set the frame rate agentBuffer size
     frameRateBufferSize = 1.0f / timeStep;
 
     // Resize vertex arrays
@@ -179,7 +182,7 @@ void Renderer::initializeSensors() {
         if (type == "agent-based") {
             
             // Create the agent-based sensor and add to sensors vector
-            sensors.push_back(std::make_unique<AgentBasedSensor>(detectionArea, colorAlpha));
+            sensors.push_back(std::make_unique<AgentBasedSensor>(detectionArea, colorAlpha, sensorBuffer));
             sensors.back()->scale = scale;
 
 
@@ -190,7 +193,7 @@ void Renderer::initializeSensors() {
             bool showSensorGrid = sensorNode["grid"]["show_grid"].as<bool>();
 
             // Create the grid-based sensor and add to sensors vector
-            sensors.push_back(std::make_unique<GridBasedSensor>(detectionArea, colorAlpha, cellSize, showSensorGrid));
+            sensors.push_back(std::make_unique<GridBasedSensor>(detectionArea, colorAlpha, cellSize, showSensorGrid, sensorBuffer));
             sensors.back()->scale = scale;
         } else if (type == "adaptive-grid-based") {
 
@@ -199,7 +202,7 @@ void Renderer::initializeSensors() {
             int maxDepth = sensorNode["grid"]["max_depth"].as<int>();
 
             // Create the grid-based sensor and add to sensors vector
-            sensors.push_back(std::make_unique<AdaptiveGridBasedSensor>(detectionArea, colorAlpha, cellSize, maxDepth, showSensorGrid));
+            sensors.push_back(std::make_unique<AdaptiveGridBasedSensor>(detectionArea, colorAlpha, cellSize, maxDepth, showSensorGrid, sensorBuffer));
             sensors.back()->scale = scale;
         }
     }
@@ -289,7 +292,7 @@ void Renderer::initializeGUI() {
 // Function to update the text that displays the current frame count
 void Renderer::updateFrameCountText() {
 
-    frameText.setString("Frame " + std::to_string(buffer.currentReadFrameIndex) + " / " + (maxFrames > 0 ? std::to_string(maxFrames) : "∞")); // ∞ for unlimited frames
+    frameText.setString("Frame " + std::to_string(agentBuffer.currentReadFrameIndex) + " / " + (maxFrames > 0 ? std::to_string(maxFrames) : "∞")); // ∞ for unlimited frames
     sf::FloatRect textRect = frameText.getLocalBounds();
     frameText.setOrigin({textRect.size.x, 0}); // Right-align the text
     frameText.setPosition({static_cast<float>(window.getSize().x) - 10, 40}); // Position with padding
@@ -349,11 +352,11 @@ void Renderer::updateTimeText() {
 void Renderer::updateFrameRateText() {
 
     // Wait for the warmup frames to pass
-    if(buffer.currentReadFrameIndex < warmupFrames) {
+    if(agentBuffer.currentReadFrameIndex < warmupFrames) {
         return;
     }
     
-    // Wait for frame buffer to fill up
+    // Wait for frame agentBuffer to fill up
     if(frameRates.size() != frameRateBufferSize) {
         frameRates.push_back(frameRate);
         
@@ -369,7 +372,7 @@ void Renderer::updateFrameRateText() {
         frameRateText.setOrigin({textRect.size.x, 0}); // Right-align the text
         frameRateText.setPosition({static_cast<float>(window.getSize().x) - 10, 70}); // Position with padding
 
-        // Update the frame rate buffer
+        // Update the frame rate agentBuffer
         frameRates.pop_front();
         frameRates.push_back(frameRate);
     }
@@ -389,216 +392,12 @@ void Renderer::updatePlayBackSpeedText() {
 }
 
 // Function to handle events
-// void Renderer::handleEvents(sf::Event& event) { // Note: SFML 2.6.2 or prior
-// void Renderer::handleEvents(const std::__1::optional<sf::Event> event) {
-
-//     // if (event.type == sf::Event::Closed) {
-//     if(event->is<sf::Event::Closed>()) {
-//         window.close();
-//         buffer.stop.store(true);
-//         return;
-//     }
-//     // else if (event.type == sf::Event::Resized) {
-//     else if (const auto* resized = event->getIf<sf::Event::Resized>()) {
-        
-//         // Resize the window
-//         // sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height); // Note: SFML 2.6.2 or prior
-//         sf::FloatRect visibleArea({0, 0}, {resized->size.x, resized->size.y});
-//         window.setView(sf::View(visibleArea));
-//         initializeGUI(); // Reinitialize UI elements
-
-//         // Update the simulation offsets
-//         // windowWidth = event.size.width;
-//         // windowHeight = event.size.height;
-//         windowWidth = resized->size.x;
-//         windowHeight = resized->size.y;
-//         offset = sf::Vector2f((windowWidth - simulationWidth) / 2, (windowHeight - simulationHeight) / 2);
-//         return;
-//     }
-//     else if (event.type == sf::Event::KeyReleased) {
-//         if(event.key.code == sf::Keyboard::Scancode::LShift || event.key.code == sf::Keyboard::Scancode::RShift) {
-//             isShiftPressed = false;
-//             DEBUG_MSG("Shift released");
-//             return;
-//         }
-//         else if(event.key.code == sf::Keyboard::Scancode::LControl || event.key.code == sf::Keyboard::Scancode::RControl) {
-//             isCtrlPressed = false;
-//             DEBUG_MSG("Ctrl released");
-//             return;
-//         }
-//     } 
-//     else if (event.type == sf::Event::KeyPressed) {
-//         if (event.key.code == sf::Keyboard::Scancode::Space) {
-//             paused = !paused;
-//             pauseButtonText.setString(paused ? "  Play" : "Pause");
-//             pauseButton.setFillColor(paused ? sf::Color::Red : sf::Color::Green);
-//             window.draw(pauseButton); // NEW
-//             window.draw(pauseButtonText); // NEW
-//             window.display(); // NEW
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::LShift || event.key.code == sf::Keyboard::Scancode::RShift) {
-//             isShiftPressed = true;
-//             DEBUG_MSG("Shift pressed");
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::LControl || event.key.code == sf::Keyboard::Scancode::RControl) {
-//             isCtrlPressed = true;
-//             DEBUG_MSG("Ctrl pressed");
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::Left) {
-//             playbackSpeed -= 0.1f;
-//             DEBUG_MSG("Playback speed decreased to: " << playbackSpeed);
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::Right) {
-//             playbackSpeed += 0.1f;
-//             DEBUG_MSG("Playback speed increased to: " << playbackSpeed);
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::A) {
-//             showArrow = !showArrow;
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::B) {
-//             showBufferZones = !showBufferZones;
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::C) {
-//             showCollisionGrid = !showCollisionGrid;
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::O) {
-//             showObstacles = !showObstacles;
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::R) {
-//             playbackSpeed = 1.0f;
-//             DEBUG_MSG("Playback speed reset to: " << playbackSpeed);
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::S) {
-//             showSensors = !showSensors;
-//             showSensorGrid = !showSensorGrid;
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::T) {
-//             showTrajectories = !showTrajectories;
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::W) {
-//             showWaypoints = !showWaypoints;
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::Q) {
-//             window.close();
-//             buffer.stop.store(true);
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::Z) {
-//             scale = initialScale;
-//             simulationHeight = initialSimulationHeight;
-//             simulationWidth = initialSimulationWidth;
-//             offset.x = (windowWidth - initialSimulationWidth) / 2;
-//             offset.y = (windowHeight - initialSimulationHeight) / 2;
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::Escape) {
-//             window.close();
-//             buffer.stop.store(true);
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::Up) {
-//             if (playbackSpeed >= 1.0f) {
-//                 playbackSpeed += 1.0f;
-//                 playbackSpeed = std::floor(playbackSpeed);
-//             } else if (playbackSpeed < 1.0f && playbackSpeed > 0.1f) {
-//                 playbackSpeed += 0.1f;
-//             } else {
-//                 playbackSpeed = 0.1f;
-//             }
-//             DEBUG_MSG("Playback speed increased to: " << playbackSpeed);
-//             return;
-//         }
-//         else if (event.key.code == sf::Keyboard::Scancode::Down) {
-//             if (playbackSpeed > 1.0f) {
-//                 playbackSpeed -= 1.0f;
-//                 playbackSpeed = std::ceil(playbackSpeed);
-//             } else if (playbackSpeed <= 1.0f && playbackSpeed > 0.1f) {
-//                 playbackSpeed -= 0.1f;
-//             } else {
-//                 playbackSpeed = 0.1f;
-//             }
-//             DEBUG_MSG("Playback speed decreased to: " << playbackSpeed);
-//             return;
-//         }
-//     } else if (event.type == sf::Event::MouseButtonPressed) {
-//         if (event.mouseButton.button == sf::Mouse::Left) {
-//             sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
-//             if (pauseButton.getGlobalBounds().contains(mousePosition.x, mousePosition.y)) {
-//                 paused = !paused;
-//                 pauseButtonText.setString(paused ? "  Play" : "Pause");
-//                 pauseButton.setFillColor(paused ? sf::Color::Red : sf::Color::Green);
-//                 window.draw(pauseButton); // NEW
-//                 window.draw(pauseButtonText); // NEW
-//                 window.display(); // NEW
-//             } else if (resetButton.getGlobalBounds().contains(mousePosition.x, mousePosition.y)) {
-//                 showInfo = !showInfo;
-//             }
-//         }
-//         return;
-//     } else if (event.type == sf::Event::MouseWheelScrolled) {
-//         if(isShiftPressed) {
-//             if (event.mouseWheelScroll.delta > 0) {
-//                 offset.x -= 20;
-//             } else if (event.mouseWheelScroll.delta < 0) {
-//                 offset.x += 20;
-//             }
-//             return;
-//         }
-//         else if(isCtrlPressed) {
-//             if (event.mouseWheelScroll.delta > 0) {
-//                 offset.y -= 20;
-//             } else if (event.mouseWheelScroll.delta < 0) {
-//                 offset.y += 20;
-//             }
-//             return;
-//         }
-//         else if (event.mouseWheelScroll.delta > 0) {
-//             int previousWidth = simulationWidth;
-//             int previousHeight = simulationHeight;
-//             simulationHeight /= scale;
-//             simulationWidth /= scale;
-//             scale += 1.0f;
-//             simulationHeight *= scale;
-//             simulationWidth *= scale;
-//             offset.x = offset.x - (simulationWidth - previousWidth) / 2;
-//             offset.y = offset.y - (simulationHeight - previousHeight) / 2;
-//             return;
-//         } 
-//         else if (event.mouseWheelScroll.delta < 0) {
-//             int previousWidth = simulationWidth;
-//             int previousHeight = simulationHeight;
-//             simulationHeight /= scale;
-//             simulationWidth /= scale;
-//             if(scale != 1.0f) scale -= 1.0f;
-//             simulationHeight *= scale;
-//             simulationWidth *= scale;
-//             offset.x = offset.x - (simulationWidth - previousWidth) / 2;
-//             offset.y = offset.y - (simulationHeight - previousHeight) / 2;
-//             return;
-//         }
-//     }
-// }
-
-// Function to handle events
 void Renderer::handleEvents() {
 
     // Lambda to handle window close events.
     const auto onClose = [this](const sf::Event::Closed&) {
         window.close();
-        buffer.stop.store(true);
+        agentBuffer.stop.store(true);
     };
 
     // Lambda to handle window resize events.
@@ -662,7 +461,7 @@ void Renderer::handleEvents() {
         
         else if (keyPressed.scancode == sf::Keyboard::Scancode::Q) {
             window.close();
-            buffer.stop.store(true);
+            agentBuffer.stop.store(true);
         }
 
         else if (keyPressed.scancode == sf::Keyboard::Scancode::R) {
@@ -694,7 +493,7 @@ void Renderer::handleEvents() {
 
         else if (keyPressed.scancode == sf::Keyboard::Scancode::Escape) {
             window.close();
-            buffer.stop.store(true);
+            agentBuffer.stop.store(true);
         }
     };
 
@@ -834,19 +633,16 @@ void Renderer::run() {
     float readBufferTime = 0.f;
     float eventHandlingTime = 0.f;
 
-    // Add the setup time to the frame rate buffer
+    // Add the setup time to the frame rate agentBuffer
     rendererRealTime += rendererClock.restart();
 
     // Main rendering loop
-    while (window.isOpen() && buffer.currentReadFrameIndex < maxFrames) {
+    while (window.isOpen() && agentBuffer.currentReadFrameIndex < maxFrames) {
 
         // Reset the frame time clock
         rendererFrameClock.restart();
 
         // Handle events
-        // while (const std::optional event = window.pollEvent()) {
-        //     handleEvents(event);
-        // }
         handleEvents();
 
         // Polling mouse position for panning when dragging mouse
@@ -864,11 +660,14 @@ void Renderer::run() {
         // Run the renderer if not paused
         if(!paused) {
 
-            // Read the current frame from the buffer
-            currentFrame = buffer.read();
-            pauseFrame = currentFrame;
+            // Process the buffer frames
+            readAgentBufferFrame();
+            readSensorBufferFrame();
+            
+            // Update the pause frame pointer
+            pauseAgentFrame = currentAgentFrame;
 
-            // Get the time taken to read the buffer
+            // Get the time taken to read the agentBuffer
             readBufferTime += rendererFrameClock.getElapsedTime().asSeconds() - eventHandlingTime;
 
             // Get the current simulation time step
@@ -904,17 +703,17 @@ void Renderer::run() {
         else {
 
             // Replay last frame and sleep time in paused state
-            currentFrame = pauseFrame;
+            currentAgentFrame = pauseAgentFrame;
             render();
             std::this_thread::sleep_for(std::chrono::duration<float>(pauseSleepTime.asSeconds()));
         }
     }
-    STATS_MSG("Total render wall time: " << rendererRealTime.asSeconds() << " seconds for " << buffer.currentReadFrameIndex << " frames");
+    STATS_MSG("Total render wall time: " << rendererRealTime.asSeconds() << " seconds for " << agentBuffer.currentReadFrameIndex << " frames");
     STATS_MSG("Total render time: " << targetRenderTime << " seconds" << " for " << numAgents << " agents");
     STATS_MSG("Render speedup: " << targetRenderTime / rendererRealTime.asSeconds());
-    STATS_MSG("Average frame rate: " << 1/(rendererRealTime.asSeconds() / (buffer.currentReadFrameIndex + 1)));
-    STATS_MSG("Average render frame time: " << rendererRealTime.asSeconds() / (buffer.currentReadFrameIndex + 1));
-    STATS_MSG("Average read buffer time: " << readBufferTime / (buffer.currentReadFrameIndex + 1));
+    STATS_MSG("Average frame rate: " << 1/(rendererRealTime.asSeconds() / (agentBuffer.currentReadFrameIndex + 1)));
+    STATS_MSG("Average render frame time: " << rendererRealTime.asSeconds() / (agentBuffer.currentReadFrameIndex + 1));
+    STATS_MSG("Average read buffer time: " << readBufferTime / (agentBuffer.currentReadFrameIndex + 1));
 }
 
 // Function to calculate the sleep time for each frame
@@ -949,6 +748,97 @@ sf::Time Renderer::calculateSleepTime() {
     return std::max(remainingTime, sf::Time::Zero);
 }
 
+// Function to print the current sensor buffer frame for debugging
+void Renderer::printSensorBuffer() {
+
+    // Get the current sensor buffer data
+    std::ostringstream out;
+
+    out << "Timestamp: " << generateISOTimestampString(currentSensorBufferFrame->first) << " - ";
+
+    // Iterate and print
+    for (const auto& [sensorId, cellIds]: currentSensorBufferFrame->second) {
+        out << "Sensor ID: " << sensorId << " - ";
+        out << "Cell IDs: ";
+        for (const auto& cellId: cellIds) {
+            out << cellId << " ";
+        }
+    }
+
+    DEBUG_MSG(out.str());
+}
+
+// Function to print the current agent buffer frame for debugging
+void Renderer::printAgentBuffer() {
+
+    // Get the current agent buffer data
+    std::ostringstream out;
+
+    out << "Timestamp: " << generateISOTimestampString(currentAgentBufferFrame->first) << " - ";
+    out << "Agent IDs: ";
+
+    // Iterate and print
+    for (const auto& agent: currentAgentBufferFrame->second) {
+            out << agent.agentId << " ";
+    }
+
+    DEBUG_MSG(out.str());
+}
+
+// Process agent buffer
+void Renderer::readAgentBufferFrame() {
+
+    // Read the current frame from the agentBuffer
+    currentAgentBufferFrame = agentBuffer.read();
+
+    
+    // Check if pointer is not null and assign to currentFrame
+    if(currentAgentBufferFrame) {
+
+        printAgentBuffer();
+
+        agentFrameTimestamp = currentAgentBufferFrame->first;
+        currentAgentFrame = std::shared_ptr<const agentFrame>(currentAgentBufferFrame, &currentAgentBufferFrame->second);
+    } else {
+        DEBUG_MSG("Renderer: " << agentBuffer.name << " buffer drained with last frame " << agentBuffer.currentReadFrameIndex-1);
+        sensorBufferDrained = true; // Also mark sensor buffer as drained to stop reading
+    }
+}
+
+// Process sensor buffer (not working yet)
+void Renderer::readSensorBufferFrame() {
+
+    if(!sensorBufferDrained){
+
+        // Get the current sensor buffer frame
+        currentSensorBufferFrame = sensorBuffer.read();
+
+        // Check if pointer is not null = valid
+        if (currentSensorBufferFrame) {
+
+            printSensorBuffer();
+
+            // Compare timestamp from sensor buffer frame and agent buffer frame
+            if(agentFrameTimestamp == currentSensorBufferFrame->first) {
+                currentSensorFrame = std::shared_ptr<const sensorFrame>(currentSensorBufferFrame, &currentSensorBufferFrame->second);
+                DEBUG_MSG("Renderer: " << sensorBuffer.name << " timestamp match at frame " << sensorBuffer.currentReadFrameIndex-1);
+            }
+            else {
+                localSensorBuffer.emplace_back(currentSensorBufferFrame);
+                DEBUG_MSG("Renderer: " << sensorBuffer.name << " buffer frame timestamp mismatch at frame " << sensorBuffer.currentReadFrameIndex-1);
+
+                // Search for matching timestamp in local storage
+
+            }
+        } else {
+            sensorBufferDrained = true;
+            DEBUG_MSG("Renderer: " << sensorBuffer.name << " buffer drained with last frame " << sensorBuffer.currentReadFrameIndex-1);
+        }
+    }
+}
+
+// Read from local sensor buffer
+
 // Main rendering function
 void Renderer::render() {  // Input: meters, Output: pixels
 
@@ -956,7 +846,9 @@ void Renderer::render() {  // Input: meters, Output: pixels
     window.clear(sf::Color::White);
 
     // Get the current number of agents
-    currentNumAgents = currentFrame.size();
+    // currentNumAgents = currentFrame.size();
+    // currentNumAgents = currentFrame ? static_cast<int>(currentFrame->size()) : 0;
+    currentNumAgents = static_cast<int>(currentAgentFrame->size());
 
     // Check if the frame is empty
     if (currentNumAgents == 0) {
@@ -965,7 +857,7 @@ void Renderer::render() {  // Input: meters, Output: pixels
     }
 
     // Loop through all agents and render them
-    if (currentNumAgents != 0 || buffer.currentReadFrameIndex != maxFrames) {
+    if (currentNumAgents != 0 || agentBuffer.currentReadFrameIndex != maxFrames) {
 
         // Draw the grid if enabled
         if(showGrids) {
@@ -1053,6 +945,7 @@ void Renderer::render() {  // Input: meters, Output: pixels
 
                         // Draw the adaptive grid with scaling and offset
                         adaptiveGridBasedSensor->adaptiveGrid.draw(window, font, scale, offset);
+
                         // adaptiveGridBasedSensor->adaptiveGrid.printChildren(12);
                         // adaptiveGridBasedSensor->adaptiveGrid.printChildren(13);
                         // adaptiveGridBasedSensor->adaptiveGrid.printChildren(14);
@@ -1082,22 +975,49 @@ void Renderer::render() {  // Input: meters, Output: pixels
         agentArrowHeadVertexArray.clear();
         agentArrowBodyVertexArray.clear();
 
-        // Draw agents
-        for (auto& agent : currentFrame) {
+        // Prepare render agents
+        renderAgents.clear();
+        renderAgents.reserve(currentAgentFrame->size());
 
-            // Scale agent data
-            agent.position *= scale; // Pixels
-            agent.initialPosition *= scale; // Pixels
-            agent.targetPosition *= scale; // Pixels
-            agent.bodyRadius *= scale; // Pixels
-            agent.velocity *= scale; // Pixels
-            agent.bufferZoneRadius *= scale; // Pixels
-            agent.velocityMagnitude *= scale; // Pixels
+        // Prepare and scale render agent 
+        for (const auto& currentAgent: *currentAgentFrame) {
+
+            RenderAgent agent;
+            agent.position = currentAgent.position * scale; // Pixels
+            agent.initialPosition = currentAgent.initialPosition * scale; // Pixels
+            agent.targetPosition = currentAgent.targetPosition * scale; // Pixels
+            agent.bodyRadius = currentAgent.bodyRadius * scale; // Pixels
+            agent.velocity = currentAgent.velocity * scale; // Pixels
+            agent.bufferZoneRadius = currentAgent.bufferZoneRadius * scale; // Pixels
+            agent.velocityMagnitude = currentAgent.velocityMagnitude * scale; // Pixels
+            agent.bufferZoneColor = currentAgent.bufferZoneColor;
+            agent.heading = currentAgent.heading;
+            agent.waypointColor = sf::Color::Red;
+            agent.color = currentAgent.color;
+            agent.type = currentAgent.type;
+            agent.waypointDistance = currentAgent.waypointDistance * scale; // Pixels
+            agent.nextWaypointIndex = currentAgent.nextWaypointIndex;
+
+            for(auto& waypoint : currentAgent.trajectory) {
+                agent.trajectory.push_back(waypoint * scale);
+            }
+
+        // // Draw agents
+        // for (auto& agent : currentFrame) {
+
+            // // Scale agent data
+            // agent.position *= scale; // Pixels
+            // agent.initialPosition *= scale; // Pixels
+            // agent.targetPosition *= scale; // Pixelsx
+            // agent.bodyRadius *= scale; // Pixels
+            // agent.velocity *= scale; // Pixels
+            // agent.bufferZoneRadius *= scale; // Pixels
+            // agent.velocityMagnitude *= scale; // Pixels
 
             // Scale the trajectory waypoints
-            for(auto& waypoint : agent.trajectory) {
-                waypoint *= scale;
-            }
+            // for(auto& waypoint : agent.trajectory) {
+            //     waypoint *= scale;
+            // }
 
             // Determine the next waypoint index that is ahead of the agent
             if(showWaypoints) {
@@ -1108,7 +1028,16 @@ void Renderer::render() {  // Input: meters, Output: pixels
                 sf::VertexArray waypoints(sf::PrimitiveType::Triangles, 6);
 
                 // Calculate the next waypoint
-                agent.getNextWaypoint();
+                // Get the next waypoint based on trajectory, position, and velocity
+                for (int i = 0; i < agent.trajectory.size(); ++i) {
+                    sf::Vector2f directionToWaypoint = agent.trajectory[i] - agent.position;
+                    float dotProduct = directionToWaypoint.x * agent.velocity.x + directionToWaypoint.y * agent.velocity.y;
+                    if (dotProduct > 0) {
+                        agent.nextWaypointIndex = i;
+                        break;
+                    }
+                }
+                // agent.getNextWaypoint();
 
                 // Calculate the neighboring pixels for the quad
                 if (agent.nextWaypointIndex != -1) {
@@ -1222,10 +1151,10 @@ void Renderer::render() {  // Input: meters, Output: pixels
                     normalizedDirection = sf::Vector2f(0, 0);
                 }
             }
-            // Append the agent bodies and buffer zones to the vertex arrays
+            // Append the agent bodies and agentBuffer zones to the vertex arrays
             appendAgentBodies(agentBodyVertexArray, agent);
 
-            // Draw the buffer zones
+            // Draw the agentBuffer zones
             if(showBufferZones){ 
 
                 appendBufferZones(bufferZonesVertexArray, agent);
@@ -1282,10 +1211,10 @@ void Renderer::render() {  // Input: meters, Output: pixels
     }
 }
 
-// Function to append buffer zones to the vertex array
-void Renderer::appendBufferZones(sf::VertexArray& vertices, const Agent& agent) {
+// Function to append agentBuffer zones to the vertex array
+void Renderer::appendBufferZones(sf::VertexArray& vertices, const RenderAgent& agent) {
 
-    // Calculate the number of segments depending on the buffer zone radius
+    // Calculate the number of segments depending on the agentBuffer zone radius
     int numSegments = std::max(100, static_cast<int>(agent.bufferZoneRadius * 6.0f));
     
     // Loop through each segment and calculate the position of the vertices
@@ -1299,7 +1228,7 @@ void Renderer::appendBufferZones(sf::VertexArray& vertices, const Agent& agent) 
 }
 
 // Function to append agent bodies to the vertex array
-void Renderer::appendAgentBodies(sf::VertexArray& triangles, const Agent& agent) {
+void Renderer::appendAgentBodies(sf::VertexArray& triangles, const RenderAgent& agent) {
 
     // Extract the type of the agent
     std::stringstream ss(agent.type);
@@ -1332,10 +1261,10 @@ void Renderer::appendAgentBodies(sf::VertexArray& triangles, const Agent& agent)
     }
 
     // Calculate the positions of the quad vertices
-    sf::Vector2f topLeft = sf::Vector2f(position.x - minRadius, position.y - minRadius/divY);
-    sf::Vector2f topRight = sf::Vector2f(position.x + minRadius, position.y - minRadius/divY);
-    sf::Vector2f bottomRight = sf::Vector2f(position.x + minRadius, position.y + minRadius/divY);
-    sf::Vector2f bottomLeft = sf::Vector2f(position.x - minRadius, position.y + minRadius/divY);
+    sf::Vector2f topLeft = sf::Vector2f(position.x - minRadius/divX, position.y - minRadius/divY);
+    sf::Vector2f topRight = sf::Vector2f(position.x + minRadius/divX, position.y - minRadius/divY);
+    sf::Vector2f bottomRight = sf::Vector2f(position.x + minRadius/divX, position.y + minRadius/divY);
+    sf::Vector2f bottomLeft = sf::Vector2f(position.x - minRadius/divX, position.y + minRadius/divY);
 
     // Create the quad and transform it based on the agent's heading
     // SFML 2.6.1 and prior

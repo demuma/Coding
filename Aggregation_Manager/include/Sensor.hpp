@@ -52,11 +52,11 @@ public:
     std::chrono::system_clock::time_point timestamp;
     std::unordered_map<std::string, sf::Vector2f> previousPositions;
     std::unordered_map<std::string, sf::Vector2f> currentPositions;
+    std::string sensorId;
 
 protected:
     std::shared_ptr<mongocxx::client> client;
     SharedBuffer<sensorBufferFrameType>& sensorBuffer;
-    std::string sensorId;
     float timeSinceLastUpdate = 0.0f;
 
     void estimateVelocities(std::unordered_map<std::string, sf::Vector2f>& estimatedVelocities);

@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <unordered_set>
 #include <unordered_map>
 #include <functional>
 #include <stdexcept>
@@ -22,6 +23,7 @@ public:
         int id;    // Unique integer ID (using a Morton-code style bit‐encoding)
         int depth; // Depth level (base nodes are depth 1)
         std::vector<Agent*> agents;
+        bool drawText = true;
 
         // Constructor: creates a node with the given position and size.
         Node(float x, float y, float size, int id, int depth, Node* parent = nullptr);
@@ -40,6 +42,7 @@ public:
     std::unordered_map<int, Node*> nodeMap;     // Maps cell IDs to nodes.
     std::vector<sf::Vector2f> positions;        // Agent positions (or any positions)
     std::vector<Agent*> agents;                 // Agents in the quadtree
+    // bool showText = false;
 
     // Constructor & destructor
     Quadtree(float x, float y, float cellSize, int maxDepth);
@@ -99,6 +102,7 @@ public:
     
     // Split the quadtree according to the current positions.
     void splitFromPositions();
+    void splitFromCellIds(std::unordered_set<int> seq);
 
     // Utility functions to generate and update positions.
     void generatePositions(int number);  // DELETE

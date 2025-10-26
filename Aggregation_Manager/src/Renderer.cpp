@@ -727,8 +727,7 @@ sf::Time Renderer::calculateSleepTime() {
     if(targetFrameTime < currentSimulationFrameTime){
         targetFrameTime = currentSimulationFrameTime;
         playbackSpeed = timeStep / currentSimulationFrameTime.asSeconds();
-        DEBUG_MSG("Playback speed adjusted to: " << playbackSpeed);
-        
+        DEBUG_MSG("Playback speed adjusted to: " << playbackSpeed);  
     }
 
     if (rendererFrameTime >= targetFrameTime) {
@@ -764,7 +763,25 @@ void Renderer::printSensorBuffer() {
             out << cellId << " ";
         }
     }
+    DEBUG_MSG(out.str());
+}
 
+// Function to print the current sensor buffer frame for debugging
+void Renderer::printLocalBuffer() {
+
+    // Get the current sensor buffer data
+    std::ostringstream out;
+
+    out << "Timestamp: " << generateISOTimestampString(currentLocalSensorBufferFrame->first) << " - ";
+
+    // Iterate and print
+    for (const auto& [sensorId, cellIds]: currentLocalSensorBufferFrame->second) {
+        out << "Sensor ID: " << sensorId << " - ";
+        out << "Cell IDs: ";
+        for (const auto& cellId: cellIds) {
+            out << cellId << " ";
+        }
+    }
     DEBUG_MSG(out.str());
 }
 
@@ -781,7 +798,6 @@ void Renderer::printAgentBuffer() {
     for (const auto& agent: currentAgentBufferFrame->second) {
             out << agent.agentId << " ";
     }
-
     DEBUG_MSG(out.str());
 }
 
@@ -791,11 +807,10 @@ void Renderer::readAgentBufferFrame() {
     // Read the current frame from the agentBuffer
     currentAgentBufferFrame = agentBuffer.read();
 
-    
     // Check if pointer is not null and assign to currentFrame
     if(currentAgentBufferFrame) {
 
-        printAgentBuffer();
+        // printAgentBuffer();
 
         agentFrameTimestamp = currentAgentBufferFrame->first;
         currentAgentFrame = std::shared_ptr<const agentFrame>(currentAgentBufferFrame, &currentAgentBufferFrame->second);
@@ -816,7 +831,7 @@ void Renderer::readSensorBufferFrame() {
         // Check if pointer is not null = valid
         if (currentSensorBufferFrame) {
 
-            printSensorBuffer();
+            // printSensorBuffer();
 
             // Compare timestamp from sensor buffer frame and agent buffer frame
             if(agentFrameTimestamp == currentSensorBufferFrame->first) {
@@ -824,20 +839,58 @@ void Renderer::readSensorBufferFrame() {
                 DEBUG_MSG("Renderer: " << sensorBuffer.name << " timestamp match at frame " << sensorBuffer.currentReadFrameIndex-1);
             }
             else {
+                // Store in local buffer for later processing
                 localSensorBuffer.emplace_back(currentSensorBufferFrame);
                 DEBUG_MSG("Renderer: " << sensorBuffer.name << " buffer frame timestamp mismatch at frame " << sensorBuffer.currentReadFrameIndex-1);
 
-                // Search for matching timestamp in local storage
-
+                readLocalSensorBufferFrame();
             }
         } else {
             sensorBufferDrained = true;
             DEBUG_MSG("Renderer: " << sensorBuffer.name << " buffer drained with last frame " << sensorBuffer.currentReadFrameIndex-1);
         }
     }
+    else {
+        readLocalSensorBufferFrame();
+    }
 }
 
 // Read from local sensor buffer
+void Renderer::readLocalSensorBufferFrame() {
+    
+    int frameNumber = 0;
+
+    DEBUG_MSG("Renderer: searching local sensor buffer for matching timestamp " << generateISOTimestampString(agentFrameTimestamp));
+
+    // Search for matching timestamp in local storage
+    for (const auto& storedSensorFrame : localSensorBuffer) {
+        if (storedSensorFrame->first == agentFrameTimestamp) {
+
+            DEBUG_MSG("Renderer: found matching timestamp in local sensor buffer at frame " << frameNumber);
+
+            // // Get the current sensor buffer data
+            std::ostringstream out;
+
+            out << "Timestamp: " << generateISOTimestampString(storedSensorFrame->first) << " - ";
+
+            // Iterate and print
+            for (const auto& [sensorId, cellIds]: storedSensorFrame->second) {
+                out << "Sensor ID: " << sensorId << " - ";
+                out << "Cell IDs: ";
+                for (const auto& cellId: cellIds) {
+                    out << cellId << " ";
+                }
+            }
+
+            DEBUG_MSG(out.str());
+            currentSensorFrame = std::shared_ptr<const sensorFrame>(storedSensorFrame, &storedSensorFrame->second);
+            // break;
+            return;
+        }
+        frameNumber++;
+    }
+    DEBUG_MSG("Renderer: no matching timestamp found in local sensor buffer");
+}
 
 // Main rendering function
 void Renderer::render() {  // Input: meters, Output: pixels
@@ -896,7 +949,24 @@ void Renderer::render() {  // Input: meters, Output: pixels
             for (const auto& sensor : sensors) {
 
                 // Check if the sensor is grid-based
-                if (auto gridBasedSensor = dynamic_cast<GridBasedSensor*>(sensor.get())) {
+                if(auto agentBasedSensor = dynamic_cast<AgentBasedSensor*>(sensor.get())) {
+
+                    // Draw the grid if enabled
+                    if(showSensors) {
+
+                        // Draw outer rectangle
+                        sf::RectangleShape gridBoundaries(sf::Vector2f(agentBasedSensor->detectionArea.size.x * scale, agentBasedSensor->detectionArea.size.y * scale));
+                        gridBoundaries.setPosition({agentBasedSensor->detectionArea.position.x * scale + offset.x, agentBasedSensor->detectionArea.position.y * scale + offset.y}); // Set position in pixels
+                        // gridBoundaries.setFillColor(sf::Color::Transparent);
+                        gridBoundaries.setFillColor(agentBasedSensor->detectionAreaColor);
+                        gridBoundaries.setOutlineColor(sf::Color::Black);
+                        gridBoundaries.setOutlineThickness(3);
+                        window.draw(gridBoundaries);
+                    }
+                }
+
+                // Check if the sensor is grid-based
+                else if(auto gridBasedSensor = dynamic_cast<GridBasedSensor*>(sensor.get())) {
 
                     // Draw the grid if enabled
                     if(gridBasedSensor->showGrid && showSensors) {
@@ -907,7 +977,7 @@ void Renderer::render() {  // Input: meters, Output: pixels
                         // gridBoundaries.setFillColor(sf::Color::Transparent);
                         gridBoundaries.setFillColor(gridBasedSensor->detectionAreaColor);
                         gridBoundaries.setOutlineColor(sf::Color::Black);
-                        gridBoundaries.setOutlineThickness(1);
+                        gridBoundaries.setOutlineThickness(3);
                         window.draw(gridBoundaries);
 
                         // Draw vertical lines
@@ -930,18 +1000,51 @@ void Renderer::render() {  // Input: meters, Output: pixels
                     }
                 }
 
-                if(auto adaptiveGridBasedSensor = dynamic_cast<AdaptiveGridBasedSensor*>(sensor.get())) {
+                else if(auto adaptiveGridBasedSensor = dynamic_cast<AdaptiveGridBasedSensor*>(sensor.get())) {
+                    
+                    adaptiveGridBasedSensor->adaptiveGrid.reset();
+                    std::vector<std::vector<int>> splitSequences;
 
+                    if (!currentSensorFrame) {
+                        DEBUG_MSG("Renderer: No sensor frame found for timestamp");
+                        break;
+                    }
+                    else {
+
+                        for (const auto& [sensorIds, cellIds]: *currentSensorFrame){
+                            adaptiveGridBasedSensor->sensorId = sensorIds;
+                            adaptiveGridBasedSensor->adaptiveGrid.splitFromCellIds(cellIds);
+                            // for (const auto& cellId: cellIds) {
+                            //     auto splitSequence = adaptiveGridBasedSensor->adaptiveGrid.getSplitSequence(cellId);
+                            //     std::cout << "Split sequence for cell " << cellId << ": ";
+                            //     for (const auto& morton : splitSequence) {
+                            //         std::cout << morton << " ";
+                            //     }
+                            //     std::cout << std::endl;
+                            //     splitSequences.push_back(splitSequence);
+                            //     // splitSequences.push_back(adaptiveGridBasedSensor->adaptiveGrid.getSplitSequence(cellId));
+
+                            //     // Split the cells in the adaptive grid
+                            //     for(const auto& seq : splitSequences) {
+                                    
+                            //         adaptiveGridBasedSensor->adaptiveGrid.splitCell(seq);
+                            //     }
+                            // }
+                            break;
+                        }
+                    } 
+                    
                     // Draw the grid if enabled
                     if(adaptiveGridBasedSensor->showGrid && showSensors) {
 
                         // Draw outer rectangle
-                        // sf::RectangleShape gridBoundaries(sf::Vector2f(adaptiveGridBasedSensor->detectionArea.size.x * scale, adaptiveGridBasedSensor->detectionArea.height * scale));
-                        // gridBoundaries.setPosition(adaptiveGridBasedSensor->detectionArea.position.x * scale + offset.x, adaptiveGridBasedSensor->detectionArea.top * scale + offset.y); // Set position in pixels
+                        sf::RectangleShape gridBoundaries(sf::Vector2f(adaptiveGridBasedSensor->detectionArea.size.x * scale, adaptiveGridBasedSensor->detectionArea.size.y * scale));
+                        gridBoundaries.setPosition({adaptiveGridBasedSensor->detectionArea.position.x * scale + offset.x, adaptiveGridBasedSensor->detectionArea.position.y * scale + offset.y}); // Set position in pixels
                         // gridBoundaries.setFillColor(sf::Color::Transparent);
-                        // gridBoundaries.setOutlineColor(sf::Color::Black);
-                        // gridBoundaries.setOutlineThickness(1);
-                        // window.draw(gridBoundaries);
+                        gridBoundaries.setFillColor(adaptiveGridBasedSensor->detectionAreaColor);
+                        gridBoundaries.setOutlineColor(sf::Color::Black);
+                        gridBoundaries.setOutlineThickness(3);
+                        window.draw(gridBoundaries);
 
                         // Draw the adaptive grid with scaling and offset
                         adaptiveGridBasedSensor->adaptiveGrid.draw(window, font, scale, offset);
@@ -982,6 +1085,7 @@ void Renderer::render() {  // Input: meters, Output: pixels
         // Prepare and scale render agent 
         for (const auto& currentAgent: *currentAgentFrame) {
 
+            // Scale agent properties from meters to pixels
             RenderAgent agent;
             agent.position = currentAgent.position * scale; // Pixels
             agent.initialPosition = currentAgent.initialPosition * scale; // Pixels
@@ -1002,29 +1106,9 @@ void Renderer::render() {  // Input: meters, Output: pixels
                 agent.trajectory.push_back(waypoint * scale);
             }
 
-        // // Draw agents
-        // for (auto& agent : currentFrame) {
-
-            // // Scale agent data
-            // agent.position *= scale; // Pixels
-            // agent.initialPosition *= scale; // Pixels
-            // agent.targetPosition *= scale; // Pixelsx
-            // agent.bodyRadius *= scale; // Pixels
-            // agent.velocity *= scale; // Pixels
-            // agent.bufferZoneRadius *= scale; // Pixels
-            // agent.velocityMagnitude *= scale; // Pixels
-
-            // Scale the trajectory waypoints
-            // for(auto& waypoint : agent.trajectory) {
-            //     waypoint *= scale;
-            // }
-
             // Determine the next waypoint index that is ahead of the agent
             if(showWaypoints) {
                 
-                // Draw the trajectory waypoints ahead of the agent
-                // sf::VertexArray waypoints(sf::Quads); // Note: SFML 2.6.2 or prior
-                // sf::VertexArray waypoints(sf::PrimitiveType::Triangles, 6);
                 sf::VertexArray waypoints(sf::PrimitiveType::Triangles, 6);
 
                 // Calculate the next waypoint
@@ -1050,13 +1134,6 @@ void Renderer::render() {  // Input: meters, Output: pixels
                         sf::Vector2f topRight(center.x + waypointRadius + offset.x, center.y - waypointRadius + offset.y);
                         sf::Vector2f bottomRight(center.x + waypointRadius + offset.x, center.y + waypointRadius + offset.y);
                         sf::Vector2f bottomLeft(center.x - waypointRadius + offset.x, center.y + waypointRadius + offset.y);
-
-                        // Add vertices to the VertexArray
-                        // Note: SFML 2.6.2 or prior
-                        // waypoints.append(sf::Vertex(topLeft, color));
-                        // waypoints.append(sf::Vertex(topRight, color));
-                        // waypoints.append(sf::Vertex(bottomRight, color));
-                        // waypoints.append(sf::Vertex(bottomLeft, color));
 
                         // // First triangle
                         waypoints.append(sf::Vertex({topLeft, color}));
@@ -1151,6 +1228,7 @@ void Renderer::render() {  // Input: meters, Output: pixels
                     normalizedDirection = sf::Vector2f(0, 0);
                 }
             }
+
             // Append the agent bodies and agentBuffer zones to the vertex arrays
             appendAgentBodies(agentBodyVertexArray, agent);
 
@@ -1265,14 +1343,6 @@ void Renderer::appendAgentBodies(sf::VertexArray& triangles, const RenderAgent& 
     sf::Vector2f topRight = sf::Vector2f(position.x + minRadius/divX, position.y - minRadius/divY);
     sf::Vector2f bottomRight = sf::Vector2f(position.x + minRadius/divX, position.y + minRadius/divY);
     sf::Vector2f bottomLeft = sf::Vector2f(position.x - minRadius/divX, position.y + minRadius/divY);
-
-    // Create the quad and transform it based on the agent's heading
-    // SFML 2.6.1 and prior
-    // sf::VertexArray body(sf::Quads, 4);
-    // body[0] = sf::Vertex(topLeft, agent.color);
-    // body[1] = sf::Vertex(topRight, agent.color);
-    // body[2] = sf::Vertex(bottomRight, agent.color);
-    // body[3] = sf::Vertex(bottomLeft, agent.color);
 
     // Create the quad and transform it based on the agent's heading
     sf::VertexArray body(sf::PrimitiveType::Triangles, 6);

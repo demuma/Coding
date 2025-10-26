@@ -8,6 +8,7 @@
 #include <vector>
 #include <iomanip>
 #include <thread>
+#include <iterator>
 
 #include "Agent.hpp"
 #include "SharedBuffer.hpp"
@@ -45,6 +46,7 @@ public:
     sf::Time calculateSleepTime();
     void printSensorBuffer();
     void printAgentBuffer();
+    void printLocalBuffer();
     void readAgentBufferFrame();
     void readSensorBufferFrame();
     void readLocalSensorBufferFrame();
@@ -167,6 +169,7 @@ private:
     SharedBuffer<sensorBufferFrameType>& sensorBuffer;
     sensorBufferFrameType currentSensorBufferFrame;
     agentBufferFrameType currentAgentBufferFrame;
+    sensorBufferFrameType currentLocalSensorBufferFrame;
     std::deque<sensorBufferFrameType> localSensorBuffer;
     std::chrono::system_clock::time_point agentFrameTimestamp;
 
@@ -185,7 +188,7 @@ private:
     // Agents and sensors
     std::shared_ptr<const agentFrame> currentAgentFrame;
     std::shared_ptr<const sensorFrame> currentSensorFrame;
-    sensorBufferFrameType currentCellIds;
+    // sensorBufferFrameType currentCellIds;
     
     // Sensor buffer frame: timestamp, map (sensorID -> set of cell IDs)
     int currentNumAgents;

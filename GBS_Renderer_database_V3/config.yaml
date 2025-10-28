@@ -4,7 +4,7 @@ display:
   width: 800 # 2400
   height: 800 # 1200
   pixels_per_meter: 10
-  title: 'Urban Mobility Simulator'
+  title: 'Grid Data Visualizer'
 
 renderer:
   show_renderer: true
@@ -17,7 +17,7 @@ renderer:
   show_info: true
   show_grids: true
   show_sensors: false
-  make_video: false
+  make_video: true
 
 database:
   host: localhost
@@ -139,17 +139,10 @@ agents:
       look_ahead_time: 5.0 # Part of behavior profile (foresightfulness)
 
 sensors:
-  - type: agent-based
-    frame_rate: 10.0
-    color: blue
-    alpha: 0.1
-    database:
-      db_name: Simulation
-      collection_name: AB_Sensor_Data_V3
   - type: grid-based
     frame_rate: 10.0
-    color: green
-    alpha: 0.1
+    color: blue
+    alpha: 0.2
     grid:
       show_grid: true
     database:

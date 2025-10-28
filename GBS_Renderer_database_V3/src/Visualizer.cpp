@@ -31,6 +31,7 @@ void Visualizer::loadConfiguration() {
     windowSize.x = config["display"]["width"].as<int>(); // Pixels
     windowSize.y = config["display"]["height"].as<int>(); // Pixels
     scale = config["display"]["pixels_per_meter"].as<float>();
+    title = config["display"]["title"].as<std::string>();
 
     // Load simulation parameters
     simulationSize.x = windowSize.x / scale;
@@ -98,7 +99,7 @@ void Visualizer::initializeWindow() {
     settings.antiAliasingLevel = 16;
 
     // Create window
-    window.create(sf::VideoMode({static_cast<unsigned int>(windowSize.x), static_cast<unsigned int>(windowSize.y)}), "Urban Data Visualizer", sf::Style::Default, sf::State::Windowed, settings);
+    window.create(sf::VideoMode({static_cast<unsigned int>(windowSize.x), static_cast<unsigned int>(windowSize.y)}), title, sf::Style::Default, sf::State::Windowed, settings);
     window.setVerticalSyncEnabled(true);
     
     // Initialize the render texture
@@ -275,6 +276,7 @@ void Visualizer::update() {
 void Visualizer::render() {
     // Clear the window
     renderTexture.clear(sf::Color::White);
+    sf::Color gridColor = sf::Color::White;
 
     // Clear vertex arrays if any
     gridLinesVertexArray.clear();
@@ -303,8 +305,8 @@ void Visualizer::render() {
             for (int x = 0; x <= gridWidth; ++x) {
                 float posX = sensor.detectionArea.position.x + x * cellSize + offset.x;
                 sf::Vertex line[] = {
-                    sf::Vertex({sf::Vector2f(posX, sensor.detectionArea.position.y + offset.y), sf::Color(220, 220, 220)}),
-                    sf::Vertex({sf::Vector2f(posX, sensor.detectionArea.position.y + sensor.detectionArea.size.y + offset.y), sf::Color(220, 220, 220)})
+                    sf::Vertex({sf::Vector2f(posX, sensor.detectionArea.position.y + offset.y), gridColor}),
+                    sf::Vertex({sf::Vector2f(posX, sensor.detectionArea.position.y + sensor.detectionArea.size.y + offset.y), gridColor})
                 };
                 gridLinesVertexArray.append(line[0]);
                 gridLinesVertexArray.append(line[1]);
@@ -313,8 +315,8 @@ void Visualizer::render() {
             for (int y = 0; y <= gridHeight; ++y) {
                 float posY = sensor.detectionArea.position.y + y * cellSize + offset.y;
                 sf::Vertex line[] = {
-                    sf::Vertex({sf::Vector2f(sensor.detectionArea.position.x + offset.x, posY), sf::Color(220, 220, 220)}),
-                    sf::Vertex({sf::Vector2f(sensor.detectionArea.position.x + sensor.detectionArea.size.x + offset.x, posY), sf::Color(220, 220, 220)})
+                    sf::Vertex({sf::Vector2f(sensor.detectionArea.position.x + offset.x, posY), gridColor}),
+                    sf::Vertex({sf::Vector2f(sensor.detectionArea.position.x + sensor.detectionArea.size.x + offset.x, posY), gridColor})
                 };
                 gridLinesVertexArray.append(line[0]);
                 gridLinesVertexArray.append(line[1]);

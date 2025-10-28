@@ -87,6 +87,7 @@ private:
     sf::Font font;
     std::string title;
     bool showInfo = true;
+    bool showText = true;
 
     // Event handling
     bool isShiftPressed = false;

@@ -23,7 +23,7 @@ public:
         int id;    // Unique integer ID (using a Morton-code style bit‐encoding)
         int depth; // Depth level (base nodes are depth 1)
         std::vector<Agent*> agents;
-        bool drawText = true;
+        bool showCellId = false;
 
         // Constructor: creates a node with the given position and size.
         Node(float x, float y, float size, int id, int depth, Node* parent = nullptr);
@@ -32,6 +32,7 @@ public:
         void split(std::unordered_map<int, Node*>& nodeMap);
         void draw(sf::RenderWindow& window, sf::Font& font);
         void draw(sf::RenderWindow& window, sf::Font& font, float scale, const sf::Vector2f& offset);
+        void draw(sf::RenderWindow& window, sf::Font& font, float scale, const sf::Vector2f& offset, bool showCellId);
     };
 
     // Data members
@@ -42,7 +43,7 @@ public:
     std::unordered_map<int, Node*> nodeMap;     // Maps cell IDs to nodes.
     std::vector<sf::Vector2f> positions;        // Agent positions (or any positions)
     std::vector<Agent*> agents;                 // Agents in the quadtree
-    // bool showText = false;
+    bool showCellId = false;
 
     // Constructor & destructor
     Quadtree(float x, float y, float cellSize, int maxDepth);

@@ -81,7 +81,37 @@ void Quadtree::Node::draw(sf::RenderWindow& window, sf::Font& font) {
     }
 }
 
+void Quadtree::Node::draw(sf::RenderWindow& window, sf::Font& font, float scale, const sf::Vector2f& offset, bool showCellId) {
+    sf::RectangleShape shape;
+    // Scale the size and offset the position
+    shape.setSize(sf::Vector2f(bounds.size.x * scale, bounds.size.y * scale));
+    shape.setPosition({bounds.position.x * scale + offset.x, bounds.position.y * scale + offset.y});
+    shape.setFillColor(sf::Color::Transparent);
+    shape.setOutlineThickness(1);
+    shape.setOutlineColor(sf::Color::Black);
+    window.draw(shape);
+    
+    // Draw the node id text (also apply scaling and offset)
+    if(showCellId){
+        sf::Text text(font, std::to_string(id), 0.5 * scale); // Initialize text with font, string and character size
+        text.setFillColor(sf::Color::Black);
+        sf::FloatRect textBounds = text.getLocalBounds();
+        text.setPosition({
+            bounds.position.x * scale + offset.x + (bounds.size.x * scale - textBounds.size.x) / 2,
+            bounds.position.y * scale + offset.y + (bounds.size.y * scale - textBounds.size.y) / 2
+        });
+        window.draw(text);
+    }
 
+    // Recursively draw children nodes
+    if (isSplit) {
+        for (int i = 0; i < 4; ++i) {
+            if (children[i])
+            // children[i]->drawText = false;
+            children[i]->draw(window, font, scale, offset, showCellId);
+        }
+    }
+}
 
 void Quadtree::Node::draw(sf::RenderWindow& window, sf::Font& font, float scale, const sf::Vector2f& offset) {
     sf::RectangleShape shape;
@@ -94,7 +124,7 @@ void Quadtree::Node::draw(sf::RenderWindow& window, sf::Font& font, float scale,
     window.draw(shape);
     
     // Draw the node id text (also apply scaling and offset)
-    if(drawText){
+    if(showCellId){
         sf::Text text(font, std::to_string(id), 0.5 * scale); // Initialize text with font, string and character size
         text.setFillColor(sf::Color::Black);
         sf::FloatRect textBounds = text.getLocalBounds();
@@ -117,7 +147,7 @@ void Quadtree::Node::draw(sf::RenderWindow& window, sf::Font& font, float scale,
 
 void Quadtree::draw(sf::RenderWindow& window, sf::Font& font, float scale, const sf::Vector2f& offset) {
     for (Node* n : baseNodes){
-        n->draw(window, font, scale, offset);
+        n->draw(window, font, scale, offset, showCellId);
     }
 }
 
@@ -466,11 +496,11 @@ void Quadtree::splitFromCellIds(std::unordered_set<int> cellIds) {
 
     for (const auto& cellId: cellIds) {
         auto splitSequence = getSplitSequence(cellId);
-        std::cout << "Split sequence for cell " << cellId << ": ";
-        for (const auto& morton : splitSequence) {
-            std::cout << morton << " ";
-        }
-        std::cout << std::endl;
+        // std::cout << "Split sequence for cell " << cellId << ": ";
+        // for (const auto& morton : splitSequence) {
+        //     std::cout << morton << " ";
+        // }
+        // std::cout << std::endl;
         std::vector<std::vector<int>> splitSequences;
         splitSequences.push_back(splitSequence);
 

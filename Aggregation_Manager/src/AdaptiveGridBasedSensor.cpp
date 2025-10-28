@@ -154,7 +154,8 @@ void AdaptiveGridBasedSensor::postMetadata() {
              << "position" << positionDocument
              << "detection_area" << detectionAreaDocument
              << "frame_rate" << frameRate
-             << "cell_size" << cellSize;
+             << "cell_size" << cellSize
+             << "max_depth" << maxDepth;
 
     // Insert the metadata document into the collection
     try {

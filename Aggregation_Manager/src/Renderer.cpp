@@ -69,6 +69,7 @@ void Renderer::loadConfiguration() {
     showSensors = config["renderer"]["show_sensors"].as<bool>();
     showBufferZones = config["renderer"]["show_buffer"].as<bool>();
     showArrow = config["renderer"]["show_arrow"].as<bool>();
+    showText = config["renderer"]["show_text"].as<bool>();
 
     // Load collision parameters
     showCollisionGrid = config["collision"]["grid"]["show_grid"].as<bool>();
@@ -1047,6 +1048,7 @@ void Renderer::render() {  // Input: meters, Output: pixels
                         window.draw(gridBoundaries);
 
                         // Draw the adaptive grid with scaling and offset
+                        adaptiveGridBasedSensor->adaptiveGrid.showCellId = showText;
                         adaptiveGridBasedSensor->adaptiveGrid.draw(window, font, scale, offset);
 
                         // adaptiveGridBasedSensor->adaptiveGrid.printChildren(12);

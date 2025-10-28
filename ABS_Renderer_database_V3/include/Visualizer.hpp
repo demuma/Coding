@@ -52,6 +52,7 @@ public:
     sf::RenderTexture renderTexture; // For video capture
     sf::Vector2f windowSize;
     bool paused = false;
+    std::string title;
 
     sf::Vector2f simulationSize;
     sf::Vector2f offset;

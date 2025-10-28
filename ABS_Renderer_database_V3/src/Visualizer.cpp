@@ -35,6 +35,7 @@ void Visualizer::loadConfiguration() {
     windowSize.x = config["display"]["width"].as<int>(); // Pixels
     windowSize.y = config["display"]["height"].as<int>(); // Pixels
     scale = config["display"]["pixels_per_meter"].as<float>();
+    title = config["display"]["title"].as<std::string>();
 
     // Load simulation parameters
     simulationSize.x = windowSize.x / scale;
@@ -105,7 +106,7 @@ void Visualizer::initializeWindow() {
     settings.antiAliasingLevel = 16;
 
     // Create window
-    window.create(sf::VideoMode({static_cast<unsigned int>(windowSize.x), static_cast<unsigned int>(windowSize.y)}), "Urban Data Visualizer", sf::Style::Default, sf::State::Windowed, settings);
+    window.create(sf::VideoMode({static_cast<unsigned int>(windowSize.x), static_cast<unsigned int>(windowSize.y)}), title, sf::Style::Default, sf::State::Windowed, settings);
     window.setVerticalSyncEnabled(true);
     
     // Initialize the render texture
@@ -424,6 +425,7 @@ void Visualizer::render() {
 
     // Clear the window
     renderTexture.clear(sf::Color::White);
+    sf::Color gridColor = sf::Color::White;
 
     // Clear vertex arrays
     gridLinesVertexArray.clear();
@@ -433,23 +435,23 @@ void Visualizer::render() {
     agentArrowHeadVertexArray.clear();
 
     // Draw the collision grid
-    for(int x = 0; x <= simulationSize.x / gridCellSize; x++) {
-        sf::Vertex line[] = {
-            sf::Vertex({sf::Vector2f(x * gridCellSize, 0) + offset, sf::Color(220, 220, 220)}),
-            sf::Vertex({sf::Vector2f(x * gridCellSize, simulationSize.y) + offset, sf::Color(220, 220, 220)})
-        };
-        gridLinesVertexArray.append(line[0]);
-        gridLinesVertexArray.append(line[1]);
-    }
+    // for(int x = 0; x <= simulationSize.x / gridCellSize; x++) {
+    //     sf::Vertex line[] = {
+    //         sf::Vertex({sf::Vector2f(x * gridCellSize, 0) + offset, gridColor}),
+    //         sf::Vertex({sf::Vector2f(x * gridCellSize, simulationSize.y) + offset, gridColor})
+    //     };
+    //     gridLinesVertexArray.append(line[0]);
+    //     gridLinesVertexArray.append(line[1]);
+    // }
 
-    for(int y = 0; y < (simulationSize.y / gridCellSize); y++) {
-        sf::Vertex line[] = {
-            sf::Vertex({sf::Vector2f(0, y * gridCellSize) + offset, sf::Color(220, 220, 220)}),
-            sf::Vertex({sf::Vector2f(simulationSize.x, y * gridCellSize) + offset, sf::Color(220, 220, 220)})
-        };
-        gridLinesVertexArray.append(line[0]);
-        gridLinesVertexArray.append(line[1]);
-    }
+    // for(int y = 0; y < (simulationSize.y / gridCellSize); y++) {
+    //     sf::Vertex line[] = {
+    //         sf::Vertex({sf::Vector2f(0, y * gridCellSize) + offset, gridColor}),
+    //         sf::Vertex({sf::Vector2f(simulationSize.x, y * gridCellSize) + offset, gridColor})
+    //     };
+    //     gridLinesVertexArray.append(line[0]);
+    //     gridLinesVertexArray.append(line[1]);
+    // }
 
     // Draw sensor detection areas
     for(const auto& sensor : sensors) {

@@ -177,7 +177,8 @@ sf::Color stringToColor(std::string colorStr) {
         {"violet", sf::Color(238, 130, 238)},
         {"orange", sf::Color(198, 81, 2)},
         {"indigo", sf::Color(75, 0, 130)},
-        {"grey", sf::Color(128, 128, 128)}
+        {"grey", sf::Color(128, 128, 128)},
+        {"lightgrey", sf::Color(250, 200, 200)}
     };
 
     // Convert to lowercase directly for faster comparison

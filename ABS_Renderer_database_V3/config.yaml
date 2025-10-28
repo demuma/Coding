@@ -4,7 +4,7 @@ display:
   width: 800 # 2400
   height: 800 # 1200
   pixels_per_meter: 10
-  title: 'Urban Mobility Simulator'
+  title: 'Agent Data Visualizer'
 
 renderer:
   show_renderer: true
@@ -17,7 +17,7 @@ renderer:
   show_info: true
   show_grids: true
   show_sensors: false
-  make_video: false
+  make_video: true
 
 database:
   host: localhost
@@ -141,20 +141,11 @@ agents:
 sensors:
   - type: agent-based
     frame_rate: 10.0
-    color: magenta
-    alpha: 0.1
+    color: yellow
+    alpha: 0.2
     database:
       db_name: Simulation
       collection_name: AB_Sensor_Data_V3
-  - type: grid-based
-    frame_rate: 10.0
-    color: green
-    alpha: 0.1
-    grid:
-      show_grid: true
-    database:
-      db_name: Simulation
-      collection_name: GB_Sensor_Data_V3
 
 # simulation:
 #   width: 40

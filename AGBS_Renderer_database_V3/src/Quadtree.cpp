@@ -95,7 +95,7 @@ void Quadtree::Node::draw(sf::RenderTexture& renderTexture, sf::Font& font, floa
     renderTexture.draw(shape);
 
     // Draw the node id text (also apply scaling and offset)
-    if(showCellId){
+    if(this->showCellId){
         sf::Text text(font, std::to_string(id), 1 * scale); // Initialize text with font, string and character size
         text.setFillColor(sf::Color::Black);
         sf::FloatRect textBounds = text.getLocalBounds();
@@ -356,8 +356,11 @@ std::vector<int> Quadtree::getNeighboringCells(int id) {
 
 int Quadtree::getNearestCell(sf::Vector2f position) {
     // Find which base cell contains the position.
-    int col = static_cast<int>(position.x / cellSize);
-    int row = static_cast<int>(position.y / cellSize);
+    // int col = static_cast<int>(position.x / cellSize);
+    // int row = static_cast<int>(position.y / cellSize);
+    sf::Vector2f relativePos = position - origin;
+    int col = static_cast<int>(relativePos.x / cellSize);
+    int row = static_cast<int>(relativePos.y / cellSize);
     col = std::max(0, std::min(col, 1));
     row = std::max(0, std::min(row, 1));
 

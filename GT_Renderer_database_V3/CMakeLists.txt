@@ -21,6 +21,11 @@ find_package(yaml-cpp REQUIRED)
 find_package(mongocxx REQUIRED)
 find_package(bsoncxx REQUIRED)
 
+# macOS framework needed for CGDisplay APIs
+if(APPLE)
+    find_library(APP_SERVICES_FRAMEWORK ApplicationServices)
+endif()
+
 # Add the include directories for the libraries
 include_directories(include)
 
@@ -32,6 +37,10 @@ add_executable(Visualizer ${SOURCES})
 
 # Link libraries to the executable
 target_link_libraries(Visualizer SFML::Graphics SFML::Window SFML::System yaml-cpp::yaml-cpp mongo::mongocxx_shared mongo::bsoncxx_shared) # for macOS SFML 3.0.0
+# Link ApplicationServices for CGDisplay APIs on macOS
+if(APPLE AND APP_SERVICES_FRAMEWORK)
+    target_link_libraries(Visualizer ${APP_SERVICES_FRAMEWORK})
+endif()
 #target_link_libraries(Simulator sfml-graphics sfml-window sfml-system uuid yaml-cpp mongo::mongocxx_shared mongo::bsoncxx_shared) # for Linux
 
 # Additional CMake options for the executable

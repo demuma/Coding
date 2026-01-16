@@ -382,6 +382,10 @@ void Visualizer::appendAgentBodies(sf::VertexArray& quads, const Agent& agent) {
         divX = 1;
         divY = 3;
     }
+        else if(word2 == "Cargo") {
+        divX = 1;
+        divY = 3;
+    }
     else if(word2 == "Pedestrian") {
         divX = 1;
         divY = 1;

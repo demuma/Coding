@@ -102,7 +102,11 @@ UAM-Simulator: CMakeFiles/UAM-Simulator.dir/rule
 # codegen rule for target.
 CMakeFiles/UAM-Simulator.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/UAM-Simulator.dir/build.make CMakeFiles/UAM-Simulator.dir/codegen
+<<<<<<< HEAD:Metal-Simulator/build/CMakeFiles/Makefile2
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Metal-Simulator/build/CMakeFiles" --progress-num=1,2 "Finished codegen for target UAM-Simulator"
+=======
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/UAM-Simulator/build/CMakeFiles" --progress-num=1,2 "Finished codegen for target UAM-Simulator"
+>>>>>>> 5386a9f (- updated simulator):UAM-Simulator/build/CMakeFiles/Makefile2
 .PHONY : CMakeFiles/UAM-Simulator.dir/codegen
 
 # clean rule for target.

@@ -15,7 +15,8 @@ struct GridCell {
 
 class Grid {
 public:
-    Grid(float cellSize, int width, int height); // in cells
+    // Grid(float cellSize, int width, int height); // in cells
+    Grid(float cellSize, sf::FloatRect detectionArea); // in cells
     sf::Vector2i addAgent(Agent* agent);
     void clear();
     void calculateDensity(); // Calculate agent density in each cell
@@ -29,10 +30,10 @@ public:
     }
     int width; // Number of cells horizontally
     int height; // Number of cells vertically
+    float cellSize;
 
 private:
     sf::FloatRect detectionArea;
-    float cellSize;
 
     // Helper function to get adjacent cell indices
     std::vector<sf::Vector2i> getAdjacentCellIndices(const sf::Vector2i& cellIndex) const;

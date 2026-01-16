@@ -50,6 +50,7 @@ public:
     sf::RenderWindow window;
     sf::RenderTexture renderTexture; // For video capture
     sf::Vector2f windowSize;
+    sf::Vector2f screenSize;
     bool paused = false;
 
     sf::Vector2f simulationSize;

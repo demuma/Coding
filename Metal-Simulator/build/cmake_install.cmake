@@ -40,7 +40,11 @@ endif()
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
+<<<<<<< HEAD:Metal-Simulator/build/cmake_install.cmake
   file(WRITE "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Metal-Simulator/build/install_local_manifest.txt"
+=======
+  file(WRITE "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/UAM-Simulator/build/install_local_manifest.txt"
+>>>>>>> 5386a9f (- updated simulator):UAM-Simulator/build/cmake_install.cmake
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()
 if(CMAKE_INSTALL_COMPONENT)
@@ -56,6 +60,10 @@ else()
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+<<<<<<< HEAD:Metal-Simulator/build/cmake_install.cmake
   file(WRITE "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/Metal-Simulator/build/${CMAKE_INSTALL_MANIFEST}"
+=======
+  file(WRITE "/Users/maxdemu/Documents/HAW Hamburg/Promotion/Coding/UAM-Simulator/build/${CMAKE_INSTALL_MANIFEST}"
+>>>>>>> 5386a9f (- updated simulator):UAM-Simulator/build/cmake_install.cmake
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

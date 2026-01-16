@@ -5,11 +5,11 @@
 #include "../include/CollisionAvoidance.hpp" // Include the new header
 
 // Constructor
-Grid::Grid(float cellSize, int width, int height)
-    : cellSize(cellSize), width(width), height(height), cells(0, Vector2iHash{}) {
+Grid::Grid(float cellSize, sf::FloatRect detectionArea)
+    : cellSize(cellSize), detectionArea(detectionArea), cells(0, Vector2iHash{}) {
 
         this->cellSize = cellSize;
-    }
+}
 
 // Add agent to the grid
 sf::Vector2i Grid::addAgent(Agent* agent) {
@@ -82,8 +82,8 @@ void Grid::checkCollisions() {
 // Get cell index based on position
 sf::Vector2i Grid::getGridCellIndex(const sf::Vector2f& position) {
 
-    int x = static_cast<int>(position.x / cellSize); 
-    int y = static_cast<int>(position.y / cellSize);
+    int x = static_cast<int>((position.x - detectionArea.position.x) / cellSize); 
+    int y = static_cast<int>((position.y - detectionArea.position.y) / cellSize);
 
     return sf::Vector2i(x, y);
 }

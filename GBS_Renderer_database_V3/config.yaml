@@ -1,9 +1,9 @@
 version: 1.0
 
 display:
-  width: 800 # 2400
-  height: 800 # 1200
-  pixels_per_meter: 10
+  width: 1600 # 2400
+  height: 640 # 1200
+  pixels_per_meter: 8
   title: 'Grid Data Visualizer'
 
 renderer:
@@ -16,8 +16,8 @@ renderer:
   show_buffer: true
   show_info: true
   show_grids: true
-  show_sensors: false
-  make_video: true
+  show_sensors: true
+  make_video: false
 
 database:
   host: localhost
@@ -136,6 +136,22 @@ agents:
       acceleration:
         min: 2.0
         max: 4.5
+      look_ahead_time: 5.0 # Part of behavior profile (foresightfulness)
+    - type: Adult Cargo Cyclist
+      probability: 0.05
+      priority: 5
+      radius: 1.25
+      color: 'brown'
+      velocity:
+        min: 4.44  # 16 km/h
+        max: 6.95  # 25 km/h
+        mu: 5.0    # 18 km/h
+        sigma: 0.5
+        noise_scale: 0.05
+        noise_factor: 0.5
+      acceleration:
+        min: 0.5
+        max: 2.0
       look_ahead_time: 5.0 # Part of behavior profile (foresightfulness)
 
 sensors:

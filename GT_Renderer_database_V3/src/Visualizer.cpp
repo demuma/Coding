@@ -1,6 +1,7 @@
 #include "../include/Visualizer.hpp"
 #include "../include/Logging.hpp"
 #include "../include/Utilities.hpp"
+#include <ApplicationServices/ApplicationServices.h>
 
 using bsoncxx::builder::basic::kvp;
 using bsoncxx::builder::basic::make_array;
@@ -17,8 +18,8 @@ Visualizer::Visualizer()
     loadConfiguration();
     loadAgentsAttributes();
     initializeDatabase();
-    initializeWindow();
     getMetadata();
+    initializeWindow();
     getData();
 }
 
@@ -32,6 +33,9 @@ void Visualizer::loadConfiguration() {
     config = YAML::LoadFile("config.yaml");
 
     // Load window parameters
+    // auto id = CGMainDisplayID();
+    // screenSize.x = static_cast<float>(CGDisplayPixelsWide(id));
+    // screenSize.y = static_cast<float>(CGDisplayPixelsHigh(id));
     windowSize.x = config["display"]["width"].as<int>(); // Pixels
     windowSize.y = config["display"]["height"].as<int>(); // Pixels
     scale = config["display"]["pixels_per_meter"].as<float>();
@@ -175,11 +179,11 @@ Agent Visualizer::createAgentFromDocument(bsoncxx::document::view document) {
 
     agent.uuid = std::string(document["agent_id"].get_string().value.data());
     agent.type = std::string(document["type"].get_string().value.data());
-    agent.position.x = document["position"].get_array().value[0].get_double();
-    agent.position.y = document["position"].get_array().value[1].get_double();
-    agent.timestamp = std::string(document["timestamp"].get_string().value.data());
-    agent.velocity.x = document["velocity"].get_array().value[0].get_double();
-    agent.velocity.y = document["velocity"].get_array().value[1].get_double();
+    agent.position.x = document["position"].get_document().value["x"].get_double();
+    agent.position.y = document["position"].get_document().value["y"].get_double();
+    agent.timestamp = document["timestamp"].get_date();
+    agent.velocity.x = document["velocity"].get_document().value["x"].get_double();
+    agent.velocity.y = document["velocity"].get_document().value["y"].get_double();
     agent.velocityMagnitude = std::sqrt(std::pow(agent.velocity.x, 2) + std::pow(agent.velocity.y, 2));
     agent.bodyRadius = agentTypeAttributes[agent.type].bodyRadius;
     agent.color = stringToColor(agentTypeAttributes[agent.type].color);
@@ -202,8 +206,9 @@ void Visualizer::getMetadata() {
 
     // Extract metadata (adjust based on your actual metadata structure)
     bsoncxx::document::view document = metadataCursor->view();
-    float detectionWidth = document["simulation_area"]["width"].get_double().value * scale;
-    float detectionHeight = document["simulation_area"]["height"].get_double().value * scale;
+    // windowSize.x = document["simulation_area"]["width"].get_double().value * scale;
+    // windowSize.y = document["simulation_area"]["height"].get_double().value * scale;
+
     frameRate = document["frame_rate"].get_double().value;
 
     // Set position vector to origin (0,0)
@@ -240,7 +245,7 @@ void Visualizer::getData() {
     // Iterate over the documents
     for(auto&& doc : cursor) {
         // Access the timestamps field (referrenced by "_id")
-        std::string timestamp = std::string(doc["_id"].get_string().value.data());
+        bsoncxx::types::b_date timestamp = doc["_id"].get_date();
 
         // Access the 'agents' array
         bsoncxx::array::view agents_array = doc["agents"].get_array().value;
@@ -338,6 +343,10 @@ void Visualizer::appendAgentBodies(sf::VertexArray& quads, const Agent& agent) {
         divY = 2;
     }
     else if(word2 == "E-Scooter") {
+        divX = 1;
+        divY = 3;
+    }
+        else if(word2 == "Cargo") {
         divX = 1;
         divY = 3;
     }

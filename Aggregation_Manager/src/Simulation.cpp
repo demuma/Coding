@@ -10,12 +10,11 @@ Simulation::Simulation(
     SharedBuffer<agentBufferFrameType>& agentBuffer,
     SharedBuffer<sensorBufferFrameType>& sensorBuffer,
     std::atomic<float>& currentSimulationTimeStep, const YAML::Node& config)
-: agentBuffer(agentBuffer), sensorBuffer(sensorBuffer), currentSimulationTimeStep(currentSimulationTimeStep), config(config), collisionGrid(0, 0, 0), instance {} {
+: agentBuffer(agentBuffer), sensorBuffer(sensorBuffer), currentSimulationTimeStep(currentSimulationTimeStep), config(config), collisionGrid(0, sf::FloatRect({0.0f, 0.0f}, {0.0f, 0.0f})), instance {} {
     
     // Set the initial write agentBuffer (second queue agentBuffer) -> TODO: Make SharedBuffer class and move this logic there
     DEBUG_MSG("Simulation: " << agentBuffer.name << " write buffer " << agentBuffer.writeBufferIndex);
     DEBUG_MSG("Simulation: " << sensorBuffer.name << " write buffer " << sensorBuffer.writeBufferIndex);
-
     loadConfiguration();
     loadAgentsAttributes();
     loadRegionsAttributes();
@@ -163,7 +162,8 @@ void Simulation::loadRegionsAttributes() {
 void Simulation::initializeGrid() {
 
     // Initialize the grid
-    collisionGrid = Grid(collisionGridCellSize, simulationWidth / collisionGridCellSize, simulationHeight / collisionGridCellSize);
+    // collisionGrid = Grid(collisionGridCellSize, simulationWidth / collisionGridCellSize, simulationHeight / collisionGridCellSize);
+    collisionGrid = Grid(collisionGridCellSize, sf::FloatRect({0.0f, 0.0f}, {simulationWidth, simulationHeight}));
 }
 
 // Function to load obstacles from the YAML configuration file
@@ -646,23 +646,24 @@ void Simulation::postData(const std::vector<Agent>& agents) {
         for (const auto& agent : agents) {
 
             // Construct a BSON document for each agent
-            bsoncxx::builder::stream::document document{};
+            bsoncxx::builder::stream::document document{},
+                                               positionDocument{},
+                                               velocityDocument{};
+
+            // Prepare the position and estimated velocity documents
+            positionDocument << "x" << agent.position.x
+                             << "y" << agent.position.y;
+                             
+            velocityDocument << "x" << agent.velocity.x
+                             << "y" << agent.velocity.y;
 
             // Append the agent data to the document
             document << "timestamp" << bsoncxx::types::b_date{timestamp}
                      << "data_type" << "agent data"
                      << "agent_id" << agent.agentId
                      << "type" << agent.type
-                     << "position" 
-                        << bsoncxx::builder::stream::open_array
-                        << agent.position.x 
-                        << agent.position.y
-                        << bsoncxx::builder::stream::close_array
-                     << "velocity" 
-                        << bsoncxx::builder::stream::open_array
-                        << agent.velocity.x 
-                        << agent.velocity.y
-                        << bsoncxx::builder::stream::close_array;
+                     << "position" << positionDocument
+                     << "velocity" << velocityDocument;
 
             documents.push_back(document << bsoncxx::builder::stream::finalize);
         }

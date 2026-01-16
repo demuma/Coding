@@ -21,8 +21,8 @@ GridBasedSensor::GridBasedSensor(
     db(client->database(databaseName)),
     collection(db[collectionName]),
     sensorBuffer(sensorBuffer),
-    currentGrid(cellSize, detectionArea.size.x, detectionArea.size.y),
-    previousGrid(cellSize, detectionArea.size.x, detectionArea.size.y)
+    currentGrid(cellSize, detectionArea),
+    previousGrid(cellSize, detectionArea)
 {
     this->detectionArea = detectionArea;
 }
@@ -35,9 +35,9 @@ GridBasedSensor::GridBasedSensor(
     bool showGrid,
     SharedBuffer<sensorBufferFrameType>& sensorBuffer
 ) : Sensor(detectionArea, detectionAreaColor, sensorBuffer), 
-    cellSize(cellSize), currentGrid(cellSize, detectionArea.size.x, detectionArea.size.y), 
+    cellSize(cellSize), currentGrid(cellSize, detectionArea), 
     sensorBuffer(sensorBuffer),
-    previousGrid(cellSize, detectionArea.size.x, detectionArea.size.y) {
+    previousGrid(cellSize, detectionArea) {
         this->detectionArea = detectionArea;
         this->detectionAreaColor = detectionAreaColor;
         this->showGrid = showGrid;
@@ -92,6 +92,7 @@ void GridBasedSensor::update(std::vector<Agent>& agents, float timeStep, std::ch
 
                 // Add the agent to the current grid and get the cell index
                 cellIndex = currentGrid.addAgent(&agent);
+                // std::cout << "Agent of type " << agent.type << " at position (" << agent.position.x << ", " << agent.position.y << ") added to cell (" << cellIndex.x << ", " << cellIndex.y << ")\n";
 
                 // Increment the count of the agent type in the cell
                 gridData[cellIndex].agentTypeCount[agent.type]++;

@@ -1329,6 +1329,10 @@ void Renderer::appendAgentBodies(sf::VertexArray& triangles, const RenderAgent& 
     }
     else if(word2 == "E-Scooter") {
         divX = 1;
+        divY = 2.5;
+    }
+    else if(word2 == "Cargo") {
+        divX = 1;
         divY = 3;
     }
     else if(word2 == "Pedestrian") {

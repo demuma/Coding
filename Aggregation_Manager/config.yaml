@@ -195,7 +195,7 @@ agents:
         max: 1.2
       look_ahead_time: 2.0 # Part of behavior profile (foresightfulness)
     - type: Adult Pedestrian
-      probability: 0.4
+      probability: 0.35
       priority: 3
       radius: 0.25
       color: 'blue'
@@ -258,6 +258,22 @@ agents:
         min: 2.0
         max: 4.5
       look_ahead_time: 5.0 # Part of behavior profile (foresightfulness)
+    - type: Adult Cargo Cyclist
+      probability: 0.05
+      priority: 5
+      radius: 1.25
+      color: 'brown'
+      velocity:
+        min: 4.44  # 16 km/h
+        max: 6.95  # 25 km/h
+        mu: 5.0    # 18 km/h
+        sigma: 0.5
+        noise_scale: 0.05
+        noise_factor: 0.5
+      acceleration:
+        min: 0.5
+        max: 2.0
+      look_ahead_time: 5.0 # Part of behavior profile (foresightfulness)
 
 common:
   debug: false # not used
@@ -275,8 +291,8 @@ sensors:
   - type: agent-based
     frame_rate: 10.0
     detection_area:
-      x: 00.0
-      y: 00.0
+      x: 0.0
+      y: 0.0
       width: 60.0 # default: 115.0
       height: 80.0 # 120
       color: magenta

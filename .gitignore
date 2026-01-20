@@ -1,4 +1,9 @@
-SimulatorV3/.DS_Store
 .DS_Store
-.DS_Store
-SimulatorV3/.DS_Store
+
+# Build artifacts
+**/build/
+**/CMakeFiles/
+**/CMakeCache.txt
+**/cmake_install.cmake
+**/Makefile
+**/compile_commands.json

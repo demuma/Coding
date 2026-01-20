@@ -1,9 +1,9 @@
 version: 1.0
 
 display:
-  width: 800 # 2400
-  height: 800 # 1200
-  pixels_per_meter: 10
+  width: 1640 # 2400
+  height: 640 # 1200
+  pixels_per_meter: 8
   title: 'Agent Data Visualizer'
 
 renderer:
@@ -17,7 +17,7 @@ renderer:
   show_info: true
   show_grids: true
   show_sensors: false
-  make_video: true
+  make_video: false
 
 database:
   host: localhost

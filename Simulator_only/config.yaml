@@ -9,7 +9,7 @@ simulation:
   width: 200
   height: 100
   # duration_seconds: 1000
-  maximum_frames: 1000
+  maximum_frames: 100
   time_step: 0.05
   playback_speed: 1.0
   num_threads: 8
